@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Flashcard Tiếng Trung - iPhone 11 Pro Max</title>
+    <title>Flashcard Tiếng Trung</title>
     <!-- Thư viện Pinyin -->
     <script src="https://unpkg.com/pinyin-pro"></script>
     <!-- Thư viện Biểu đồ Chart.js -->
@@ -13,7 +13,6 @@
             --primary: #007aff;
             --success: #34c759;
             --danger: #ff3b30;
-            --warning: #ff9500;
             --bg-system: #f2f2f7;
             --card-bg: #ffffff;
             --text-main: #1c1c1e;
@@ -49,6 +48,16 @@
         .stat-number { font-size: 18px; font-weight: 700; }
         .chart-wrapper { position: relative; width: 140px; height: 140px; margin: 0 auto; }
 
+        /* Nút bấm iOS */
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease; }
+        button:active { opacity: 0.7; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-back { background: #e5e5ea; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        .menu-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+
         /* Form Nhập */
         .input-group { margin-bottom: 10px; }
         .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; text-transform: uppercase; }
@@ -56,15 +65,8 @@
         .input-group input:focus { border-color: var(--primary); background: #fff; }
         .input-group input[readonly] { background-color: #e5e5ea; color: #3a3a3c; }
 
-        button { width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease; }
-        button:active { opacity: 0.7; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-filter-group { display: flex; gap: 8px; }
-        .btn-filter { background: #e5e5ea; color: var(--text-main); font-size: 13px; padding: 10px; }
-        .btn-filter.active { background: var(--primary); color: white; }
-
         /* Flashcard Swipe Area */
-        .swipe-container { position: relative; width: 100%; height: 270px; perspective: 1000px; }
+        .swipe-container { position: relative; width: 100%; height: 270px; perspective: 1000px; margin-bottom: 12px; }
         .flashcard { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 0.4s ease, left 0.3s ease, opacity 0.3s ease; cursor: pointer; user-select: none; }
         .flashcard.flipped { transform: rotateY(180deg); }
 
@@ -81,7 +83,7 @@
         .meaning-text { font-size: 18px; color: var(--text-main); }
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); }
 
-        /* Nút Chỉnh sửa & Xóa trên Thẻ */
+        /* Tools trên Thẻ */
         .card-tools { position: absolute; top: 12px; left: 16px; display: flex; gap: 8px; z-index: 10; }
         .btn-tool { width: auto; padding: 4px 8px; font-size: 12px; border-radius: 6px; }
         .btn-edit { background: #e5e5ea; color: var(--primary); }
@@ -90,99 +92,97 @@
         .action-btns { display: flex; gap: 10px; }
         .btn-know { background: #e4f9e8; color: var(--success); }
         .btn-unknow { background: #ffe5e5; color: var(--danger); }
-        .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); }
+        .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); margin-bottom: 8px; }
 
-        /* Mini-game Ghép từ trái nghĩa */
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-        .game-card { background: var(--bg-system); padding: 14px 8px; border-radius: 12px; text-align: center; font-size: 18px; font-weight: bold; cursor: pointer; border: 2px solid transparent; }
-        .game-card.selected { border-color: var(--primary); background: #e8f2ff; }
-        .game-card.matched { border-color: var(--success); background: #e4f9e8; opacity: 0.5; pointer-events: none; }
-        .game-card.wrong { border-color: var(--danger); background: #ffe5e5; }
+        /* Quản lý các Màn hình */
+        .view-section { display: none; }
+        .view-section.active { display: block; }
     </style>
 </head>
 <body>
 
 <div class="iphone-container">
 
-    <!-- THỐNG KÊ -->
-    <div class="card-box">
-        <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Từ Vựng</h3>
-        <div class="stats-grid">
-            <div class="stat-item">
-                <div class="stat-number" id="totalCount">0</div>
-                <div style="font-size: 11px; color: var(--text-sub);">Tổng từ</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
-                <div style="font-size: 11px; color: var(--text-sub);">Đã thuộc</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
-                <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
-            </div>
-        </div>
-        <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
-    </div>
-
-    <!-- FORM THÊM / SỬA TỪ -->
-    <div class="card-box">
-        <h3 style="margin: 0 0 12px 0; font-size: 17px;" id="formTitle">Thêm Từ Vựng Mới</h3>
-        <div class="input-group">
-            <label>Chữ Hán:</label>
-            <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin()">
-        </div>
-        <div class="input-group">
-            <label>Bính âm (Pinyin):</label>
-            <input type="text" id="pinyinInput" readonly placeholder="Tự động hiện Pinyin">
-        </div>
-        <div class="input-group">
-            <label>Nghĩa Tiếng Việt:</label>
-            <input type="text" id="meaningInput" placeholder="Nhập nghĩa...">
-        </div>
-        <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
-        <button class="btn-filter" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
-    </div>
-
-    <!-- CHỌN CHẾ ĐỘ ÔN TẬP -->
-    <div class="btn-filter-group">
-        <button class="btn-filter active" id="filterAllBtn" onclick="setFilter('all')">Ôn Tất Cả Từ</button>
-        <button class="btn-filter" id="filterUnlearnedBtn" onclick="setFilter('unlearned')">Chỉ Ôn CHƯA THUỘC</button>
-    </div>
-
-    <!-- THẺ FLASHCARD -->
-    <div class="hint-swipe">👈 Vuốt Trái: Đã thuộc | Vuốt Phải: Chưa thuộc 👉</div>
-    <div class="swipe-container">
-        <div class="flashcard" id="flashcard">
-            <div class="card-face front">
-                <div class="card-tools" onclick="event.stopPropagation()">
-                    <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
-                    <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
+    <!-- MÀN HÌNH CHÍNH (HOME) -->
+    <div id="homeView" class="view-section active">
+        <div class="card-box">
+            <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Từ Vựng</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Tổng từ</div>
                 </div>
-                <span class="seen-badge" id="seenCount">Hiện: 0</span>
-                <span id="displayHanzi">Vui lòng thêm từ</span>
-            </div>
-            <div class="card-face back">
-                <div class="card-tools" onclick="event.stopPropagation()">
-                    <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
-                    <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
+                <div class="stat-item">
+                    <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Đã thuộc</div>
                 </div>
-                <div class="pinyin-text" id="displayPinyin"></div>
-                <div class="meaning-text" id="displayMeaning"></div>
+                <div class="stat-item">
+                    <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
+                </div>
             </div>
+            <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
+        </div>
+
+        <div class="menu-buttons">
+            <button class="btn-primary" onclick="showView('addWordView')">➕ Thêm Từ Vựng Mới</button>
+            <button class="btn-success" onclick="startReview('all')">📖 Ôn Tập Tất Cả Từ</button>
+            <button class="btn-danger" onclick="startReview('unlearned')">🎯 Chỉ Ôn Từ CHƯA THUỘC</button>
         </div>
     </div>
 
-    <div class="action-btns">
-        <button class="btn-know" onclick="markCard(true)">👈 Đã thuộc</button>
-        <button class="btn-unknow" onclick="markCard(false)">Chưa thuộc 👉</button>
+    <!-- MÀN HÌNH THÊM / SỬA TỪ -->
+    <div id="addWordView" class="view-section">
+        <button class="btn-back" onclick="showView('homeView')">⬅ Quay về màn hình chính</button>
+        <div class="card-box">
+            <h3 style="margin: 0 0 12px 0; font-size: 17px;" id="formTitle">Thêm Từ Vựng Mới</h3>
+            <div class="input-group">
+                <label>Chữ Hán:</label>
+                <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin()">
+            </div>
+            <div class="input-group">
+                <label>Bính âm (Pinyin):</label>
+                <input type="text" id="pinyinInput" readonly placeholder="Tự động hiện Pinyin">
+            </div>
+            <div class="input-group">
+                <label>Nghĩa Tiếng Việt:</label>
+                <input type="text" id="meaningInput" placeholder="Nhập nghĩa...">
+            </div>
+            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
+            <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
+        </div>
     </div>
 
-    <!-- GAME GHÉP NỐI TỪ TRÁI NGHĨA -->
-    <div class="card-box" style="margin-top: 10px;">
-        <h3 style="margin: 0 0 8px 0; font-size: 17px; text-align: center;">🎮 Trò Chơi Ghép Từ Trái Nghĩa</h3>
-        <div style="font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 10px;">Bấm chọn cặp 2 từ có nghĩa trái ngược nhau</div>
-        <button class="btn-primary" onclick="startAntonymGame()">Bắt Đầu Trò Chơi Mới</button>
-        <div class="game-grid" id="gameContainer"></div>
+    <!-- MÀN HÌNH ÔN TẬP FLASHCARD -->
+    <div id="reviewView" class="view-section">
+        <button class="btn-back" onclick="showView('homeView')">⬅ Quay về màn hình chính</button>
+        
+        <div class="hint-swipe">👈 Vuốt Trái: Đã thuộc | Vuốt Phải: Chưa thuộc 👉</div>
+        <div class="swipe-container">
+            <div class="flashcard" id="flashcard">
+                <div class="card-face front">
+                    <div class="card-tools" onclick="event.stopPropagation()">
+                        <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
+                        <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
+                    </div>
+                    <span class="seen-badge" id="seenCount">Hiện: 0</span>
+                    <span id="displayHanzi">Vui lòng thêm từ</span>
+                </div>
+                <div class="card-face back">
+                    <div class="card-tools" onclick="event.stopPropagation()">
+                        <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
+                        <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
+                    </div>
+                    <div class="pinyin-text" id="displayPinyin"></div>
+                    <div class="meaning-text" id="displayMeaning"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-btns">
+            <button class="btn-know" onclick="markCard(true)">👈 Đã thuộc</button>
+            <button class="btn-unknow" onclick="markCard(false)">Chưa thuộc 👉</button>
+        </div>
     </div>
 
 </div>
@@ -190,19 +190,20 @@
 <script>
     const { pinyin } = pinyinPro;
 
-    // Cơ sở dữ liệu từ trái nghĩa mặc định
-    const antonymPairs = [
-        ['大', '小'], ['多', '少'], ['高', '矮'], ['长', '短'], ['快', '慢'],
-        ['新', '旧'], ['好', '坏'], ['冷', '热'], ['前', '后'], ['左', '右'],
-        ['上', '下'], ['进', '出'], ['买', '卖'], ['开', '关'], ['问', '答'],
-        ['早', '晚'], ['黑', '白'], ['远', '近'], ['重', '轻'], ['推', '拉']
-    ];
-
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
     let currentFilter = 'all';
     let currentCardIndex = -1;
     let editingId = null;
     let chartInstance = null;
+
+    // Chuyển đổi qua lại giữa các Màn hình
+    function showView(viewId) {
+        document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        if (viewId === 'homeView') {
+            updateUI();
+        }
+    }
 
     function autoPinyin() {
         const input = document.getElementById('hanziInput').value.trim();
@@ -250,8 +251,8 @@
 
         saveData();
         resetForm();
-        updateUI();
-        loadNextCard();
+        alert('Đã lưu thành công!');
+        showView('homeView');
     }
 
     function editCurrentCard() {
@@ -265,6 +266,8 @@
         document.getElementById('formTitle').innerText = "Sửa Từ Vựng";
         document.getElementById('saveBtn').innerText = "Cập Nhật Từ";
         document.getElementById('cancelEditBtn').style.display = "block";
+        
+        showView('addWordView');
     }
 
     function deleteCurrentCard() {
@@ -272,7 +275,6 @@
         if (confirm("Bạn có chắc chắn muốn xóa từ này khỏi danh sách?")) {
             vocabList.splice(currentCardIndex, 1);
             saveData();
-            updateUI();
             loadNextCard();
         }
     }
@@ -304,11 +306,10 @@
         }
     }
 
-    function setFilter(filter) {
+    function startReview(filter) {
         currentFilter = filter;
-        document.getElementById('filterAllBtn').classList.toggle('active', filter === 'all');
-        document.getElementById('filterUnlearnedBtn').classList.toggle('active', filter === 'unlearned');
         loadNextCard();
+        showView('reviewView');
     }
 
     function loadNextCard() {
@@ -350,7 +351,6 @@
         item.seenCount += 1;
 
         saveData();
-        updateUI();
 
         const cardElem = document.getElementById('flashcard');
         cardElem.style.transform = isLearned ? 'translateX(-120%) rotate(-10deg)' : 'translateX(120%) rotate(10deg)';
@@ -376,83 +376,9 @@
         if (diffX > 50) markCard(false);
     });
 
-    /* THUẬT TOÁN MINI-GAME TRÁI NGHĨA */
-    let selectedCards = [];
-
-    function startAntonymGame() {
-        const container = document.getElementById('gameContainer');
-        container.innerHTML = '';
-        selectedCards = [];
-
-        // Trích xuất các chữ Hán người dùng đã thêm
-        const userHanziList = vocabList.map(v => v.hanzi);
-        let activePairs = [];
-
-        // Tìm các cặp trái nghĩa khớp với danh sách từ đã thêm
-        antonymPairs.forEach(pair => {
-            if (userHanziList.includes(pair[0]) || userHanziList.includes(pair[1])) {
-                activePairs.push(pair);
-            }
-        });
-
-        // Nếu từ người dùng thêm chưa đủ cặp, lấy tự động từ kho mẫu
-        if (activePairs.length < 3) {
-            activePairs = antonymPairs.slice(0, 4);
-        } else {
-            activePairs = activePairs.slice(0, 4);
-        }
-
-        // Tạo danh sách thẻ game và xáo trộn (Shuffle)
-        let gameItems = [];
-        activePairs.forEach((pair, index) => {
-            gameItems.push({ text: pair[0], pairId: index });
-            gameItems.push({ text: pair[1], pairId: index });
-        });
-        gameItems.sort(() => Math.random() - 0.5);
-
-        // Hiển thị ra màn hình
-        gameItems.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'game-card';
-            div.innerText = item.text;
-            div.dataset.pairId = item.pairId;
-            div.onclick = () => handleGameSelect(div);
-            container.appendChild(div);
-        });
-    }
-
-    function handleGameSelect(card) {
-        if (card.classList.contains('matched') || card.classList.contains('selected')) return;
-
-        card.classList.add('selected');
-        selectedCards.push(card);
-
-        if (selectedCards.length === 2) {
-            const [c1, c2] = selectedCards;
-            if (c1.dataset.pairId === c2.dataset.pairId) {
-                // Khớp đúng cặp trái nghĩa
-                c1.classList.remove('selected');
-                c2.classList.remove('selected');
-                c1.classList.add('matched');
-                c2.classList.add('matched');
-                selectedCards = [];
-            } else {
-                // Sai cặp
-                c1.classList.add('wrong');
-                c2.classList.add('wrong');
-                setTimeout(() => {
-                    c1.classList.remove('selected', 'wrong');
-                    c2.classList.remove('selected', 'wrong');
-                    selectedCards = [];
-                }, 600);
-            }
-        }
-    }
-
     window.onload = function() {
         initChart();
         updateUI();
-        loadNextCard();
     };
 </script>
 
