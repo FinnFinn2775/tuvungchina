@@ -43,7 +43,7 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.06);
         }
 
-        /* Ẩn các màn hình */
+        /* Ẩn/Hiện các trang */
         .page { display: none; }
         .page.active { display: flex; flex-direction: column; gap: 16px; }
 
@@ -74,7 +74,7 @@
         button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease; }
         button:active { opacity: 0.7; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 18px 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-radius: 14px; }
 
         /* Flashcard Swipe Area */
         .swipe-container { position: relative; width: 100%; height: 270px; perspective: 1000px; }
@@ -106,21 +106,18 @@
         .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); }
 
         /* Thời gian học */
-        .time-box { text-align: center; background: #e8f2ff; color: var(--primary); padding: 12px; border-radius: 12px; font-weight: 600; font-size: 15px; }
+        .time-box { text-align: center; background: #e8f2ff; color: var(--primary); padding: 14px; border-radius: 14px; font-weight: 600; font-size: 16px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
 
 <div class="iphone-container">
 
-    <!-- 1. MÀN HÌNH CHÍNH (MENU) -->
+    <!-- 1. MÀN HÌNH CHÍNH (BAN ĐẦU Chỉ có Menu) -->
     <div id="page-home" class="page active">
-        <div class="time-box">
-            ⏱️ Thời gian học hôm nay: <span id="studyTimeDisplay">0 phút 0 giây</span>
-        </div>
-
+        <h2 style="text-align: center; margin-top: 10px; margin-bottom: 8px;">Ôn Tập Tiếng Trung</h2>
         <button class="btn-menu" onclick="showPage('page-stats')">
-            <span>📊 Thống Kê Học Tập</span> <span>➔</span>
+            <span>📊 Thống Kê Học Tập & Thời Gian</span> <span>➔</span>
         </button>
         <button class="btn-menu" onclick="showPage('page-add')">
             <span>➕ Thêm Từ Vựng Mới</span> <span>➔</span>
@@ -133,15 +130,20 @@
         </button>
     </div>
 
-    <!-- 2. MÀN HÌNH THỐNG KÊ -->
+    <!-- 2. MÀN HÌNH THỐNG KÊ (Hiển thị thời gian & số liệu từ vựng khi ấn vào nút Thống kê) -->
     <div id="page-stats" class="page">
-        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về trang chủ</button>
+        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        
+        <div class="time-box">
+            ⏱️ Thời gian học tập: <br><span id="studyTimeDisplay" style="font-size: 20px; font-weight: bold;">0 phút 0 giây</span>
+        </div>
+
         <div class="card-box">
             <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Chi Tiết</h3>
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-number" id="totalCount">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Tổng từ</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Tổng từ đã thêm</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
@@ -158,7 +160,7 @@
 
     <!-- 3. MÀN HÌNH THÊM / SỬA TỪ -->
     <div id="page-add" class="page">
-        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về trang chủ</button>
+        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         <div class="card-box">
             <h3 style="margin: 0 0 12px 0; font-size: 17px;" id="formTitle">Thêm Từ Vựng Mới</h3>
             <div class="input-group">
@@ -180,7 +182,7 @@
 
     <!-- 4. MÀN HÌNH FLASHCARD ÔN TẬP -->
     <div id="page-flashcard" class="page">
-        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về trang chủ</button>
+        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         
         <div class="hint-swipe">👈 Vuốt Trái: Đã thuộc | Vuốt Phải: Chưa thuộc 👉</div>
         <div class="swipe-container">
@@ -221,7 +223,7 @@
     let editingId = null;
     let chartInstance = null;
 
-    // Đếm thời gian học tập
+    // Bộ đếm thời gian học
     let totalSeconds = parseInt(localStorage.getItem('study_total_seconds')) || 0;
     setInterval(() => {
         totalSeconds++;
@@ -232,10 +234,11 @@
     function updateStudyTimeDisplay() {
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-        document.getElementById('studyTimeDisplay').innerText = `${minutes} phút ${seconds} giây`;
+        const elem = document.getElementById('studyTimeDisplay');
+        if (elem) elem.innerText = `${minutes} phút ${seconds} giây`;
     }
 
-    // Chuyển đổi màn hình
+    // Chuyển đổi giao diện màn hình
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
