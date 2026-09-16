@@ -105,19 +105,40 @@
         .btn-unknow { background: #ffe5e5; color: var(--danger); }
         .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); }
 
-        /* Thời gian học */
-        .time-box { text-align: center; background: #e8f2ff; color: var(--primary); padding: 14px; border-radius: 14px; font-weight: 600; font-size: 16px; margin-bottom: 12px; }
+        /* Bảng thống kê 7 ngày */
+        .day-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e5ea; font-size: 14px; }
+        .day-row:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
 <div class="iphone-container">
 
-    <!-- 1. MÀN HÌNH CHÍNH (BAN ĐẦU Chỉ có Menu) -->
+    <!-- 1. MÀN HÌNH CHÍNH (Hiển thị ngay Thống kê từ vựng & Menu điều hướng) -->
     <div id="page-home" class="page active">
-        <h2 style="text-align: center; margin-top: 10px; margin-bottom: 8px;">Ôn Tập Tiếng Trung</h2>
-        <button class="btn-menu" onclick="showPage('page-stats')">
-            <span>📊 Thống Kê Học Tập & Thời Gian</span> <span>➔</span>
+        <!-- Khối Thống kê hiển thị sẵn ngay trên Trang chủ -->
+        <div class="card-box">
+            <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Từ Vựng</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Tất cả từ</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Đã thuộc</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
+                    <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
+                </div>
+            </div>
+            <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
+        </div>
+
+        <!-- Nút bấm chuyển giao diện -->
+        <button class="btn-menu" onclick="showPage('page-time-stats')">
+            <span>⏱️ Thống Kê Thời Gian Học Tập (7 Ngày)</span> <span>➔</span>
         </button>
         <button class="btn-menu" onclick="showPage('page-add')">
             <span>➕ Thêm Từ Vựng Mới</span> <span>➔</span>
@@ -130,31 +151,13 @@
         </button>
     </div>
 
-    <!-- 2. MÀN HÌNH THỐNG KÊ (Hiển thị thời gian & số liệu từ vựng khi ấn vào nút Thống kê) -->
-    <div id="page-stats" class="page">
+    <!-- 2. MÀN HÌNH THỐNG KÊ THỜI GIAN HỌC TẬP (Chỉ hiển thị khi ấn vào) -->
+    <div id="page-time-stats" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         
-        <div class="time-box">
-            ⏱️ Thời gian học tập: <br><span id="studyTimeDisplay" style="font-size: 20px; font-weight: bold;">0 phút 0 giây</span>
-        </div>
-
         <div class="card-box">
-            <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Chi Tiết</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-number" id="totalCount">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Tổng từ đã thêm</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Đã thuộc</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
-                </div>
-            </div>
-            <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
+            <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thời Gian Học 7 Ngày Gần Đây</h3>
+            <div id="sevenDaysList"></div>
         </div>
     </div>
 
@@ -218,31 +221,34 @@
     const { pinyin } = pinyinPro;
 
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
+    let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
     let currentFilter = 'all';
     let currentCardIndex = -1;
     let editingId = null;
     let chartInstance = null;
 
-    // Bộ đếm thời gian học
-    let totalSeconds = parseInt(localStorage.getItem('study_total_seconds')) || 0;
-    setInterval(() => {
-        totalSeconds++;
-        localStorage.setItem('study_total_seconds', totalSeconds);
-        updateStudyTimeDisplay();
-    }, 1000);
-
-    function updateStudyTimeDisplay() {
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        const elem = document.getElementById('studyTimeDisplay');
-        if (elem) elem.innerText = `${minutes} phút ${seconds} giây`;
+    // Lấy chuỗi ngày hôm nay (YYYY-MM-DD)
+    function getTodayKey() {
+        const d = new Date();
+        return d.toISOString().split('T')[0];
     }
 
-    // Chuyển đổi giao diện màn hình
+    // Đếm và lưu thời gian học tập theo ngày
+    setInterval(() => {
+        const today = getTodayKey();
+        if (!dailyStats[today]) {
+            dailyStats[today] = { seconds: 0, wordsReviewed: 0 };
+        }
+        dailyStats[today].seconds += 1;
+        localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+    }, 1000);
+
+    // Chuyển đổi giữa các giao diện
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         document.getElementById(pageId).classList.add('active');
-        if (pageId === 'page-stats') updateUI();
+        if (pageId === 'page-home') updateUI();
+        if (pageId === 'page-time-stats') renderSevenDaysStats();
     }
 
     function startStudy(filter) {
@@ -351,6 +357,31 @@
         }
     }
 
+    // Hiển thị thống kê 7 ngày gần đây
+    function renderSevenDaysStats() {
+        const container = document.getElementById('sevenDaysList');
+        container.innerHTML = '';
+
+        for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().split('T')[0];
+            const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+            
+            const stats = dailyStats[key] || { seconds: 0, wordsReviewed: 0 };
+            const mins = Math.floor(stats.seconds / 60);
+            const secs = stats.seconds % 60;
+
+            const row = document.createElement('div');
+            row.className = 'day-row';
+            row.innerHTML = `
+                <div><strong>${i === 0 ? 'Hôm nay' : dateStr}</strong></div>
+                <div>⏱️ ${mins} phút ${secs} giây | 📖 ${stats.wordsReviewed} từ</div>
+            `;
+            container.appendChild(row);
+        }
+    }
+
     function loadNextCard() {
         let pool = vocabList;
         if (currentFilter === 'unlearned') {
@@ -389,6 +420,12 @@
         item.status = isLearned ? 'learned' : 'unlearned';
         item.seenCount += 1;
 
+        // Cộng số từ đã ôn trong ngày
+        const today = getTodayKey();
+        if (!dailyStats[today]) dailyStats[today] = { seconds: 0, wordsReviewed: 0 };
+        dailyStats[today].wordsReviewed += 1;
+        localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+
         saveData();
 
         const cardElem = document.getElementById('flashcard');
@@ -417,7 +454,7 @@
 
     window.onload = function() {
         initChart();
-        updateStudyTimeDisplay();
+        updateUI();
     };
 </script>
 
