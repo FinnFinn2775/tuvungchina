@@ -14,7 +14,6 @@
             --success: #34c759;
             --danger: #ff3b30;
             --warning: #ff9500;
-            --purple: #af52de;
             --bg-system: #f2f2f7;
             --card-bg: #ffffff;
             --text-main: #1c1c1e;
@@ -45,14 +44,19 @@
         }
 
         /* Thống kê Tổng quan */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; text-align: center; }
-        .stat-item { background: var(--bg-system); padding: 8px 2px; border-radius: 10px; }
-        .stat-number { font-size: 15px; font-weight: 700; }
-        .stat-label { font-size: 10px; color: var(--text-sub); }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; text-align: center; }
+        .stat-item { background: var(--bg-system); padding: 8px 4px; border-radius: 12px; }
+        .stat-number { font-size: 16px; font-weight: 700; }
 
-        .charts-container { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
-        .chart-wrapper-doughnut { position: relative; width: 130px; height: 130px; margin: 0 auto; }
-        .chart-wrapper-bar { position: relative; width: 100%; height: 180px; }
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .chart-wrapper { position: relative; width: 100%; height: 130px; }
 
         /* Form Nhập */
         .input-group { margin-bottom: 10px; }
@@ -69,7 +73,7 @@
         .btn-filter.active { background: var(--primary); color: white; }
 
         /* Flashcard Swipe Area */
-        .swipe-container { position: relative; width: 100%; height: 260px; perspective: 1000px; }
+        .swipe-container { position: relative; width: 100%; height: 270px; perspective: 1000px; }
         .flashcard { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 0.4s ease, left 0.3s ease, opacity 0.3s ease; cursor: pointer; user-select: none; }
         .flashcard.flipped { transform: rotateY(180deg); }
 
@@ -86,7 +90,6 @@
         .meaning-text { font-size: 18px; color: var(--text-main); }
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); }
 
-        /* Nút Chỉnh sửa & Xóa */
         .card-tools { position: absolute; top: 12px; left: 16px; display: flex; gap: 8px; z-index: 10; }
         .btn-tool { width: auto; padding: 4px 8px; font-size: 12px; border-radius: 6px; }
         .btn-edit { background: #e5e5ea; color: var(--primary); }
@@ -97,7 +100,7 @@
         .btn-unknow { background: #ffe5e5; color: var(--danger); }
         .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); }
 
-        /* Game Ghép Từ Trái Nghĩa */
+        /* Game Ghép Từ */
         .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .game-card { background: var(--bg-system); padding: 14px 8px; border-radius: 12px; text-align: center; font-size: 18px; font-weight: bold; cursor: pointer; border: 2px solid transparent; }
         .game-card.selected { border-color: var(--primary); background: #e8f2ff; }
@@ -109,50 +112,45 @@
 
 <div class="iphone-container">
 
-    <!-- THỐNG KÊ GIAO DIỆN ĐẦU (TỔNG HỢP + THỜI GIAN + 2 BIỂU ĐỒ) -->
+    <!-- THỐNG KÊ GIAO DIỆN ĐẦU (NÂNG CẤP) -->
     <div class="card-box">
-        <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Tiến Độ Học</h3>
+        <h3 style="margin: 0 0 10px 0; font-size: 17px; text-align: center;">Thống Kê Học Tập</h3>
         
-        <!-- Hàng 1: Từ Vựng -->
+        <!-- Hàng 1: Tổng từ, Đã thuộc, Chưa thuộc -->
         <div class="stats-grid">
             <div class="stat-item">
                 <div class="stat-number" id="totalCount">0</div>
-                <div class="stat-label">Tổng từ</div>
+                <div style="font-size: 11px; color: var(--text-sub);">Tổng từ</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
-                <div class="stat-label">Đã thuộc</div>
+                <div style="font-size: 11px; color: var(--text-sub);">Đã thuộc</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
-                <div class="stat-label">Chưa thuộc</div>
+                <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
             </div>
         </div>
 
-        <!-- Hàng 2: Thời Gian & Chuỗi Ngày Học -->
+        <!-- Hàng 2: Số ngày học & Thời gian đã ôn -->
         <div class="stats-grid">
-            <div class="stat-item">
+            <div class="stat-item" style="grid-column: span 1;">
                 <div class="stat-number" id="daysCount" style="color: var(--warning);">0</div>
-                <div class="stat-label">Ngày đã học</div>
+                <div style="font-size: 11px; color: var(--text-sub);">Ngày đã học</div>
             </div>
             <div class="stat-item" style="grid-column: span 2;">
-                <div class="stat-number" id="studyTimeText" style="color: var(--purple);">0g 0p</div>
-                <div class="stat-label">Tổng thời gian ôn</div>
+                <div class="stat-number" id="studyTimeDisplay" style="color: var(--primary);">0g 0p</div>
+                <div style="font-size: 11px; color: var(--text-sub);">Thời gian đã ôn tập</div>
             </div>
         </div>
 
-        <div class="charts-container">
-            <!-- Biểu đồ tròn (Tỷ lệ thuộc từ) -->
-            <div class="chart-wrapper-doughnut">
-                <canvas id="vocabDoughnutChart"></canvas>
+        <!-- Khung chứa 2 Biểu đồ cạnh nhau -->
+        <div class="charts-row">
+            <div class="chart-wrapper">
+                <canvas id="vocabChart"></canvas>
             </div>
-            
-            <!-- Biểu đồ cột (7 ngày gần đây) -->
-            <div>
-                <h4 style="margin: 4px 0 8px 0; font-size: 13px; text-align: center; color: var(--text-sub);">7 Ngày Gần Đây (Từ đã học & Phút ôn)</h4>
-                <div class="chart-wrapper-bar">
-                    <canvas id="weeklyBarChart"></canvas>
-                </div>
+            <div class="chart-wrapper">
+                <canvas id="weeklyChart"></canvas>
             </div>
         </div>
     </div>
@@ -226,50 +224,48 @@
     const antonymPairs = [
         ['大', '小'], ['多', '少'], ['高', '矮'], ['长', '短'], ['快', '慢'],
         ['新', '旧'], ['好', '坏'], ['冷', '热'], ['前', '后'], ['左', '右'],
-        ['上', '下'], ['进', '出'], ['买', '卖'], ['开', '关'], ['问', '答']
+        ['上', '下'], ['进', '出'], ['买', '卖'], ['开', '关'], ['问', '答'],
+        ['早', '晚'], ['黑', '白'], ['远', '近'], ['重', '轻'], ['推', '拉']
     ];
 
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
-    let statsData = JSON.parse(localStorage.getItem('my_stats_data')) || {
+    let statsData = JSON.parse(localStorage.getItem('my_study_stats')) || {
+        historyDays: [],
         totalSeconds: 0,
-        daysStudied: [],
-        dailyLogs: {} // { 'YYYY-MM-DD': { learnedWords: 0, seconds: 0 } }
+        weeklyData: {} // lưu theo định dạng 'YYYY-MM-DD': { words: 0, seconds: 0 }
     };
 
     let currentFilter = 'all';
     let currentCardIndex = -1;
     let editingId = null;
-    let doughnutChartInstance = null;
-    let barChartInstance = null;
+    let chartInstance = null;
+    let weeklyChartInstance = null;
 
-    // Theo dõi thời gian ôn tập
-    let sessionStartTime = Date.now();
-    setInterval(trackStudyTime, 5000); // Lưu mỗi 5s
-
-    function getTodayKey() {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
+    // Tính toán thời gian học tự động
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (!statsData.historyDays.includes(todayStr)) {
+        statsData.historyDays.push(todayStr);
+    }
+    if (!statsData.weeklyData[todayStr]) {
+        statsData.weeklyData[todayStr] = { words: 0, seconds: 0 };
     }
 
-    function trackStudyTime() {
-        const now = Date.now();
-        const elapsedSeconds = Math.floor((now - sessionStartTime) / 1000);
-        if (elapsedSeconds > 0) {
-            sessionStartTime = now;
-            statsData.totalSeconds += elapsedSeconds;
-            
-            const todayKey = getTodayKey();
-            if (!statsData.daysStudied.includes(todayKey)) {
-                statsData.daysStudied.push(todayKey);
-            }
-            if (!statsData.dailyLogs[todayKey]) {
-                statsData.dailyLogs[todayKey] = { learnedWords: 0, seconds: 0 };
-            }
-            statsData.dailyLogs[todayKey].seconds += elapsedSeconds;
+    setInterval(() => {
+        statsData.totalSeconds += 1;
+        statsData.weeklyData[todayStr].seconds += 1;
+        saveStats();
+        updateTimeDisplay();
+    }, 1000);
 
-            saveStats();
-            updateTimeUI();
-        }
+    function saveStats() {
+        localStorage.setItem('my_study_stats', JSON.stringify(statsData));
+    }
+
+    function updateTimeDisplay() {
+        const hrs = Math.floor(statsData.totalSeconds / 3600);
+        const mins = Math.floor((statsData.totalSeconds % 3600) / 60);
+        document.getElementById('studyTimeDisplay').innerText = `${hrs}g ${mins}p`;
+        document.getElementById('daysCount').innerText = statsData.historyDays.length;
     }
 
     function autoPinyin() {
@@ -281,11 +277,10 @@
         }
     }
 
-    /* KHỞI TẠO BIỂU ĐỒ */
     function initCharts() {
-        // Biểu đồ tròn
-        const ctxDoughnut = document.getElementById('vocabDoughnutChart').getContext('2d');
-        doughnutChartInstance = new Chart(ctxDoughnut, {
+        // Biểu đồ Tròn
+        const ctxPie = document.getElementById('vocabChart').getContext('2d');
+        chartInstance = new Chart(ctxPie, {
             type: 'doughnut',
             data: {
                 labels: ['Đã thuộc', 'Chưa thuộc'],
@@ -294,23 +289,57 @@
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
 
-        // Biểu đồ cột 7 ngày
-        const ctxBar = document.getElementById('weeklyBarChart').getContext('2d');
-        barChartInstance = new Chart(ctxBar, {
+        // Biểu đồ 7 Ngày Gần Đây
+        const ctxBar = document.getElementById('weeklyChart').getContext('2d');
+        const last7Days = getLast7Days();
+        
+        weeklyChartInstance = new Chart(ctxBar, {
             type: 'bar',
             data: {
-                labels: [],
+                labels: last7Days.map(d => d.slice(5)), // Hiện MM-DD
                 datasets: [
-                    { label: 'Từ đã học', data: [], backgroundColor: '#34c759', borderRadius: 6 },
-                    { label: 'Phút ôn', data: [], backgroundColor: '#007aff', borderRadius: 6 }
+                    {
+                        label: 'Từ',
+                        data: getWeeklyWordsData(last7Days),
+                        backgroundColor: '#007aff',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Phút',
+                        data: getWeeklyMinutesData(last7Days),
+                        backgroundColor: '#ff9500',
+                        borderRadius: 4
+                    }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: { y: { beginAtZero: true } }
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+                    y: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                }
             }
         });
+    }
+
+    function getLast7Days() {
+        let days = [];
+        for (let i = 6; i >= 0; i--) {
+            let d = new Date();
+            d.setDate(d.getDate() - i);
+            days.push(d.toISOString().split('T')[0]);
+        }
+        return days;
+    }
+
+    function getWeeklyWordsData(days) {
+        return days.map(d => (statsData.weeklyData[d] ? statsData.weeklyData[d].words : 0));
+    }
+
+    function getWeeklyMinutesData(days) {
+        return days.map(d => (statsData.weeklyData[d] ? Math.round(statsData.weeklyData[d].seconds / 60) : 0));
     }
 
     function addOrUpdateWord() {
@@ -336,7 +365,7 @@
             });
         }
 
-        saveVocab();
+        saveData();
         resetForm();
         updateUI();
         loadNextCard();
@@ -357,9 +386,9 @@
 
     function deleteCurrentCard() {
         if (currentCardIndex === -1 || vocabList.length === 0) return;
-        if (confirm("Bạn có chắc chắn muốn xóa từ này?")) {
+        if (confirm("Bạn có chắc chắn muốn xóa từ này khỏi danh sách?")) {
             vocabList.splice(currentCardIndex, 1);
-            saveVocab();
+            saveData();
             updateUI();
             loadNextCard();
         }
@@ -375,15 +404,7 @@
         document.getElementById('cancelEditBtn').style.display = "none";
     }
 
-    function saveVocab() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
-    function saveStats() { localStorage.setItem('my_stats_data', JSON.stringify(statsData)); }
-
-    function updateTimeUI() {
-        const hrs = Math.floor(statsData.totalSeconds / 3600);
-        const mins = Math.floor((statsData.totalSeconds % 3600) / 60);
-        document.getElementById('studyTimeText').innerText = `${hrs}g ${mins}p`;
-        document.getElementById('daysCount').innerText = statsData.daysStudied.length;
-    }
+    function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
     function updateUI() {
         const total = vocabList.length;
@@ -394,36 +415,18 @@
         document.getElementById('learnedCount').innerText = learned;
         document.getElementById('unlearnedCount').innerText = unlearned;
 
-        updateTimeUI();
+        updateTimeDisplay();
 
-        // Cập nhật biểu đồ tròn
-        if (doughnutChartInstance) {
-            doughnutChartInstance.data.datasets[0].data = [learned, unlearned];
-            doughnutChartInstance.update();
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = [learned, unlearned];
+            chartInstance.update();
         }
 
-        // Cập nhật biểu đồ 7 ngày
-        if (barChartInstance) {
-            const labels = [];
-            const learnedData = [];
-            const minutesData = [];
-
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const key = d.toISOString().split('T')[0];
-                const label = `${d.getDate()}/${d.getMonth()+1}`;
-                labels.push(label);
-
-                const log = statsData.dailyLogs[key] || { learnedWords: 0, seconds: 0 };
-                learnedData.push(log.learnedWords);
-                minutesData.push(Math.round(log.seconds / 60));
-            }
-
-            barChartInstance.data.labels = labels;
-            barChartInstance.data.datasets[0].data = learnedData;
-            barChartInstance.data.datasets[1].data = minutesData;
-            barChartInstance.update();
+        if (weeklyChartInstance) {
+            const last7Days = getLast7Days();
+            weeklyChartInstance.data.datasets[0].data = getWeeklyWordsData(last7Days);
+            weeklyChartInstance.data.datasets[1].data = getWeeklyMinutesData(last7Days);
+            weeklyChartInstance.update();
         }
     }
 
@@ -469,21 +472,14 @@
         if (currentCardIndex === -1 || vocabList.length === 0) return;
 
         const item = vocabList[currentCardIndex];
-        const wasLearned = item.status === 'learned';
         item.status = isLearned ? 'learned' : 'unlearned';
         item.seenCount += 1;
 
-        // Ghi nhận số từ đã thuộc trong ngày nếu đánh dấu mới thuộc
-        if (isLearned && !wasLearned) {
-            const todayKey = getTodayKey();
-            if (!statsData.dailyLogs[todayKey]) {
-                statsData.dailyLogs[todayKey] = { learnedWords: 0, seconds: 0 };
-            }
-            statsData.dailyLogs[todayKey].learnedWords += 1;
-            saveStats();
-        }
+        // Ghi nhận số từ đã ôn trong ngày
+        statsData.weeklyData[todayStr].words += 1;
+        saveStats();
 
-        saveVocab();
+        saveData();
         updateUI();
 
         const cardElem = document.getElementById('flashcard');
@@ -510,18 +506,28 @@
         if (diffX > 50) markCard(false);
     });
 
-    /* TRÒ CHƠI TRÁI NGHĨA */
+    /* MINI-GAME TRÁI NGHĨA */
     let selectedCards = [];
+
     function startAntonymGame() {
         const container = document.getElementById('gameContainer');
         container.innerHTML = '';
         selectedCards = [];
 
         const userHanziList = vocabList.map(v => v.hanzi);
-        let activePairs = antonymPairs.filter(pair => userHanziList.includes(pair[0]) || userHanziList.includes(pair[1]));
+        let activePairs = [];
 
-        if (activePairs.length < 3) activePairs = antonymPairs.slice(0, 4);
-        else activePairs = activePairs.slice(0, 4);
+        antonymPairs.forEach(pair => {
+            if (userHanziList.includes(pair[0]) || userHanziList.includes(pair[1])) {
+                activePairs.push(pair);
+            }
+        });
+
+        if (activePairs.length < 3) {
+            activePairs = antonymPairs.slice(0, 4);
+        } else {
+            activePairs = activePairs.slice(0, 4);
+        }
 
         let gameItems = [];
         activePairs.forEach((pair, index) => {
@@ -542,17 +548,21 @@
 
     function handleGameSelect(card) {
         if (card.classList.contains('matched') || card.classList.contains('selected')) return;
+
         card.classList.add('selected');
         selectedCards.push(card);
 
         if (selectedCards.length === 2) {
             const [c1, c2] = selectedCards;
             if (c1.dataset.pairId === c2.dataset.pairId) {
-                c1.classList.remove('selected'); c2.classList.remove('selected');
-                c1.classList.add('matched'); c2.classList.add('matched');
+                c1.classList.remove('selected');
+                c2.classList.remove('selected');
+                c1.classList.add('matched');
+                c2.classList.add('matched');
                 selectedCards = [];
             } else {
-                c1.classList.add('wrong'); c2.classList.add('wrong');
+                c1.classList.add('wrong');
+                c2.classList.add('wrong');
                 setTimeout(() => {
                     c1.classList.remove('selected', 'wrong');
                     c2.classList.remove('selected', 'wrong');
