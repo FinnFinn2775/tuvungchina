@@ -46,7 +46,7 @@
             border: 1px solid rgba(0,0,0,0.03);
         }
 
-        /* Hiệu ứng chuyển cảnh trang mượt mà */
+        /* Hiệu ứng chuyển trang */
         .page {
             display: none;
             opacity: 0;
@@ -63,7 +63,6 @@
             transform: translateY(0);
         }
 
-        /* Tiêu đề & Nút bấm iOS */
         .page-title {
             font-size: 20px;
             font-weight: 700;
@@ -110,7 +109,11 @@
         .btn-primary { background: var(--primary); color: white; }
         .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); }
 
-        /* Segment Control (Lọc ngày) */
+        /* Nút Sao lưu & Khôi phục */
+        .backup-group { display: flex; gap: 8px; margin-top: 4px; }
+        .btn-backup { background: rgba(0, 122, 255, 0.1); color: var(--primary); padding: 12px 8px; font-size: 13px; border-radius: 12px; flex: 1; font-weight: 600; }
+
+        /* Segment Control */
         .segment-control { display: flex; background: #e3e3e8; padding: 3px; border-radius: 10px; margin-bottom: 12px; }
         .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; cursor: pointer; }
         .segment-btn.active { background: white; shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
@@ -133,7 +136,6 @@
         .meaning-text { font-size: 19px; color: var(--text-main); font-weight: 500; }
         .seen-badge { position: absolute; top: 16px; right: 18px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
 
-        /* Nút Công cụ Thẻ */
         .card-tools { position: absolute; top: 14px; left: 16px; display: flex; gap: 8px; z-index: 10; }
         .btn-tool { width: auto; padding: 6px 10px; font-size: 12px; border-radius: 8px; font-weight: 600; }
         .btn-edit { background: #e5e5ea; color: var(--primary); }
@@ -159,7 +161,7 @@
     <div id="page-home" class="page active">
         <h2 class="page-title">Ôn Tập Tiếng Trung</h2>
         
-        <!-- Thống kê tổng quan từ vựng -->
+        <!-- Thống kê từ vựng -->
         <div class="card-box">
             <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);">Thống Kê Từ Vựng</h3>
             <div class="stats-grid">
@@ -192,6 +194,13 @@
         <button class="btn-menu" onclick="startStudy('unlearned')">
             <span>🎯 Chỉ Ôn Từ CHƯA THUỘC</span> <span>➔</span>
         </button>
+
+        <!-- KHU VỰC SAO LƯU & KHÔI PHỤC DỮ LIỆU -->
+        <div class="backup-group">
+            <button class="btn-backup" onclick="exportData()">📥 Tải sao lưu về máy</button>
+            <button class="btn-backup" onclick="document.getElementById('importFile').click()">📤 Khôi phục dữ liệu</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+        </div>
     </div>
 
     <!-- 2. MÀN HÌNH THỐNG KÊ THỜI GIAN HỌC TẬP -->
@@ -292,7 +301,7 @@
         return d.toISOString().split('T')[0];
     }
 
-    // Ghi nhận thời gian học thực tế
+    // Bộ đếm thời gian
     setInterval(() => {
         const today = getTodayKey();
         if (!dailyStats[today]) {
@@ -302,13 +311,9 @@
         localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
     }, 1000);
 
-    // Chuyển màn hình với hiệu ứng Fade In
     function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        const target = document.getElementById(pageId);
-        target.classList.add('active');
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.getElementById(pageId).classList.add('active');
 
         if (pageId === 'page-home') updateUI();
         if (pageId === 'page-time-stats') renderTimeStats(currentRange);
@@ -356,7 +361,6 @@
         }
     }
 
-    // Vẽ biểu đồ cột Thống kê thời gian & số từ lướt (7 / 30 / 90 Ngày)
     function renderTimeStats(rangeDays) {
         currentRange = rangeDays;
 
@@ -364,7 +368,6 @@
         document.getElementById('btn30').classList.toggle('active', rangeDays === 30);
         document.getElementById('btn90').classList.toggle('active', rangeDays === 90);
 
-        // Đếm số ngày thực tế có học tập (> 0 giây hoặc > 0 từ)
         const activeDays = Object.keys(dailyStats).filter(key => dailyStats[key].seconds > 0 || dailyStats[key].wordsReviewed > 0).length;
         document.getElementById('totalDaysCount').innerText = `${activeDays} Ngày`;
 
@@ -387,7 +390,6 @@
             minutesData.push(mins);
             wordsData.push(stats.wordsReviewed);
 
-            // Bảng danh sách chi tiết
             if (stats.seconds > 0 || stats.wordsReviewed > 0) {
                 const row = document.createElement('div');
                 row.className = 'detail-item';
@@ -407,26 +409,13 @@
             data: {
                 labels: labels,
                 datasets: [
-                    {
-                        label: 'Số phút học',
-                        data: minutesData,
-                        backgroundColor: '#007aff',
-                        borderRadius: 6
-                    },
-                    {
-                        label: 'Từ lướt',
-                        data: wordsData,
-                        backgroundColor: '#ff9500',
-                        borderRadius: 6
-                    }
+                    { label: 'Số phút học', data: minutesData, backgroundColor: '#007aff', borderRadius: 6 },
+                    { label: 'Từ lướt', data: wordsData, backgroundColor: '#ff9500', borderRadius: 6 }
                 ]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 11 } } }
-                },
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                     y: { grid: { color: '#e5e5ea' }, ticks: { font: { size: 10 } } }
@@ -453,9 +442,7 @@
                 vocabList[idx].meaning = meaning;
             }
         } else {
-            vocabList.push({
-                id: Date.now(), hanzi: hanzi, pinyin: py, meaning: meaning, status: 'unlearned', seenCount: 0
-            });
+            vocabList.push({ id: Date.now(), hanzi: hanzi, pinyin: py, meaning: meaning, status: 'unlearned', seenCount: 0 });
         }
 
         saveData();
@@ -537,7 +524,6 @@
         item.status = isLearned ? 'learned' : 'unlearned';
         item.seenCount += 1;
 
-        // Cộng số lần lướt từ trong ngày
         const today = getTodayKey();
         if (!dailyStats[today]) dailyStats[today] = { seconds: 0, wordsReviewed: 0 };
         dailyStats[today].wordsReviewed += 1;
@@ -554,6 +540,37 @@
             cardElem.style.opacity = '1';
             loadNextCard();
         }, 300);
+    }
+
+    /* CHỨC NĂNG SAO LƯU & KHÔI PHỤC DỮ LIỆU */
+    function exportData() {
+        const backupData = {
+            vocab: JSON.parse(localStorage.getItem('my_infinite_vocab')) || [],
+            dailyStats: JSON.parse(localStorage.getItem('my_daily_stats')) || {}
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `TuVung_Backup_${getTodayKey()}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                if (imported.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imported.vocab));
+                if (imported.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imported.dailyStats));
+                alert("Đã khôi phục dữ liệu thành công!");
+                location.reload();
+            } catch (err) {
+                alert("File sao lưu không đúng định dạng!");
+            }
+        };
+        reader.readAsText(event.target.files[0]);
     }
 
     document.getElementById('flashcard').addEventListener('click', function() {
