@@ -6,7 +6,7 @@
     <title>Flashcard Tiếng Trung - iPhone 11 Pro Max</title>
     <!-- Thư viện Pinyin -->
     <script src="https://unpkg.com/pinyin-pro"></script>
-    <!-- Thư viện Biểu đồ tròn Chart.js -->
+    <!-- Thư viện Biểu đồ Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -20,10 +20,7 @@
             --text-sub: #8e8e93;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
@@ -37,14 +34,7 @@
             min-height: 100vh;
         }
 
-        /* Khung hiển thị chuẩn kích thước iPhone 11 Pro Max */
-        .iphone-container {
-            width: 100%;
-            max-width: 414px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; }
 
         .card-box {
             background: var(--card-bg);
@@ -54,143 +44,67 @@
         }
 
         /* Thống kê */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        .stat-item {
-            background: var(--bg-system);
-            padding: 8px 4px;
-            border-radius: 12px;
-        }
-
-        .stat-number {
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .chart-wrapper {
-            position: relative;
-            width: 140px;
-            height: 140px;
-            margin: 0 auto;
-        }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; text-align: center; }
+        .stat-item { background: var(--bg-system); padding: 8px 4px; border-radius: 12px; }
+        .stat-number { font-size: 18px; font-weight: 700; }
+        .chart-wrapper { position: relative; width: 140px; height: 140px; margin: 0 auto; }
 
         /* Form Nhập */
-        .input-group {
-            margin-bottom: 10px;
-        }
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; text-transform: uppercase; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #c7c7cc; border-radius: 10px; font-size: 16px; background: #fafafa; outline: none; }
+        .input-group input:focus { border-color: var(--primary); background: #fff; }
+        .input-group input[readonly] { background-color: #e5e5ea; color: #3a3a3c; }
 
-        .input-group label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-sub);
-            margin-bottom: 4px;
-            text-transform: uppercase;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #c7c7cc;
-            border-radius: 10px;
-            font-size: 16px;
-            background: #fafafa;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: var(--primary);
-            background: #fff;
-        }
-
-        .input-group input[readonly] {
-            background-color: #e5e5ea;
-            color: #3a3a3c;
-        }
-
-        button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.15s ease;
-        }
-
+        button { width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease; }
         button:active { opacity: 0.7; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-filter-group { display: flex; gap: 8px; }
-        .btn-filter { background: #e5e5ea; color: var(--text-main); font-size: 14px; padding: 10px; }
+        .btn-filter { background: #e5e5ea; color: var(--text-main); font-size: 13px; padding: 10px; }
         .btn-filter.active { background: var(--primary); color: white; }
 
         /* Flashcard Swipe Area */
-        .swipe-container {
-            position: relative;
-            width: 100%;
-            height: 260px;
-            perspective: 1000px;
-        }
-
-        .flashcard {
-            width: 100%;
-            height: 100%;
-            position: absolute;
-            transform-style: preserve-3d;
-            transition: transform 0.4s ease, left 0.3s ease, opacity 0.3s ease;
-            cursor: pointer;
-            user-select: none;
-        }
-
+        .swipe-container { position: relative; width: 100%; height: 270px; perspective: 1000px; }
+        .flashcard { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 0.4s ease, left 0.3s ease, opacity 0.3s ease; cursor: pointer; user-select: none; }
         .flashcard.flipped { transform: rotateY(180deg); }
 
         .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 22px;
-            background: var(--card-bg);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            border: 1px solid #e5e5ea;
-            padding: 20px;
-            text-align: center;
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 22px; background: var(--card-bg); box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            border: 1px solid #e5e5ea; padding: 20px; text-align: center; box-sizing: border-box;
         }
 
         .front { font-size: 52px; font-weight: 700; color: var(--text-main); }
         .back { transform: rotateY(180deg); background: #fdfdfd; }
-
-        .pinyin-text { font-size: 24px; color: var(--danger); font-weight: 600; margin-bottom: 6px; }
-        .hanviet-text { font-size: 18px; color: var(--warning); font-weight: 600; margin-bottom: 6px; }
+        .pinyin-text { font-size: 24px; color: var(--danger); font-weight: 600; margin-bottom: 8px; }
         .meaning-text { font-size: 18px; color: var(--text-main); }
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); }
 
-        .action-btns {
-            display: flex;
-            gap: 10px;
-        }
+        /* Nút Chỉnh sửa & Xóa trên Thẻ */
+        .card-tools { position: absolute; top: 12px; left: 16px; display: flex; gap: 8px; z-index: 10; }
+        .btn-tool { width: auto; padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+        .btn-edit { background: #e5e5ea; color: var(--primary); }
+        .btn-delete { background: #ffe5e5; color: var(--danger); }
 
+        .action-btns { display: flex; gap: 10px; }
         .btn-know { background: #e4f9e8; color: var(--success); }
         .btn-unknow { background: #ffe5e5; color: var(--danger); }
         .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); }
+
+        /* Mini-game Ghép từ trái nghĩa */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .game-card { background: var(--bg-system); padding: 14px 8px; border-radius: 12px; text-align: center; font-size: 18px; font-weight: bold; cursor: pointer; border: 2px solid transparent; }
+        .game-card.selected { border-color: var(--primary); background: #e8f2ff; }
+        .game-card.matched { border-color: var(--success); background: #e4f9e8; opacity: 0.5; pointer-events: none; }
+        .game-card.wrong { border-color: var(--danger); background: #ffe5e5; }
     </style>
 </head>
 <body>
 
 <div class="iphone-container">
 
-    <!-- BẢNG THỐNG KÊ BIỂU ĐỒ TRÒN -->
+    <!-- THỐNG KÊ -->
     <div class="card-box">
         <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Từ Vựng</h3>
         <div class="stats-grid">
@@ -207,50 +121,52 @@
                 <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
             </div>
         </div>
-        <div class="chart-wrapper">
-            <canvas id="vocabChart"></canvas>
-        </div>
+        <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
     </div>
 
-    <!-- FORM THÊM TỪ -->
+    <!-- FORM THÊM / SỬA TỪ -->
     <div class="card-box">
-        <h3 style="margin: 0 0 12px 0; font-size: 17px;">Thêm Từ Vựng Mới</h3>
+        <h3 style="margin: 0 0 12px 0; font-size: 17px;" id="formTitle">Thêm Từ Vựng Mới</h3>
         <div class="input-group">
             <label>Chữ Hán:</label>
-            <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoProcessHanzi()">
+            <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin()">
         </div>
         <div class="input-group">
             <label>Bính âm (Pinyin):</label>
             <input type="text" id="pinyinInput" readonly placeholder="Tự động hiện Pinyin">
         </div>
         <div class="input-group">
-            <label>Âm Hán Việt (Tự động):</label>
-            <input type="text" id="hanvietInput" placeholder="Tự động hiện Hán Việt">
-        </div>
-        <div class="input-group">
             <label>Nghĩa Tiếng Việt:</label>
-            <input type="text" id="meaningInput" placeholder="Nhập nghĩa giải thích...">
+            <input type="text" id="meaningInput" placeholder="Nhập nghĩa...">
         </div>
-        <button class="btn-primary" onclick="addWord()">Lưu Từ Vựng</button>
+        <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
+        <button class="btn-filter" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
     </div>
 
-    <!-- BỘ LỌC ÔN TẬP -->
+    <!-- CHỌN CHẾ ĐỘ ÔN TẬP -->
     <div class="btn-filter-group">
         <button class="btn-filter active" id="filterAllBtn" onclick="setFilter('all')">Ôn Tất Cả Từ</button>
         <button class="btn-filter" id="filterUnlearnedBtn" onclick="setFilter('unlearned')">Chỉ Ôn CHƯA THUỘC</button>
     </div>
 
-    <!-- KHU VỰC THẺ FLASHCARD SWIPE -->
+    <!-- THẺ FLASHCARD -->
     <div class="hint-swipe">👈 Vuốt Trái: Đã thuộc | Vuốt Phải: Chưa thuộc 👉</div>
     <div class="swipe-container">
         <div class="flashcard" id="flashcard">
             <div class="card-face front">
+                <div class="card-tools" onclick="event.stopPropagation()">
+                    <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
+                    <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
+                </div>
                 <span class="seen-badge" id="seenCount">Hiện: 0</span>
                 <span id="displayHanzi">Vui lòng thêm từ</span>
             </div>
             <div class="card-face back">
+                <div class="card-tools" onclick="event.stopPropagation()">
+                    <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
+                    <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
+                </div>
                 <div class="pinyin-text" id="displayPinyin"></div>
-                <div class="hanviet-text" id="displayHanViet"></div>
                 <div class="meaning-text" id="displayMeaning"></div>
             </div>
         </div>
@@ -261,77 +177,39 @@
         <button class="btn-unknow" onclick="markCard(false)">Chưa thuộc 👉</button>
     </div>
 
+    <!-- GAME GHÉP NỐI TỪ TRÁI NGHĨA -->
+    <div class="card-box" style="margin-top: 10px;">
+        <h3 style="margin: 0 0 8px 0; font-size: 17px; text-align: center;">🎮 Trò Chơi Ghép Từ Trái Nghĩa</h3>
+        <div style="font-size: 12px; color: var(--text-sub); text-align: center; margin-bottom: 10px;">Bấm chọn cặp 2 từ có nghĩa trái ngược nhau</div>
+        <button class="btn-primary" onclick="startAntonymGame()">Bắt Đầu Trò Chơi Mới</button>
+        <div class="game-grid" id="gameContainer"></div>
+    </div>
+
 </div>
 
 <script>
     const { pinyin } = pinyinPro;
 
-    // Từ điển Hán Việt tích hợp mở rộng
-    const hanVietDict = {
-        '一':'Nhất','七':'Thất','三':'Tam','上':'Thượng','下':'Hạ','不':'Bất','与':'Dữ','丑':'Sửu','专':'Chuyên','且':'Thả',
-        '世':'Thế','丘':'Khâu','丙':'Bính','业':'Nghệp','丛':'Tùng','东':'Đông','丝':'Ti','丞':'Thừa','丢':'Đâu','两':'Lưỡng',
-        '严':'Nghiêm','丧':'Táng','个':'Cá','丫':'A','中':'Trung','丰':'Phong','串':'Xuyến','临':'Lâm','丸':'Hoàn','丹':'Đan',
-        '为':'Vi','主':'Chủ','丽':'Lệ','举':'Cử','乃':'Nãi','久':'Cửu','么':'Ma','义':'Nghĩa','之':'Chi','乌':'Ô',
-        '乍':'Sạ','乎':'Hồ','乏':'Phạt','乐':'Nhạc','乒':'Binh','乓':'Bàng','乔':'Kiều','乖':'Quái','乘':'Thừa','九':'Cửu',
-        '也':'Dã','习':'Tập','乡':'Hương','书':'Thư','买':'Mãi','乱':'Loạn','乾':'Càn','了':'Liễu','予':'Dư','争':'Tranh',
-        '事':'Sự','二':'Nhị','于':'Vu','亏':'Khuya','云':'Vân','互':'Hỗ','五':'Ngũ','井':'Tỉnh','亚':'Á','些':'Ta',
-        '亚':'Á','交':'Giao','亦':'Diệc','产':'Sản','亨':'Hanh','亩':'Mẫu','享':'Hưởng','京':'Kinh','亭':'Đình','亮':'Lượng',
-        '亲':'Thân','人':'Nhân','亿':'Ức','什':'Thập','仁':'Nhân','仅':'Cận','仆':'Bộc','仇':'Cừu','今':'Kim','介':'Giới',
-        '仍':'Nhược','仓':'Thương','仔':'Tử','仕':'Sĩ','他':'Tha','付':'Phó','仙':'Tiên','代':'Đại','令':'Lệnh','以':'Dĩ',
-        '仪':'Nghi','仰':'Ngưỡng','仲':'Trọng','件':'Kiện','价':'Giá','任':'Nhiệm','份':'Phận','仿':'Phỏng','企':'Xí','伊':'Y',
-        '伍':'Ngũ','伏':'Phục','伐':'Phạt','休':'Hưu','众':'Chúng','优':'Ưu','伟':'Vĩ','传':'Truyền','伤':'Thương','伦':'Luân',
-        '伯':'Bác','估':'Cổ','体':'Thể','何':'Hà','余':'Dư','佛':'Phật','作':'Tác','你':'Nể','佩':'Bội','佳':'Giai',
-        '使':'Sử','来':'Lai','例':'Lệ','侍':'Thị','供':'Cung','依':'Y','侠':'Hiệp','侦':'Trinh','侧':'Trắc','侨':'Kiều',
-        '侯':'Hầu','侵':'Xâm','便':'Tiện','保':'Bảo','信':'Tín','修':'Tu','俱':'Câu','伟':'Vĩ','健':'Kiện','备':'Bị',
-        '傲':'Ngạo','传':'Truyền','倾':'Khuynh','催':'Thôi','伤':'Thương','傻':'Sả','像':'Tượng','僚':'Liêu','僧':'Tăng','仙':'Tiên',
-        '元':'Nguyên','兄':'Huynh','充':'Sung','兆':'Triệu','先':'Tiên','光':'Quang','克':'Khắc','免':'Miễn','兑':'Đoái','兔':'Thỏ',
-        '党':'Đảng','兜':'Đâu','入':'Nhập','全':'Toàn','八':'Bát','公':'Công','六':'Lục','兰':'Lan','共':'Cộng','关':'Quan',
-        '兴':'Hưng','兵':'Binh','其':'Kỳ','具':'Cụ','典':'Điển','兹':'Tư','养':'Dưỡng','兼':'Kiêm','兽':'Thú','内':'Nội',
-        '冈':'Cương','册':'Sách','再':'Tái','冒':'Mạo','写':'Tả','军':'Quân','农':'Nông','冠':'Quan','冢':'Trủng','冬':'Đông',
-        '冰':'Băng','冲':'Xung','决':'Quyết','况':'Huống','冷':'Lãnh','冻':'Đống','净':'Tịnh','准':'Chuẩn','凉':'Lương','减':'Giảm',
-        '凑':'Tấu','凛':'Lẫm','凝':'Ngưng','几':'Kỷ','凡':'Phàm','凤':'Phượng','凭':'Bằng','凯':'Khải','凰':'Hoàng','出':'Xuất',
-        '击':'Kích','函':'Hàm','凿':'Tạc','刀':'Đao','切':'Thiết','刊':'San','刑':'Hình','划':'Hoạch','列':'Liệt','刘':'Lưu',
-        '则':'Tắc','刚':'Cương','创':'Sáng','初':'Sơ','删':'San','判':'Phán','券':'Khoán','刺':'Thứ','刻':'Khắc','剃':'Thế',
-        '削':'Tước','前':'Tiền','剑':'Kiếm','剔':'Dịch','剖':'Phẫu','剥':'Bác','剧':'Kịch','剩':'Thặng','剪':'Tiễn','副':'Phó',
-        '割':'Cát','力':'Lực','劝':'Khuyến','办':'Biện','功':'Công','加':'Gia','务':'Vụ','劣':'Liệt','动':'Động','助':'Trợ',
-        '努':'Nỗ','劫':'Kiếp','励':'Lệ','劲':'Kính','劳':'Lao','势':'Thế','勇':'Dũng','勉':'Miễn','勋':'Huân','勒':'Lặc',
-        '勾':'Câu','勿':'Vật','包':'Bao','匆':'Thốt','匈':'Hung','葡':'Bồ','萄':'Đào','化':'Hóa','北':'Bắc','匙':'Thì',
-        '匹':'Thất','区':'Khu','医':'Y','匾':'Biển','十':'Thập','千':'Thiên','升':'Thăng','午':'Ngọ','半':'Bán','华':'Hoa',
-        '协':'Hiệp','卑':'Ty','卒':'Tốt','卓':'Trác','单':'Đơn','卖':'Mại','南':'Nam','博':'Bác','卜':'Bốc','卞':'Biện',
-        '占':'Chiêm','卡':'Tạp','卢':'Lô','印':'Ấn','危':'Nguy','即':'Tức','却':'Khước','卵':'Noãn','卷':'Quyển','卸':'Há',
-        '厂':'Xưởng','厄':'Ách','厅':'Sảnh','历':'Lịch','厉':'Lệ','压':'Áp','厌':'Yếm','厕':'Xí','厚':'Hậu','原':'Nguyên',
-        '厢':'Sương','厨':'Trù','去':'Khứ','县':'Huyện','参':'Tham','又':'Hựu','叉':'Xoa','及':'Cập','友':'Hữu','双':'Song',
-        '反':'Phản','发':'Phát','叔':'Thúc','取':'Thủ','受':'Thụ','变':'Biến','叙':'Tự','叛':'Phản','叠':'Điệp','口':'Khẩu',
-        '古':'Cổ','句':'Cú','另':'Lánh','只':'Chỉ','叫':'Khiếu','召':'Triệu','可':'Khả','台':'Đài','史':'Sử','右':'Hữu',
-        '叶':'Diệp','号':'Hiệu','司':'Tư','叹':'Thán','吃':'Cật','各':'Các','合':'Hợp','吉':'Cát','吊':'Điếu','同':'Đồng',
-        '名':'Danh','后':'Hậu','吏':'Lại','吐':'Thổ','向':'Hướng','君':'Quân','吟':'Ngâm','吠':'Phệ','否':'Phủ','吧':'Ba',
-        '吨':'Tấn','含':'Hàm','听':'Thính','启':'Khải','吴':'Ngô','吵':'Sảo','吸':'Hấp','吹':'Xúy','吻':'Vẫn','吾':'Ngô',
-        '呀':'Nha','呆':'Ngốc','呈':'Trình','告':'Cáo','呐':'Nột','员':'Viên','呜':'Ô','呢':'Ni','周':'Chu','味':'Vị',
-        '呵':'Hà','呸':'Phôi','呼':'Hô','命':'Mệnh','和':'Hòa','咖':'Cà','啡':'Phê','咒':'Chú','咸':'Hàm','品':'Phẩm',
-        '哈':'Háp','响':'Hưởng','哥':'Ca','哩':'Lý','哪':'Nào','哭':'Khốc','哮':'Háo','哲':'Triết','哺':'Bộ','哼':'Hanh',
-        '唆':'Toa','唇':'Thần','唉':'Ai','唐':'Đường','唤':'Hoán','售':'Thụ','唯':'Duy','唱':'Xướng','念':'Niệm','鸟':'Điểu'
-    };
+    // Cơ sở dữ liệu từ trái nghĩa mặc định
+    const antonymPairs = [
+        ['大', '小'], ['多', '少'], ['高', '矮'], ['长', '短'], ['快', '慢'],
+        ['新', '旧'], ['好', '坏'], ['冷', '热'], ['前', '后'], ['左', '右'],
+        ['上', '下'], ['进', '出'], ['买', '卖'], ['开', '关'], ['问', '答'],
+        ['早', '晚'], ['黑', '白'], ['远', '近'], ['重', '轻'], ['推', '拉']
+    ];
 
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
     let currentFilter = 'all';
     let currentCardIndex = -1;
+    let editingId = null;
     let chartInstance = null;
 
-    // Tra cứu âm Hán Việt
-    function getHanViet(text) {
-        return text.split('').map(char => hanVietDict[char] || '').filter(Boolean).join(' ');
-    }
-
-    // Tự động xử lý khi gõ chữ Hán
-    function autoProcessHanzi() {
+    function autoPinyin() {
         const input = document.getElementById('hanziInput').value.trim();
         if (input) {
             document.getElementById('pinyinInput').value = pinyin(input, { toneType: 'symbol' });
-            const hv = getHanViet(input);
-            if (hv) document.getElementById('hanvietInput').value = hv;
         } else {
             document.getElementById('pinyinInput').value = '';
-            document.getElementById('hanvietInput').value = '';
         }
     }
 
@@ -341,24 +219,15 @@
             type: 'doughnut',
             data: {
                 labels: ['Đã thuộc', 'Chưa thuộc'],
-                datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ['#34c759', '#ff3b30'],
-                    borderWidth: 0
-                }]
+                datasets: [{ data: [0, 0], backgroundColor: ['#34c759', '#ff3b30'], borderWidth: 0 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
         });
     }
 
-    function addWord() {
+    function addOrUpdateWord() {
         const hanzi = document.getElementById('hanziInput').value.trim();
         const py = document.getElementById('pinyinInput').value.trim();
-        const hv = document.getElementById('hanvietInput').value.trim();
         const meaning = document.getElementById('meaningInput').value.trim();
 
         if (!hanzi || !meaning) {
@@ -366,29 +235,59 @@
             return;
         }
 
-        vocabList.push({
-            id: Date.now(),
-            hanzi: hanzi,
-            pinyin: py,
-            hanviet: hv,
-            meaning: meaning,
-            status: 'unlearned',
-            seenCount: 0
-        });
+        if (editingId) {
+            const idx = vocabList.findIndex(v => v.id === editingId);
+            if (idx !== -1) {
+                vocabList[idx].hanzi = hanzi;
+                vocabList[idx].pinyin = py;
+                vocabList[idx].meaning = meaning;
+            }
+        } else {
+            vocabList.push({
+                id: Date.now(), hanzi: hanzi, pinyin: py, meaning: meaning, status: 'unlearned', seenCount: 0
+            });
+        }
 
         saveData();
-        document.getElementById('hanziInput').value = '';
-        document.getElementById('pinyinInput').value = '';
-        document.getElementById('hanvietInput').value = '';
-        document.getElementById('meaningInput').value = '';
-
+        resetForm();
         updateUI();
         loadNextCard();
     }
 
-    function saveData() {
-        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+    function editCurrentCard() {
+        if (currentCardIndex === -1 || vocabList.length === 0) return;
+        const item = vocabList[currentCardIndex];
+        editingId = item.id;
+        document.getElementById('hanziInput').value = item.hanzi;
+        document.getElementById('pinyinInput').value = item.pinyin;
+        document.getElementById('meaningInput').value = item.meaning;
+
+        document.getElementById('formTitle').innerText = "Sửa Từ Vựng";
+        document.getElementById('saveBtn').innerText = "Cập Nhật Từ";
+        document.getElementById('cancelEditBtn').style.display = "block";
     }
+
+    function deleteCurrentCard() {
+        if (currentCardIndex === -1 || vocabList.length === 0) return;
+        if (confirm("Bạn có chắc chắn muốn xóa từ này khỏi danh sách?")) {
+            vocabList.splice(currentCardIndex, 1);
+            saveData();
+            updateUI();
+            loadNextCard();
+        }
+    }
+
+    function resetForm() {
+        editingId = null;
+        document.getElementById('hanziInput').value = '';
+        document.getElementById('pinyinInput').value = '';
+        document.getElementById('meaningInput').value = '';
+        document.getElementById('formTitle').innerText = "Thêm Từ Vựng Mới";
+        document.getElementById('saveBtn').innerText = "Lưu Từ Vựng";
+        document.getElementById('cancelEditBtn').style.display = "none";
+    }
+
+    function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
     function updateUI() {
         const total = vocabList.length;
@@ -424,24 +323,21 @@
         if (pool.length === 0) {
             document.getElementById('displayHanzi').innerText = "Hết từ ôn!";
             document.getElementById('displayPinyin').innerText = "";
-            document.getElementById('displayHanViet').innerText = "";
             document.getElementById('displayMeaning').innerText = "";
             document.getElementById('seenCount').innerText = "";
             currentCardIndex = -1;
             return;
         }
 
-        // Cân bằng tần suất hiển thị
         pool.sort((a, b) => a.seenCount - b.seenCount);
         const minSeen = pool[0].seenCount;
         const candidatePool = pool.filter(v => v.seenCount === minSeen);
-        
+
         const selected = candidatePool[Math.floor(Math.random() * candidatePool.length)];
         currentCardIndex = vocabList.findIndex(v => v.id === selected.id);
 
         document.getElementById('displayHanzi').innerText = selected.hanzi;
         document.getElementById('displayPinyin').innerText = selected.pinyin;
-        document.getElementById('displayHanViet').innerText = selected.hanviet ? `[${selected.hanviet}]` : '';
         document.getElementById('displayMeaning').innerText = selected.meaning;
         document.getElementById('seenCount').innerText = `Hiện: ${selected.seenCount}`;
     }
@@ -471,16 +367,87 @@
         this.classList.toggle('flipped');
     });
 
-    // Thao tác Vuốt (Swipe)
     let startX = 0;
     const cardElem = document.getElementById('flashcard');
-
     cardElem.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
     cardElem.addEventListener('touchend', e => {
         let diffX = e.changedTouches[0].clientX - startX;
         if (diffX < -50) markCard(true);
         if (diffX > 50) markCard(false);
     });
+
+    /* THUẬT TOÁN MINI-GAME TRÁI NGHĨA */
+    let selectedCards = [];
+
+    function startAntonymGame() {
+        const container = document.getElementById('gameContainer');
+        container.innerHTML = '';
+        selectedCards = [];
+
+        // Trích xuất các chữ Hán người dùng đã thêm
+        const userHanziList = vocabList.map(v => v.hanzi);
+        let activePairs = [];
+
+        // Tìm các cặp trái nghĩa khớp với danh sách từ đã thêm
+        antonymPairs.forEach(pair => {
+            if (userHanziList.includes(pair[0]) || userHanziList.includes(pair[1])) {
+                activePairs.push(pair);
+            }
+        });
+
+        // Nếu từ người dùng thêm chưa đủ cặp, lấy tự động từ kho mẫu
+        if (activePairs.length < 3) {
+            activePairs = antonymPairs.slice(0, 4);
+        } else {
+            activePairs = activePairs.slice(0, 4);
+        }
+
+        // Tạo danh sách thẻ game và xáo trộn (Shuffle)
+        let gameItems = [];
+        activePairs.forEach((pair, index) => {
+            gameItems.push({ text: pair[0], pairId: index });
+            gameItems.push({ text: pair[1], pairId: index });
+        });
+        gameItems.sort(() => Math.random() - 0.5);
+
+        // Hiển thị ra màn hình
+        gameItems.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'game-card';
+            div.innerText = item.text;
+            div.dataset.pairId = item.pairId;
+            div.onclick = () => handleGameSelect(div);
+            container.appendChild(div);
+        });
+    }
+
+    function handleGameSelect(card) {
+        if (card.classList.contains('matched') || card.classList.contains('selected')) return;
+
+        card.classList.add('selected');
+        selectedCards.push(card);
+
+        if (selectedCards.length === 2) {
+            const [c1, c2] = selectedCards;
+            if (c1.dataset.pairId === c2.dataset.pairId) {
+                // Khớp đúng cặp trái nghĩa
+                c1.classList.remove('selected');
+                c2.classList.remove('selected');
+                c1.classList.add('matched');
+                c2.classList.add('matched');
+                selectedCards = [];
+            } else {
+                // Sai cặp
+                c1.classList.add('wrong');
+                c2.classList.add('wrong');
+                setTimeout(() => {
+                    c1.classList.remove('selected', 'wrong');
+                    c2.classList.remove('selected', 'wrong');
+                    selectedCards = [];
+                }, 600);
+            }
+        }
+    }
 
     window.onload = function() {
         initChart();
