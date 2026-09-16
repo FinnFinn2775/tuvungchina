@@ -18,12 +18,13 @@
             --card-bg: #ffffff;
             --text-main: #1c1c1e;
             --text-sub: #8e8e93;
+            --border: #e5e5ea;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-system);
             color: var(--text-main);
             margin: 0;
@@ -32,113 +33,155 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; }
+        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; }
 
         .card-box {
             background: var(--card-bg);
             border-radius: 18px;
             padding: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.03);
         }
 
-        /* Ẩn/Hiện các trang */
-        .page { display: none; }
-        .page.active { display: flex; flex-direction: column; gap: 16px; }
+        /* Hiệu ứng chuyển cảnh trang mượt mà */
+        .page {
+            display: none;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            width: 100%;
+        }
+        
+        .page.active {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        /* Nút quay về */
+        /* Tiêu đề & Nút bấm iOS */
+        .page-title {
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 0 4px 0;
+            letter-spacing: -0.4px;
+        }
+
         .btn-back {
-            background: #e5e5ea;
-            color: var(--text-main);
-            margin-bottom: 8px;
+            background: rgba(120, 120, 128, 0.12);
+            color: var(--primary);
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
+            font-weight: 600;
+            font-size: 15px;
+            border-radius: 12px;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
-        /* Thống kê */
+        /* Thống kê từ vựng */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; text-align: center; }
-        .stat-item { background: var(--bg-system); padding: 8px 4px; border-radius: 12px; }
-        .stat-number { font-size: 18px; font-weight: 700; }
-        .chart-wrapper { position: relative; width: 140px; height: 140px; margin: 0 auto; }
+        .stat-item { background: var(--bg-system); padding: 10px 4px; border-radius: 14px; }
+        .stat-number { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .stat-label { font-size: 11px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
+        
+        .chart-wrapper { position: relative; width: 150px; height: 150px; margin: 0 auto; }
+        .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
 
         /* Form Nhập */
-        .input-group { margin-bottom: 10px; }
-        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; text-transform: uppercase; }
-        .input-group input { width: 100%; padding: 12px; border: 1px solid #c7c7cc; border-radius: 10px; font-size: 16px; background: #fafafa; outline: none; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-group input { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: #fafafa; outline: none; transition: border-color 0.2s; }
         .input-group input:focus { border-color: var(--primary); background: #fff; }
         .input-group input[readonly] { background-color: #e5e5ea; color: #3a3a3c; }
 
-        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.15s ease; }
-        button:active { opacity: 0.7; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
+        button:active { transform: scale(0.98); opacity: 0.85; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 18px 16px; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; border-radius: 14px; }
+        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); }
 
-        /* Flashcard Swipe Area */
-        .swipe-container { position: relative; width: 100%; height: 270px; perspective: 1000px; }
-        .flashcard { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 0.4s ease, left 0.3s ease, opacity 0.3s ease; cursor: pointer; user-select: none; }
+        /* Segment Control (Lọc ngày) */
+        .segment-control { display: flex; background: #e3e3e8; padding: 3px; border-radius: 10px; margin-bottom: 12px; }
+        .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; cursor: pointer; }
+        .segment-btn.active { background: white; shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
+
+        /* Flashcard Area */
+        .swipe-container { position: relative; width: 100%; height: 280px; perspective: 1000px; }
+        .flashcard { width: 100%; height: 100%; position: absolute; transform-style: preserve-3d; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), left 0.3s ease, opacity 0.3s ease; cursor: pointer; user-select: none; }
         .flashcard.flipped { transform: rotateY(180deg); }
 
         .card-face {
             position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border-radius: 22px; background: var(--card-bg); box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            border: 1px solid #e5e5ea; padding: 20px; text-align: center; box-sizing: border-box;
+            border-radius: 24px; background: var(--card-bg); box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border); padding: 20px; text-align: center; box-sizing: border-box;
         }
 
-        .front { font-size: 52px; font-weight: 700; color: var(--text-main); }
-        .back { transform: rotateY(180deg); background: #fdfdfd; }
-        .pinyin-text { font-size: 24px; color: var(--danger); font-weight: 600; margin-bottom: 8px; }
-        .meaning-text { font-size: 18px; color: var(--text-main); }
-        .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); }
+        .front { font-size: 54px; font-weight: 700; color: var(--text-main); }
+        .back { transform: rotateY(180deg); background: #fcfcfd; }
+        .pinyin-text { font-size: 26px; color: var(--danger); font-weight: 600; margin-bottom: 8px; }
+        .meaning-text { font-size: 19px; color: var(--text-main); font-weight: 500; }
+        .seen-badge { position: absolute; top: 16px; right: 18px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
 
-        /* Nút Chỉnh sửa & Xóa */
-        .card-tools { position: absolute; top: 12px; left: 16px; display: flex; gap: 8px; z-index: 10; }
-        .btn-tool { width: auto; padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+        /* Nút Công cụ Thẻ */
+        .card-tools { position: absolute; top: 14px; left: 16px; display: flex; gap: 8px; z-index: 10; }
+        .btn-tool { width: auto; padding: 6px 10px; font-size: 12px; border-radius: 8px; font-weight: 600; }
         .btn-edit { background: #e5e5ea; color: var(--primary); }
         .btn-delete { background: #ffe5e5; color: var(--danger); }
 
-        .action-btns { display: flex; gap: 10px; }
+        .action-btns { display: flex; gap: 12px; }
         .btn-know { background: #e4f9e8; color: var(--success); }
         .btn-unknow { background: #ffe5e5; color: var(--danger); }
-        .hint-swipe { text-align: center; font-size: 12px; color: var(--text-sub); }
+        .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); }
 
-        /* Bảng thống kê 7 ngày */
-        .day-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e5ea; font-size: 14px; }
-        .day-row:last-child { border-bottom: none; }
+        .streak-card { background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; }
+        .streak-number { font-size: 32px; font-weight: 800; }
+
+        .detail-list { margin-top: 12px; max-height: 180px; overflow-y: auto; }
+        .detail-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="iphone-container">
 
-    <!-- 1. MÀN HÌNH CHÍNH (Hiển thị ngay Thống kê từ vựng & Menu điều hướng) -->
+    <!-- 1. MÀN HÌNH CHÍNH -->
     <div id="page-home" class="page active">
-        <!-- Khối Thống kê hiển thị sẵn ngay trên Trang chủ -->
+        <h2 class="page-title">Ôn Tập Tiếng Trung</h2>
+        
+        <!-- Thống kê tổng quan từ vựng -->
         <div class="card-box">
-            <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thống Kê Từ Vựng</h3>
+            <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);">Thống Kê Từ Vựng</h3>
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-number" id="totalCount">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Tất cả từ</div>
+                    <div class="stat-label">Tất cả từ</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Đã thuộc</div>
+                    <div class="stat-label">Đã thuộc</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
-                    <div style="font-size: 11px; color: var(--text-sub);">Chưa thuộc</div>
+                    <div class="stat-label">Chưa thuộc</div>
                 </div>
             </div>
             <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
         </div>
 
-        <!-- Nút bấm chuyển giao diện -->
+        <!-- Danh mục nút điều hướng -->
         <button class="btn-menu" onclick="showPage('page-time-stats')">
-            <span>⏱️ Thống Kê Thời Gian Học Tập (7 Ngày)</span> <span>➔</span>
+            <span>📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span>
         </button>
         <button class="btn-menu" onclick="showPage('page-add')">
             <span>➕ Thêm Từ Vựng Mới</span> <span>➔</span>
@@ -151,13 +194,27 @@
         </button>
     </div>
 
-    <!-- 2. MÀN HÌNH THỐNG KÊ THỜI GIAN HỌC TẬP (Chỉ hiển thị khi ấn vào) -->
+    <!-- 2. MÀN HÌNH THỐNG KÊ THỜI GIAN HỌC TẬP -->
     <div id="page-time-stats" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+
+        <div class="streak-card">
+            <div style="font-size: 13px; opacity: 0.9;">TỔNG SỐ NGÀY ĐÃ HỌC</div>
+            <div class="streak-number" id="totalDaysCount">0 Ngày</div>
+        </div>
         
         <div class="card-box">
-            <h3 style="margin: 0 0 12px 0; font-size: 17px; text-align: center;">Thời Gian Học 7 Ngày Gần Đây</h3>
-            <div id="sevenDaysList"></div>
+            <div class="segment-control">
+                <button class="segment-btn active" id="btn7" onclick="renderTimeStats(7)">7 Ngày</button>
+                <button class="segment-btn" id="btn30" onclick="renderTimeStats(30)">30 Ngày</button>
+                <button class="segment-btn" id="btn90" onclick="renderTimeStats(90)">90 Ngày</button>
+            </div>
+
+            <div class="bar-chart-wrapper">
+                <canvas id="timeBarChart"></canvas>
+            </div>
+
+            <div class="detail-list" id="detailStatsList"></div>
         </div>
     </div>
 
@@ -165,7 +222,7 @@
     <div id="page-add" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         <div class="card-box">
-            <h3 style="margin: 0 0 12px 0; font-size: 17px;" id="formTitle">Thêm Từ Vựng Mới</h3>
+            <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle">Thêm Từ Vựng Mới</h3>
             <div class="input-group">
                 <label>Chữ Hán:</label>
                 <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin()">
@@ -176,7 +233,7 @@
             </div>
             <div class="input-group">
                 <label>Nghĩa Tiếng Việt:</label>
-                <input type="text" id="meaningInput" placeholder="Nhập nghĩa...">
+                <input type="text" id="meaningInput" placeholder="Nhập nghĩa giải thích...">
             </div>
             <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
             <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
@@ -225,15 +282,17 @@
     let currentFilter = 'all';
     let currentCardIndex = -1;
     let editingId = null;
+    
     let chartInstance = null;
+    let timeChartInstance = null;
+    let currentRange = 7;
 
-    // Lấy chuỗi ngày hôm nay (YYYY-MM-DD)
     function getTodayKey() {
         const d = new Date();
         return d.toISOString().split('T')[0];
     }
 
-    // Đếm và lưu thời gian học tập theo ngày
+    // Ghi nhận thời gian học thực tế
     setInterval(() => {
         const today = getTodayKey();
         if (!dailyStats[today]) {
@@ -243,12 +302,16 @@
         localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
     }, 1000);
 
-    // Chuyển đổi giữa các giao diện
+    // Chuyển màn hình với hiệu ứng Fade In
     function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        const target = document.getElementById(pageId);
+        target.classList.add('active');
+
         if (pageId === 'page-home') updateUI();
-        if (pageId === 'page-time-stats') renderSevenDaysStats();
+        if (pageId === 'page-time-stats') renderTimeStats(currentRange);
     }
 
     function startStudy(filter) {
@@ -278,6 +341,100 @@
         });
     }
 
+    function updateUI() {
+        const total = vocabList.length;
+        const learned = vocabList.filter(v => v.status === 'learned').length;
+        const unlearned = total - learned;
+
+        document.getElementById('totalCount').innerText = total;
+        document.getElementById('learnedCount').innerText = learned;
+        document.getElementById('unlearnedCount').innerText = unlearned;
+
+        if (chartInstance) {
+            chartInstance.data.datasets[0].data = [learned, unlearned];
+            chartInstance.update();
+        }
+    }
+
+    // Vẽ biểu đồ cột Thống kê thời gian & số từ lướt (7 / 30 / 90 Ngày)
+    function renderTimeStats(rangeDays) {
+        currentRange = rangeDays;
+
+        document.getElementById('btn7').classList.toggle('active', rangeDays === 7);
+        document.getElementById('btn30').classList.toggle('active', rangeDays === 30);
+        document.getElementById('btn90').classList.toggle('active', rangeDays === 90);
+
+        // Đếm số ngày thực tế có học tập (> 0 giây hoặc > 0 từ)
+        const activeDays = Object.keys(dailyStats).filter(key => dailyStats[key].seconds > 0 || dailyStats[key].wordsReviewed > 0).length;
+        document.getElementById('totalDaysCount').innerText = `${activeDays} Ngày`;
+
+        const labels = [];
+        const minutesData = [];
+        const wordsData = [];
+        const detailListContainer = document.getElementById('detailStatsList');
+        detailListContainer.innerHTML = '';
+
+        for (let i = rangeDays - 1; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = d.toISOString().split('T')[0];
+            const displayDate = `${d.getDate()}/${d.getMonth() + 1}`;
+            
+            const stats = dailyStats[key] || { seconds: 0, wordsReviewed: 0 };
+            const mins = (stats.seconds / 60).toFixed(1);
+
+            labels.push(displayDate);
+            minutesData.push(mins);
+            wordsData.push(stats.wordsReviewed);
+
+            // Bảng danh sách chi tiết
+            if (stats.seconds > 0 || stats.wordsReviewed > 0) {
+                const row = document.createElement('div');
+                row.className = 'detail-item';
+                row.innerHTML = `
+                    <span><strong>${displayDate}</strong></span>
+                    <span>⏱️ ${Math.floor(stats.seconds / 60)} phút ${stats.seconds % 60}s | 🎴 ${stats.wordsReviewed} từ lướt</span>
+                `;
+                detailListContainer.appendChild(row);
+            }
+        }
+
+        const ctx = document.getElementById('timeBarChart').getContext('2d');
+        if (timeChartInstance) timeChartInstance.destroy();
+
+        timeChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Số phút học',
+                        data: minutesData,
+                        backgroundColor: '#007aff',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Từ lướt',
+                        data: wordsData,
+                        backgroundColor: '#ff9500',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { font: { size: 11 } } }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                    y: { grid: { color: '#e5e5ea' }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
     function addOrUpdateWord() {
         const hanzi = document.getElementById('hanziInput').value.trim();
         const py = document.getElementById('pinyinInput').value.trim();
@@ -303,7 +460,7 @@
 
         saveData();
         resetForm();
-        alert('Đã lưu thành công!');
+        alert('Đã lưu từ thành công!');
         showPage('page-home');
     }
 
@@ -341,46 +498,6 @@
     }
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
-
-    function updateUI() {
-        const total = vocabList.length;
-        const learned = vocabList.filter(v => v.status === 'learned').length;
-        const unlearned = total - learned;
-
-        document.getElementById('totalCount').innerText = total;
-        document.getElementById('learnedCount').innerText = learned;
-        document.getElementById('unlearnedCount').innerText = unlearned;
-
-        if (chartInstance) {
-            chartInstance.data.datasets[0].data = [learned, unlearned];
-            chartInstance.update();
-        }
-    }
-
-    // Hiển thị thống kê 7 ngày gần đây
-    function renderSevenDaysStats() {
-        const container = document.getElementById('sevenDaysList');
-        container.innerHTML = '';
-
-        for (let i = 0; i < 7; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            const key = d.toISOString().split('T')[0];
-            const dateStr = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
-            
-            const stats = dailyStats[key] || { seconds: 0, wordsReviewed: 0 };
-            const mins = Math.floor(stats.seconds / 60);
-            const secs = stats.seconds % 60;
-
-            const row = document.createElement('div');
-            row.className = 'day-row';
-            row.innerHTML = `
-                <div><strong>${i === 0 ? 'Hôm nay' : dateStr}</strong></div>
-                <div>⏱️ ${mins} phút ${secs} giây | 📖 ${stats.wordsReviewed} từ</div>
-            `;
-            container.appendChild(row);
-        }
-    }
 
     function loadNextCard() {
         let pool = vocabList;
@@ -420,7 +537,7 @@
         item.status = isLearned ? 'learned' : 'unlearned';
         item.seenCount += 1;
 
-        // Cộng số từ đã ôn trong ngày
+        // Cộng số lần lướt từ trong ngày
         const today = getTodayKey();
         if (!dailyStats[today]) dailyStats[today] = { seconds: 0, wordsReviewed: 0 };
         dailyStats[today].wordsReviewed += 1;
