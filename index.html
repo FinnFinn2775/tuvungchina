@@ -14,6 +14,7 @@
             --success: #34c759;
             --danger: #ff3b30;
             --warning: #ff9500;
+            --unseen: #e5e5ea;
             --bg-system: #f2f2f7;
             --card-bg: #ffffff;
             --text-main: #1c1c1e;
@@ -89,12 +90,20 @@
         }
 
         /* Thống kê từ vựng */
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; text-align: center; }
-        .stat-item { background: var(--bg-system); padding: 10px 4px; border-radius: 14px; }
-        .stat-number { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-        .stat-label { font-size: 11px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; text-align: center; }
+        .stat-item { background: var(--bg-system); padding: 8px 2px; border-radius: 12px; }
+        .stat-number { font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
+        .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
         
-        .chart-wrapper { position: relative; width: 150px; height: 150px; margin: 0 auto; }
+        .chart-wrapper { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+        .chart-center-text {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center; pointer-events: none;
+        }
+        .chart-center-val { font-size: 22px; font-weight: 800; color: var(--primary); }
+        .chart-center-lbl { font-size: 10px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; }
+
         .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
 
         /* Form Nhập */
@@ -107,6 +116,7 @@
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
         button:active { transform: scale(0.98); opacity: 0.85; }
         .btn-primary { background: var(--primary); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
         .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); }
 
         /* Nút Sao lưu & Khôi phục */
@@ -118,7 +128,7 @@
         .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; cursor: pointer; }
         .segment-btn.active { background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
 
-        /* Flashcard Area (Hiển thị thẳng, mở rộng thông tin bên dưới) */
+        /* Flashcard Area */
         .swipe-container { position: relative; width: 100%; min-height: 280px; }
         .flashcard {
             width: 100%; min-height: 280px; position: relative;
@@ -160,6 +170,25 @@
         .detail-list { margin-top: 12px; max-height: 180px; overflow-y: auto; }
         .detail-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 
+        /* Cảnh báo từ trùng */
+        .duplicate-alert {
+            background: #fff9e6; border: 1px solid #ffe0b2; border-radius: 12px;
+            padding: 12px; margin-bottom: 12px; display: none;
+        }
+        .duplicate-alert-title { font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 4px; }
+        .duplicate-info { font-size: 13px; color: var(--text-main); margin-bottom: 8px; }
+
+        /* Danh sách tất cả từ */
+        .vocab-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; margin-top: 8px; }
+        .vocab-item {
+            background: var(--bg-system); padding: 12px 14px; border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .vocab-item-left { display: flex; flex-direction: column; }
+        .vocab-item-hanzi { font-size: 20px; font-weight: 700; color: var(--text-main); }
+        .vocab-item-sub { font-size: 12px; color: var(--text-sub); }
+        .vocab-item-actions { display: flex; gap: 6px; }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -180,7 +209,7 @@
             <div class="stats-grid">
                 <div class="stat-item">
                     <div class="stat-number" id="totalCount">0</div>
-                    <div class="stat-label">Tất cả từ</div>
+                    <div class="stat-label">Tổng từ</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-number" id="learnedCount" style="color: var(--success);">0</div>
@@ -190,8 +219,19 @@
                     <div class="stat-number" id="unlearnedCount" style="color: var(--danger);">0</div>
                     <div class="stat-label">Chưa thuộc</div>
                 </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="unseenCount" style="color: #8e8e93;">0</div>
+                    <div class="stat-label">Chưa xem</div>
+                </div>
             </div>
-            <div class="chart-wrapper"><canvas id="vocabChart"></canvas></div>
+            
+            <div class="chart-wrapper">
+                <canvas id="vocabChart"></canvas>
+                <div class="chart-center-text">
+                    <div class="chart-center-val" id="chartPercent">0%</div>
+                    <div class="chart-center-lbl">Đã xem</div>
+                </div>
+            </div>
         </div>
 
         <!-- Các nút menu -->
@@ -200,6 +240,9 @@
         </button>
         <button class="btn-menu" onclick="showPage('page-add')">
             <span>➕ Thêm Từ Vựng Mới</span> <span>➔</span>
+        </button>
+        <button class="btn-menu" onclick="showPage('page-list')">
+            <span>📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span>
         </button>
         <button class="btn-menu" onclick="startStudy('all')">
             <span>🎴 Ôn Tập Tất Cả Từ</span> <span>➔</span>
@@ -245,10 +288,21 @@
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         <div class="card-box">
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle">Thêm Từ Vựng Mới</h3>
+            
             <div class="input-group">
                 <label>Chữ Hán:</label>
-                <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin()">
+                <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin(); checkDuplicateHanzi();">
             </div>
+
+            <!-- Khối cảnh báo từ trùng lặp -->
+            <div class="duplicate-alert" id="duplicateBox">
+                <div class="duplicate-alert-title">⚠️ Từ này đã tồn tại trong danh sách!</div>
+                <div class="duplicate-info" id="duplicateText"></div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="loadDuplicateToEdit()">✏️ Sửa từ cũ này</button>
+                </div>
+            </div>
+
             <div class="input-group">
                 <label>Bính âm (Pinyin - Tự động):</label>
                 <input type="text" id="pinyinInput" readonly placeholder="Tự động hiện Pinyin">
@@ -257,12 +311,25 @@
                 <label>Nghĩa Tiếng Việt:</label>
                 <input type="text" id="meaningInput" placeholder="Nhập nghĩa giải thích...">
             </div>
-            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
+            
+            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord(false)">Lưu Từ Vựng</button>
             <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
         </div>
     </div>
 
-    <!-- 4. MÀN HÌNH FLASHCARD ÔN TẬP -->
+    <!-- 4. MÀN HÌNH DANH SÁCH TẤT CẢ TỪ VỰNG -->
+    <div id="page-list" class="page">
+        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        <div class="card-box">
+            <h3 style="margin: 0 0 10px 0; font-size: 18px;">Tất Cả Từ Vựng (<span id="listTotalCount">0</span>)</h3>
+            <div class="input-group" style="margin-bottom: 8px;">
+                <input type="text" id="searchVocabInput" placeholder="🔍 Tìm kiếm chữ Hán hoặc nghĩa..." oninput="renderVocabList()">
+            </div>
+            <div class="vocab-list-container" id="vocabListContainer"></div>
+        </div>
+    </div>
+
+    <!-- 5. MÀN HÌNH FLASHCARD ÔN TẬP -->
     <div id="page-flashcard" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         
@@ -301,6 +368,7 @@
     let currentFilter = 'all';
     let currentCardIndex = -1;
     let editingId = null;
+    let matchedDuplicateItem = null;
     
     let chartInstance = null;
     let timeChartInstance = null;
@@ -326,6 +394,7 @@
 
         if (pageId === 'page-home') updateUI();
         if (pageId === 'page-time-stats') renderTimeStats(currentRange);
+        if (pageId === 'page-list') renderVocabList();
     }
 
     function startStudy(filter) {
@@ -343,29 +412,80 @@
         }
     }
 
+    // Kiểm tra và hiển thị gợi ý khi nhập từ trùng lặp
+    function checkDuplicateHanzi() {
+        if (editingId) return; // Đang sửa từ cũ thì không báo trùng
+        const hanzi = document.getElementById('hanziInput').value.trim();
+        const box = document.getElementById('duplicateBox');
+
+        if (!hanzi) {
+            box.style.display = 'none';
+            matchedDuplicateItem = null;
+            return;
+        }
+
+        const found = vocabList.find(v => v.hanzi === hanzi);
+        if (found) {
+            matchedDuplicateItem = found;
+            document.getElementById('duplicateText').innerText = `Chữ Hán: "${found.hanzi}" (${found.pinyin}) - Nghĩa: ${found.meaning}`;
+            box.style.display = 'block';
+        } else {
+            box.style.display = 'none';
+            matchedDuplicateItem = null;
+        }
+    }
+
+    function loadDuplicateToEdit() {
+        if (!matchedDuplicateItem) return;
+        editingId = matchedDuplicateItem.id;
+        document.getElementById('hanziInput').value = matchedDuplicateItem.hanzi;
+        document.getElementById('pinyinInput').value = matchedDuplicateItem.pinyin;
+        document.getElementById('meaningInput').value = matchedDuplicateItem.meaning;
+
+        document.getElementById('formTitle').innerText = "Sửa Từ Vựng";
+        document.getElementById('saveBtn').innerText = "Cập Nhật Từ";
+        document.getElementById('cancelEditBtn').style.display = "block";
+        document.getElementById('duplicateBox').style.display = 'none';
+    }
+
     function initChart() {
         const ctx = document.getElementById('vocabChart').getContext('2d');
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Đã thuộc', 'Chưa thuộc'],
-                datasets: [{ data: [0, 0], backgroundColor: ['#34c759', '#ff3b30'], borderWidth: 0 }]
+                labels: ['Đã thuộc', 'Chưa thuộc', 'Chưa xem'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'],
+                    borderWidth: 0
+                }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: { legend: { display: false } }
+            }
         });
     }
 
     function updateUI() {
         const total = vocabList.length;
         const learned = vocabList.filter(v => v.status === 'learned').length;
-        const unlearned = total - learned;
+        const unlearned = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned').length;
+        const unseen = vocabList.filter(v => !v.seenCount || v.seenCount === 0).length;
 
         document.getElementById('totalCount').innerText = total;
         document.getElementById('learnedCount').innerText = learned;
         document.getElementById('unlearnedCount').innerText = unlearned;
+        document.getElementById('unseenCount').innerText = unseen;
+
+        const seenTotal = total - unseen;
+        const percent = total > 0 ? Math.round((seenTotal / total) * 100) : 0;
+        document.getElementById('chartPercent').innerText = `${percent}%`;
 
         if (chartInstance) {
-            chartInstance.data.datasets[0].data = [learned, unlearned];
+            chartInstance.data.datasets[0].data = [learned, unlearned, unseen];
             chartInstance.update();
         }
     }
@@ -433,6 +553,61 @@
         });
     }
 
+    // Hiển thị danh sách tất cả từ vựng
+    function renderVocabList() {
+        const container = document.getElementById('vocabListContainer');
+        const query = document.getElementById('searchVocabInput').value.trim().toLowerCase();
+        container.innerHTML = '';
+
+        const filtered = vocabList.filter(v => v.hanzi.toLowerCase().includes(query) || v.meaning.toLowerCase().includes(query) || v.pinyin.toLowerCase().includes(query));
+        document.getElementById('listTotalCount').innerText = filtered.length;
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding:20px;">Chưa có từ vựng nào</div>';
+            return;
+        }
+
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'vocab-item';
+            div.innerHTML = `
+                <div class="vocab-item-left">
+                    <div class="vocab-item-hanzi">${item.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${item.pinyin}</span></div>
+                    <div class="vocab-item-sub">${item.meaning} ${item.status === 'learned' ? '• <span style="color:var(--success);">Đã thuộc</span>' : ''}</div>
+                </div>
+                <div class="vocab-item-actions">
+                    <button class="btn-tool btn-edit" onclick="editWordFromList(${item.id})">✏️ Sửa</button>
+                    <button class="btn-tool btn-delete" onclick="deleteWordFromList(${item.id})">🗑️ Xóa</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function editWordFromList(id) {
+        const item = vocabList.find(v => v.id === id);
+        if (!item) return;
+        editingId = item.id;
+        document.getElementById('hanziInput').value = item.hanzi;
+        document.getElementById('pinyinInput').value = item.pinyin;
+        document.getElementById('meaningInput').value = item.meaning;
+
+        document.getElementById('formTitle').innerText = "Sửa Từ Vựng";
+        document.getElementById('saveBtn').innerText = "Cập Nhật Từ";
+        document.getElementById('cancelEditBtn').style.display = "block";
+        showPage('page-add');
+    }
+
+    function deleteWordFromList(id) {
+        if (confirm("Bạn có chắc chắn muốn xóa từ này khỏi danh sách?")) {
+            vocabList = vocabList.filter(v => v.id !== id);
+            saveData();
+            renderVocabList();
+            updateUI();
+        }
+    }
+
+    /* VẪN CHO PHÉP THÊM TỪ TRÙNG LẶP */
     function addOrUpdateWord() {
         const hanzi = document.getElementById('hanziInput').value.trim();
         const py = document.getElementById('pinyinInput').value.trim();
@@ -451,6 +626,7 @@
                 vocabList[idx].meaning = meaning;
             }
         } else {
+            // Cho phép thêm bình thường dù trùng Hán tự
             vocabList.push({ id: Date.now(), hanzi: hanzi, pinyin: py, meaning: meaning, status: 'unlearned', seenCount: 0 });
         }
 
@@ -485,9 +661,11 @@
 
     function resetForm() {
         editingId = null;
+        matchedDuplicateItem = null;
         document.getElementById('hanziInput').value = '';
         document.getElementById('pinyinInput').value = '';
         document.getElementById('meaningInput').value = '';
+        document.getElementById('duplicateBox').style.display = 'none';
         document.getElementById('formTitle').innerText = "Thêm Từ Vựng Mới";
         document.getElementById('saveBtn').innerText = "Lưu Từ Vựng";
         document.getElementById('cancelEditBtn').style.display = "none";
@@ -501,7 +679,6 @@
             pool = vocabList.filter(v => v.status === 'unlearned');
         }
 
-        // Ẩn chi tiết từ khi load thẻ mới
         document.getElementById('cardDetails').classList.remove('show');
         document.getElementById('clickHint').style.display = 'block';
 
@@ -552,7 +729,6 @@
         }, 300);
     }
 
-    /* BẤM VÀO THẺ ĐỂ HIỂN THỊ PINYIN & NGHĨA BÊN DƯỚI */
     document.getElementById('flashcard').addEventListener('click', function() {
         const details = document.getElementById('cardDetails');
         const hint = document.getElementById('clickHint');
@@ -566,7 +742,6 @@
         }
     });
 
-    /* CHỨC NĂNG SAO LƯU & KHÔI PHỤC DỮ LIỆU */
     function exportData() {
         const backupData = {
             vocab: JSON.parse(localStorage.getItem('my_infinite_vocab')) || [],
