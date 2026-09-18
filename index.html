@@ -118,11 +118,11 @@
 
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%; padding: 12px 14px; border: 1px solid var(--border);
             border-radius: 12px; font-size: 16px; background: #fafafa; outline: none; transition: border-color 0.2s;
         }
-        .input-group input:focus { border-color: var(--primary); background: #fff; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary); background: #fff; }
         .input-group input[readonly] { background-color: #e5e5ea; color: #3a3a3c; }
 
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
@@ -170,6 +170,7 @@
         .btn-tool { width: auto; padding: 6px 10px; font-size: 12px; border-radius: 8px; font-weight: 600; }
         .btn-edit { background: #e5e5ea; color: var(--primary); }
         .btn-delete { background: #ffe5e5; color: var(--danger); }
+        .btn-speak { background: #e4f2ff; color: var(--primary); }
 
         .action-btns { display: flex; gap: 12px; }
         .btn-know { background: #e4f9e8; color: var(--success); }
@@ -198,6 +199,11 @@
         .vocab-item-hanzi { font-size: 20px; font-weight: 700; color: var(--text-main); }
         .vocab-item-sub { font-size: 12px; color: var(--text-sub); }
         .vocab-item-actions { display: flex; gap: 6px; }
+
+        /* Tùy chỉnh Cài đặt */
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .setting-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
@@ -250,6 +256,9 @@
             </div>
         </div>
 
+        <button class="btn-menu" onclick="showPage('page-settings')">
+            <span>⚙️ Cài Đặt Giọng Đọc & Hệ Thống</span> <span>➔</span>
+        </button>
         <button class="btn-menu" onclick="showPage('page-time-stats')">
             <span>📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span>
         </button>
@@ -276,7 +285,42 @@
         </div>
     </div>
 
-    <!-- 2. MÀN HÌNH THỐNG KÊ THỜI GIAN -->
+    <!-- 2. MÀN HÌNH CÀI ĐẶT -->
+    <div id="page-settings" class="page">
+        <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        <div class="card-box">
+            <h3 style="margin: 0 0 14px 0; font-size: 18px;">Cài Đặt Hệ Thống</h3>
+
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Tốc độ đọc giọng nói</div>
+                    <div class="setting-sub">Tốc độ chung áp dụng cho tất cả flashcard</div>
+                </div>
+                <div style="width: 100px;">
+                    <select id="speechRateSelect" onchange="updateSpeechRate(this.value)">
+                        <option value="0.5">0.5x</option>
+                        <option value="1" selected>1.0x (Chuẩn)</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">Tự động đọc khi đổi thẻ</div>
+                    <div class="setting-sub">Tự phát âm Chữ Hán mỗi lần lướt đến từ mới</div>
+                </div>
+                <div>
+                    <input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px;">
+                </div>
+            </div>
+
+            <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()">🔊 Thử giọng đọc (你好)</button>
+        </div>
+    </div>
+
+    <!-- 3. MÀN HÌNH THỐNG KÊ THỜI GIAN -->
     <div id="page-time-stats" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
 
@@ -300,7 +344,7 @@
         </div>
     </div>
 
-    <!-- 3. MÀN HÌNH THÊM TỪ -->
+    <!-- 4. MÀN HÌNH THÊM TỪ -->
     <div id="page-add" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         <div class="card-box">
@@ -333,7 +377,7 @@
         </div>
     </div>
 
-    <!-- 4. MÀN HÌNH DANH SÁCH TỪ -->
+    <!-- 5. MÀN HÌNH DANH SÁCH TỪ -->
     <div id="page-list" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         <div class="card-box">
@@ -345,7 +389,7 @@
         </div>
     </div>
 
-    <!-- 5. MÀN HÌNH FLASHCARD -->
+    <!-- 6. MÀN HÌNH FLASHCARD -->
     <div id="page-flashcard" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         
@@ -353,6 +397,7 @@
         <div class="swipe-container">
             <div class="flashcard" id="flashcard">
                 <div class="card-tools" onclick="event.stopPropagation()">
+                    <button class="btn-tool btn-speak" onclick="speakCurrentCard()">🔊 Đọc</button>
                     <button class="btn-tool btn-edit" onclick="editCurrentCard()">✏️ Sửa</button>
                     <button class="btn-tool btn-delete" onclick="deleteCurrentCard()">🗑️ Xóa</button>
                 </div>
@@ -381,6 +426,11 @@
 
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
     let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
+    
+    // Cài đặt giọng đọc
+    let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
+    let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
+
     let currentFilter = 'all';
     let currentListFilter = 'all';
     let currentCardIndex = -1;
@@ -405,6 +455,39 @@
         localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
     }, 1000);
 
+    /* HÀM PHÁT ÂM TIẾNG TRUNG CHUẨN KÈM TỐC ĐỘ */
+    function speakText(text) {
+        if (!text || !('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel(); // Dừng câu đọc trước nếu đang đọc
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN'; // Ngôn ngữ tiếng Trung phổ thông
+        utterance.rate = globalSpeechRate; // Tốc độ cài đặt chung (0.5x, 1x, 1.5x, 2x)
+        
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function speakCurrentCard() {
+        if (currentCardIndex !== -1 && vocabList[currentCardIndex]) {
+            speakText(vocabList[currentCardIndex].hanzi);
+        }
+    }
+
+    function testSpeech() {
+        speakText('你好');
+    }
+
+    function updateSpeechRate(val) {
+        globalSpeechRate = parseFloat(val);
+        localStorage.setItem('my_speech_rate', globalSpeechRate);
+        showToast(`✓ Đã đổi tốc độ đọc: ${globalSpeechRate}x`);
+    }
+
+    function toggleAutoSpeech(val) {
+        autoSpeechEnabled = val;
+        localStorage.setItem('my_auto_speech', autoSpeechEnabled);
+    }
+
     function showToast(msg) {
         const toast = document.getElementById('toastMsg');
         toast.innerText = msg;
@@ -419,6 +502,10 @@
         if (pageId === 'page-home') updateUI();
         if (pageId === 'page-time-stats') renderTimeStats(currentRange);
         if (pageId === 'page-list') renderVocabList();
+        if (pageId === 'page-settings') {
+            document.getElementById('speechRateSelect').value = globalSpeechRate;
+            document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled;
+        }
     }
 
     function openVocabListFilter(filterType) {
@@ -619,6 +706,7 @@
                     <div class="vocab-item-sub">${item.meaning} ${item.status === 'learned' ? '• <span style="color:var(--success);">Đã thuộc</span>' : ''}</div>
                 </div>
                 <div class="vocab-item-actions">
+                    <button class="btn-tool btn-speak" onclick="speakText('${item.hanzi}')">🔊</button>
                     <button class="btn-tool btn-edit" onclick="editWordFromList(${item.id})">✏️ Sửa</button>
                     <button class="btn-tool btn-delete" onclick="deleteWordFromList(${item.id})">🗑️ Xóa</button>
                 </div>
@@ -734,6 +822,7 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
+    /* LOAD THẺ FLASHCARD KÈM PHÁT ÂM TỰ ĐỘNG CHUẨN */
     function loadNextCard() {
         let pool = vocabList;
         if (currentFilter === 'unlearned') {
@@ -771,6 +860,11 @@
         document.getElementById('displayPinyin').innerText = selected.pinyin;
         document.getElementById('displayMeaning').innerText = selected.meaning;
         document.getElementById('seenCount').innerText = `Hiện: ${selected.seenCount}`;
+
+        // Tự động phát âm khi chuyển sang thẻ mới nếu bật cài đặt
+        if (autoSpeechEnabled) {
+            speakText(selected.hanzi);
+        }
     }
 
     function markCard(isLearned) {
