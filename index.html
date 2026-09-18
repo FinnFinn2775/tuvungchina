@@ -255,11 +255,16 @@
             </div>
         </div>
 
-        <button class="btn-menu" onclick="showPage('page-settings')">
-            <span>⚙️ Cài Đặt Giọng Đọc & Hệ Thống</span> <span>➔</span>
+        <!-- Ôn tập từ mới thêm hôm nay -->
+        <button class="btn-menu" style="background: #e4f2ff; border: 1px solid #b3d7ff;" onclick="startStudy('today')">
+            <span style="color: var(--primary); font-weight:700;">✨ Chỉ Ôn Từ Mới Thêm HÔM NAY (<span id="todayCountBadge">0</span>)</span> <span>➔</span>
         </button>
-        <button class="btn-menu" onclick="showPage('page-time-stats')">
-            <span>📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span>
+
+        <button class="btn-menu" onclick="startStudy('unlearned')">
+            <span>🎯 Chỉ Ôn Từ CHƯA THUỘC</span> <span>➔</span>
+        </button>
+        <button class="btn-menu" onclick="startStudy('all')">
+            <span>🎴 Ôn Tập Tất Cả Từ</span> <span>➔</span>
         </button>
         <button class="btn-menu" onclick="showPage('page-add')">
             <span>➕ Thêm Từ Vựng Mới</span> <span>➔</span>
@@ -267,11 +272,11 @@
         <button class="btn-menu" onclick="openVocabListFilter('all')">
             <span>📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span>
         </button>
-        <button class="btn-menu" onclick="startStudy('all')">
-            <span>🎴 Ôn Tập Tất Cả Từ</span> <span>➔</span>
+        <button class="btn-menu" onclick="showPage('page-settings')">
+            <span>⚙️ Cài Đặt Giọng Đọc & Hệ Thống</span> <span>➔</span>
         </button>
-        <button class="btn-menu" onclick="startStudy('unlearned')">
-            <span>🎯 Chỉ Ôn Từ CHƯA THUỘC</span> <span>➔</span>
+        <button class="btn-menu" onclick="showPage('page-time-stats')">
+            <span>📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span>
         </button>
 
         <div class="backup-group">
@@ -583,15 +588,20 @@
     }
 
     function updateUI() {
+        const todayKey = getTodayKey();
         const total = vocabList.length;
         const learned = vocabList.filter(v => v.status === 'learned').length;
         const unlearned = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned').length;
         const unseen = vocabList.filter(v => !v.seenCount || v.seenCount === 0).length;
+        
+        // Đếm từ mới thêm hôm nay
+        const todayAdded = vocabList.filter(v => v.dateAdded === todayKey).length;
 
         document.getElementById('totalCount').innerText = total;
         document.getElementById('learnedCount').innerText = learned;
         document.getElementById('unlearnedCount').innerText = unlearned;
         document.getElementById('unseenCount').innerText = unseen;
+        document.getElementById('todayCountBadge').innerText = todayAdded;
 
         const seenTotal = total - unseen;
         const percent = total > 0 ? Math.round((seenTotal / total) * 100) : 0;
@@ -673,6 +683,7 @@
 
         let targetList = vocabList;
         let titleText = "Tất Cả Từ Vựng";
+        const todayKey = getTodayKey();
 
         if (currentListFilter === 'learned') {
             targetList = vocabList.filter(v => v.status === 'learned');
@@ -683,6 +694,9 @@
         } else if (currentListFilter === 'unseen') {
             targetList = vocabList.filter(v => !v.seenCount || v.seenCount === 0);
             titleText = "Từ Chưa Xem";
+        } else if (currentListFilter === 'today') {
+            targetList = vocabList.filter(v => v.dateAdded === todayKey);
+            titleText = "Từ Mới Thêm Hôm Nay";
         }
 
         const filtered = targetList.filter(v => v.hanzi.toLowerCase().includes(query) || v.meaning.toLowerCase().includes(query) || v.pinyin.toLowerCase().includes(query));
@@ -755,8 +769,13 @@
             showToast('✓ Đã cập nhật từ thành công!');
         } else {
             vocabList.push({
-                id: Date.now(), hanzi: hanzi, pinyin: py, meaning: meaning,
-                status: 'unlearned', seenCount: 0
+                id: Date.now(),
+                hanzi: hanzi,
+                pinyin: py,
+                meaning: meaning,
+                status: 'unlearned',
+                seenCount: 0,
+                dateAdded: getTodayKey() // Lưu ngày thêm từ
             });
             showToast('✓ Đã thêm từ mới thành công!');
         }
@@ -819,10 +838,15 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
+    /* LOAD THẺ FLASHCARD THEO BỘ LỌC HÔM NAY / CHƯA THUỘC / TẤT CẢ */
     function loadNextCard() {
         let pool = vocabList;
+        const todayKey = getTodayKey();
+
         if (currentFilter === 'unlearned') {
             pool = vocabList.filter(v => v.status === 'unlearned');
+        } else if (currentFilter === 'today') {
+            pool = vocabList.filter(v => v.dateAdded === todayKey);
         }
 
         document.getElementById('cardDetails').classList.remove('show');
@@ -887,7 +911,6 @@
         }, 300);
     }
 
-    /* BẤM VÀO THẺ FLASHCARD TỰ ĐỘNG PHÁT ÂM */
     document.getElementById('flashcard').addEventListener('click', function() {
         const details = document.getElementById('cardDetails');
         const hint = document.getElementById('clickHint');
@@ -900,7 +923,6 @@
             hint.style.display = 'none';
         }
 
-        // Tự phát âm chữ Hán khi bấm vào thẻ Flashcard
         speakCurrentCard();
     });
 
