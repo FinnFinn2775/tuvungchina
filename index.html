@@ -175,6 +175,7 @@
         .action-btns { display: flex; gap: 12px; }
         .btn-know { background: #e4f9e8; color: var(--success); }
         .btn-unknow { background: #ffe5e5; color: var(--danger); }
+        .btn-undo { background: #e5e5ea; color: #3a3a3c; padding: 10px; font-size: 14px; margin-top: 8px; border-radius: 12px; }
         .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); }
 
         .streak-card { background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; }
@@ -255,7 +256,6 @@
             </div>
         </div>
 
-        <!-- Ôn tập từ mới thêm hôm nay -->
         <button class="btn-menu" style="background: #e4f2ff; border: 1px solid #b3d7ff;" onclick="startStudy('today')">
             <span style="color: var(--primary); font-weight:700;">✨ Chỉ Ôn Từ Mới Thêm HÔM NAY (<span id="todayCountBadge">0</span>)</span> <span>➔</span>
         </button>
@@ -421,6 +421,8 @@
             <button class="btn-know" onclick="markCard(true)">👈 Đã thuộc</button>
             <button class="btn-unknow" onclick="markCard(false)">Chưa thuộc 👉</button>
         </div>
+        
+        <button class="btn-undo" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;">↩ Quay lại từ trước đó</button>
     </div>
 
 </div>
@@ -440,6 +442,9 @@
     let editingId = null;
     let matchedDuplicateItem = null;
     
+    // Lưu thông tin để quay lại từ trước
+    let previousCardState = null;
+
     let chartInstance = null;
     let timeChartInstance = null;
     let currentRange = 7;
@@ -518,6 +523,8 @@
 
     function startStudy(filter) {
         currentFilter = filter;
+        previousCardState = null;
+        document.getElementById('btnUndoCard').style.display = 'none';
         showPage('page-flashcard');
         loadNextCard();
     }
@@ -594,7 +601,6 @@
         const unlearned = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned').length;
         const unseen = vocabList.filter(v => !v.seenCount || v.seenCount === 0).length;
         
-        // Đếm từ mới thêm hôm nay
         const todayAdded = vocabList.filter(v => v.dateAdded === todayKey).length;
 
         document.getElementById('totalCount').innerText = total;
@@ -775,7 +781,7 @@
                 meaning: meaning,
                 status: 'unlearned',
                 seenCount: 0,
-                dateAdded: getTodayKey() // Lưu ngày thêm từ
+                dateAdded: getTodayKey()
             });
             showToast('✓ Đã thêm từ mới thành công!');
         }
@@ -838,7 +844,20 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
-    /* LOAD THẺ FLASHCARD THEO BỘ LỌC HÔM NAY / CHƯA THUỘC / TẤT CẢ */
+    function renderCardUI(selected) {
+        document.getElementById('cardDetails').classList.remove('show');
+        document.getElementById('clickHint').style.display = 'block';
+
+        document.getElementById('displayHanzi').innerText = selected.hanzi;
+        document.getElementById('displayPinyin').innerText = selected.pinyin;
+        document.getElementById('displayMeaning').innerText = selected.meaning;
+        document.getElementById('seenCount').innerText = `Hiện: ${selected.seenCount}`;
+
+        if (autoSpeechEnabled) {
+            speakText(selected.hanzi);
+        }
+    }
+
     function loadNextCard() {
         let pool = vocabList;
         const todayKey = getTodayKey();
@@ -848,9 +867,6 @@
         } else if (currentFilter === 'today') {
             pool = vocabList.filter(v => v.dateAdded === todayKey);
         }
-
-        document.getElementById('cardDetails').classList.remove('show');
-        document.getElementById('clickHint').style.display = 'block';
 
         if (pool.length === 0) {
             document.getElementById('displayHanzi').innerText = "Hết từ ôn!";
@@ -876,20 +892,22 @@
         const selected = candidatePool[Math.floor(Math.random() * candidatePool.length)];
         currentCardIndex = vocabList.findIndex(v => v.id === selected.id);
 
-        document.getElementById('displayHanzi').innerText = selected.hanzi;
-        document.getElementById('displayPinyin').innerText = selected.pinyin;
-        document.getElementById('displayMeaning').innerText = selected.meaning;
-        document.getElementById('seenCount').innerText = `Hiện: ${selected.seenCount}`;
-
-        if (autoSpeechEnabled) {
-            speakText(selected.hanzi);
-        }
+        renderCardUI(selected);
     }
 
     function markCard(isLearned) {
         if (currentCardIndex === -1 || vocabList.length === 0) return;
 
         const item = vocabList[currentCardIndex];
+
+        // Lưu vết trạng thái cũ để lỡ bấm nhầm có thể quay lại
+        previousCardState = {
+            index: currentCardIndex,
+            oldStatus: item.status,
+            oldSeenCount: item.seenCount
+        };
+        document.getElementById('btnUndoCard').style.display = 'block';
+
         item.status = isLearned ? 'learned' : 'unlearned';
         item.seenCount += 1;
 
@@ -909,6 +927,25 @@
             cardElem.style.opacity = '1';
             loadNextCard();
         }, 300);
+    }
+
+    /* HÀM QUAY LẠI TỪ TRƯỚC ĐÓ DO VUỐT NHẦM */
+    function undoPreviousCard() {
+        if (!previousCardState) return;
+
+        const item = vocabList[previousCardState.index];
+        if (item) {
+            item.status = previousCardState.oldStatus;
+            item.seenCount = previousCardState.oldSeenCount;
+            saveData();
+
+            currentCardIndex = previousCardState.index;
+            renderCardUI(item);
+            showToast('↩ Đã quay lại từ trước đó!');
+        }
+
+        previousCardState = null;
+        document.getElementById('btnUndoCard').style.display = 'none';
     }
 
     document.getElementById('flashcard').addEventListener('click', function() {
