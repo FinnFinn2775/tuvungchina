@@ -148,7 +148,17 @@
             padding: 24px 20px; text-align: center; box-sizing: border-box;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; user-select: none;
-            transition: left 0.3s ease, opacity 0.3s ease, transform 0.3s ease;
+            transition: left 0.3s ease, opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Class màu xanh / đỏ khi lướt trong 0.3s */
+        .flashcard.learned-bg {
+            background-color: #e4f9e8 !important;
+            border-color: #34c759 !important;
+        }
+        .flashcard.unlearned-bg {
+            background-color: #ffe5e5 !important;
+            border-color: #ff3b30 !important;
         }
 
         .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
@@ -442,7 +452,6 @@
     let editingId = null;
     let matchedDuplicateItem = null;
     
-    // Lưu thông tin để quay lại từ trước
     let previousCardState = null;
 
     let chartInstance = null;
@@ -895,12 +904,12 @@
         renderCardUI(selected);
     }
 
+    /* ĐỔI MÀU XANH / ĐỎ TRONG 0.3S KHI VUỐT/BẤM THUỘC HOẶC CHƯA THUỘC */
     function markCard(isLearned) {
         if (currentCardIndex === -1 || vocabList.length === 0) return;
 
         const item = vocabList[currentCardIndex];
 
-        // Lưu vết trạng thái cũ để lỡ bấm nhầm có thể quay lại
         previousCardState = {
             index: currentCardIndex,
             oldStatus: item.status,
@@ -919,17 +928,25 @@
         saveData();
 
         const cardElem = document.getElementById('flashcard');
-        cardElem.style.transform = isLearned ? 'translateX(-120%) rotate(-10deg)' : 'translateX(120%) rotate(10deg)';
+        
+        // Thêm màu xanh (đã thuộc) hoặc màu đỏ (chưa thuộc) trong 0.3s
+        if (isLearned) {
+            cardElem.classList.add('learned-bg');
+            cardElem.style.transform = 'translateX(-120%) rotate(-10deg)';
+        } else {
+            cardElem.classList.add('unlearned-bg');
+            cardElem.style.transform = 'translateX(120%) rotate(10deg)';
+        }
         cardElem.style.opacity = '0';
 
         setTimeout(() => {
             cardElem.style.transform = '';
             cardElem.style.opacity = '1';
+            cardElem.classList.remove('learned-bg', 'unlearned-bg');
             loadNextCard();
         }, 300);
     }
 
-    /* HÀM QUAY LẠI TỪ TRƯỚC ĐÓ DO VUỐT NHẦM */
     function undoPreviousCard() {
         if (!previousCardState) return;
 
