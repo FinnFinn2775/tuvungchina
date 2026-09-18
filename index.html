@@ -200,7 +200,6 @@
         .vocab-item-sub { font-size: 12px; color: var(--text-sub); }
         .vocab-item-actions { display: flex; gap: 6px; }
 
-        /* Tùy chỉnh Cài đặt */
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
         .setting-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
@@ -427,7 +426,6 @@
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
     let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
     
-    // Cài đặt giọng đọc
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
 
@@ -455,14 +453,13 @@
         localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
     }, 1000);
 
-    /* HÀM PHÁT ÂM TIẾNG TRUNG CHUẨN KÈM TỐC ĐỘ */
     function speakText(text) {
         if (!text || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel(); // Dừng câu đọc trước nếu đang đọc
+        window.speechSynthesis.cancel();
 
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'zh-CN'; // Ngôn ngữ tiếng Trung phổ thông
-        utterance.rate = globalSpeechRate; // Tốc độ cài đặt chung (0.5x, 1x, 1.5x, 2x)
+        utterance.lang = 'zh-CN';
+        utterance.rate = globalSpeechRate;
         
         window.speechSynthesis.speak(utterance);
     }
@@ -822,7 +819,6 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
-    /* LOAD THẺ FLASHCARD KÈM PHÁT ÂM TỰ ĐỘNG CHUẨN */
     function loadNextCard() {
         let pool = vocabList;
         if (currentFilter === 'unlearned') {
@@ -861,7 +857,6 @@
         document.getElementById('displayMeaning').innerText = selected.meaning;
         document.getElementById('seenCount').innerText = `Hiện: ${selected.seenCount}`;
 
-        // Tự động phát âm khi chuyển sang thẻ mới nếu bật cài đặt
         if (autoSpeechEnabled) {
             speakText(selected.hanzi);
         }
@@ -892,6 +887,7 @@
         }, 300);
     }
 
+    /* BẤM VÀO THẺ FLASHCARD TỰ ĐỘNG PHÁT ÂM */
     document.getElementById('flashcard').addEventListener('click', function() {
         const details = document.getElementById('cardDetails');
         const hint = document.getElementById('clickHint');
@@ -903,6 +899,9 @@
             details.classList.add('show');
             hint.style.display = 'none';
         }
+
+        // Tự phát âm chữ Hán khi bấm vào thẻ Flashcard
+        speakCurrentCard();
     });
 
     function exportData() {
