@@ -140,6 +140,7 @@
         .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; cursor: pointer; }
         .segment-btn.active { background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
 
+        /* KÍCH THƯỚC VÀ HIỆU ỨNG FLASHCARD */
         .swipe-container { position: relative; width: 100%; min-height: 340px; }
         .flashcard {
             width: 100%; min-height: 340px; position: relative;
@@ -148,9 +149,10 @@
             padding: 48px 20px 24px 20px; text-align: center; box-sizing: border-box;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; user-select: none;
-            transition: left 0.3s ease, opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
         }
 
+        /* Class màu nền khi bấm Đã thuộc / Chưa thuộc */
         .flashcard.learned-bg {
             background-color: #e4f9e8 !important;
             border-color: #34c759 !important;
@@ -158,6 +160,28 @@
         .flashcard.unlearned-bg {
             background-color: #ffe5e5 !important;
             border-color: #ff3b30 !important;
+        }
+
+        /* Class hiệu ứng mờ dần thu nhỏ khi ẩn đi */
+        .flashcard.card-exit {
+            opacity: 0 !important;
+            transform: scale(0.92) translateY(-10px) !important;
+        }
+
+        /* Class hiệu ứng nổi lên mượt mà khi hiện thẻ mới */
+        .flashcard.card-enter {
+            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
@@ -201,7 +225,6 @@
         .related-py { color: var(--danger); font-size: 12px; }
         .related-meaning { color: var(--text-sub); font-size: 12px; }
 
-        /* NỔI BẬT CHỮ HÁN CÓ CÙNG KÝ TỰ */
         .highlight-char {
             color: #ff3b30;
             font-size: 15px;
@@ -442,7 +465,7 @@
     <div id="page-flashcard" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
         
-        <div class="hint-swipe">👈 Vuốt Trái: Đã thuộc | Vuốt Phải: Chưa thuộc 👉</div>
+        <div class="hint-swipe">Bấm các nút bên dưới để chọn Đã thuộc / Chưa thuộc</div>
         <div class="swipe-container">
             <div class="flashcard" id="flashcard">
                 <div class="card-tools" onclick="event.stopPropagation()">
@@ -492,6 +515,7 @@
     let currentCardIndex = -1;
     let editingId = null;
     let matchedDuplicateItem = null;
+    let isAnimating = false;
     
     let previousCardState = null;
 
@@ -1000,9 +1024,10 @@
         renderCardUI(selected);
     }
 
-    /* ĐỔI MÀU XANH / ĐỎ TRONG 0.3S KHI VUỐT/BẤM THUỘC HOẶC CHƯA THUỘC */
+    /* CHUYỂN THẺ MƯỢT MÀ VỚI HIỆU ỨNG POP-IN */
     function markCard(isLearned) {
-        if (currentCardIndex === -1 || vocabList.length === 0) return;
+        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return;
+        isAnimating = true;
 
         const item = vocabList[currentCardIndex];
 
@@ -1025,21 +1050,26 @@
 
         const cardElem = document.getElementById('flashcard');
         
+        /* Đổi màu nền nhẹ và chạy hiệu ứng mờ dần thu nhỏ */
         if (isLearned) {
             cardElem.classList.add('learned-bg');
-            cardElem.style.transform = 'translateX(-120%) rotate(-10deg)';
         } else {
             cardElem.classList.add('unlearned-bg');
-            cardElem.style.transform = 'translateX(120%) rotate(10deg)';
         }
-        cardElem.style.opacity = '0';
+        cardElem.classList.add('card-exit');
 
         setTimeout(() => {
-            cardElem.style.transform = '';
-            cardElem.style.opacity = '1';
-            cardElem.classList.remove('learned-bg', 'unlearned-bg');
+            cardElem.classList.remove('learned-bg', 'unlearned-bg', 'card-exit');
             loadNextCard();
-        }, 300);
+            
+            /* Thêm hiệu ứng trượt nhẹ phóng to từ dưới lên cho thẻ mới */
+            cardElem.classList.add('card-enter');
+            
+            setTimeout(() => {
+                cardElem.classList.remove('card-enter');
+                isAnimating = false;
+            }, 350);
+        }, 200);
     }
 
     function undoPreviousCard() {
@@ -1104,15 +1134,6 @@
         };
         reader.readAsText(event.target.files[0]);
     }
-
-    let startX = 0;
-    const cardElem = document.getElementById('flashcard');
-    cardElem.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, {passive: true});
-    cardElem.addEventListener('touchend', e => {
-        let diffX = e.changedTouches[0].clientX - startX;
-        if (diffX < -50) markCard(true);
-        if (diffX > 50) markCard(false);
-    });
 
     window.onload = function() {
         initChart();
