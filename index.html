@@ -152,6 +152,7 @@
             transition: left 0.3s ease, opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
         }
 
+        /* Class màu xanh / đỏ khi lướt trong 0.3s */
         .flashcard.learned-bg {
             background-color: #e4f9e8 !important;
             border-color: #34c759 !important;
@@ -339,12 +340,12 @@
             <div class="setting-item">
                 <div>
                     <div class="setting-label">Tốc độ đọc giọng nói</div>
-                    <div class="setting-sub">Mặc định tốc độ bình thường (1.0x)</div>
+                    <div class="setting-sub">Tốc độ chung áp dụng cho tất cả flashcard</div>
                 </div>
                 <div style="width: 100px;">
                     <select id="speechRateSelect" onchange="updateSpeechRate(this.value)">
                         <option value="0.5">0.5x</option>
-                        <option value="1" selected>1.0x (Bình thường)</option>
+                        <option value="1" selected>1.0x (Chuẩn)</option>
                         <option value="1.5">1.5x</option>
                         <option value="2">2.0x</option>
                     </select>
@@ -361,7 +362,7 @@
                 </div>
             </div>
 
-            <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()">🔊 Thử Giọng Phổ Thông Chuẩn (你好)</button>
+            <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()">🔊 Thử giọng đọc (你好)</button>
         </div>
     </div>
 
@@ -455,7 +456,7 @@
                     <div class="pinyin-text" id="displayPinyin"></div>
                     <div class="meaning-text" id="displayMeaning"></div>
                     
-                    <!-- Khung chứa từ vựng tương tự -->
+                    <!-- Khung từ vựng liên quan -->
                     <div class="related-box" id="relatedContainer" style="display:none;" onclick="event.stopPropagation()">
                         <div class="related-title">🔗 Từ vựng chứa chữ giống:</div>
                         <div id="relatedList"></div>
@@ -509,37 +510,7 @@
         localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
     }, 1000);
 
-    function getBestMandarinVoice() {
-        if (!('speechSynthesis' in window)) return null;
-        const voices = window.speechSynthesis.getVoices();
-        
-        const priorityKeywords = [
-            'xiaoxiao', 'yunxi', 'yunjian', 'xiaoyi', 'ting-ting', 'tingting', 
-            'huihui', 'google 普通话', 'google mandarin', 'zh-cn', 'zh_cn'
-        ];
-        
-        for (let kw of priorityKeywords) {
-            let found = voices.find(v => {
-                const nameLower = v.name.toLowerCase();
-                const langLower = v.lang.toLowerCase();
-                return (langLower.includes('zh-cn') || langLower.includes('zh_cn') || langLower === 'zh') && 
-                       nameLower.includes(kw);
-            });
-            if (found) return found;
-        }
-
-        let fallbackCN = voices.find(v => {
-            const langLower = v.lang.toLowerCase();
-            const nameLower = v.name.toLowerCase();
-            return (langLower.includes('zh-cn') || langLower.includes('zh_cn')) && 
-                   !nameLower.includes('taiwan') && !nameLower.includes('hong kong') && !nameLower.includes('cantonese');
-        });
-
-        if (fallbackCN) return fallbackCN;
-
-        return voices.find(v => v.lang.toLowerCase().startsWith('zh'));
-    }
-
+    /* GIỮ NGUYÊN HÀM GIỌNG ĐỌC BAN ĐẦU CỦA BẠN */
     function speakText(text) {
         if (!text || !('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
@@ -547,19 +518,8 @@
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'zh-CN';
         utterance.rate = globalSpeechRate;
-
-        const bestVoice = getBestMandarinVoice();
-        if (bestVoice) {
-            utterance.voice = bestVoice;
-        }
-
+        
         window.speechSynthesis.speak(utterance);
-    }
-
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.onvoiceschanged = function() {
-            window.speechSynthesis.getVoices();
-        };
     }
 
     function speakCurrentCard() {
@@ -932,7 +892,7 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
-    /* HÀM TÌM VÀ HIỂN THỊ CÁC TỪ CÓ CHỮ GIỐNG NHAU */
+    /* HÀM SO SÁNH VÀ HIỂN THỊ CÁC TỪ CÓ CHỮ GIỐNG NHAU */
     function renderRelatedWords(currentHanzi) {
         const container = document.getElementById('relatedContainer');
         const listElem = document.getElementById('relatedList');
@@ -1025,6 +985,7 @@
         renderCardUI(selected);
     }
 
+    /* ĐỔI MÀU XANH / ĐỎ TRONG 0.3S KHI VUỐT/BẤM THUỘC HOẶC CHƯA THUỘC */
     function markCard(isLearned) {
         if (currentCardIndex === -1 || vocabList.length === 0) return;
 
@@ -1049,6 +1010,7 @@
 
         const cardElem = document.getElementById('flashcard');
         
+        // Thêm màu xanh (đã thuộc) hoặc màu đỏ (chưa thuộc) trong 0.3s
         if (isLearned) {
             cardElem.classList.add('learned-bg');
             cardElem.style.transform = 'translateX(-120%) rotate(-10deg)';
