@@ -140,12 +140,13 @@
         .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; cursor: pointer; }
         .segment-btn.active { background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
 
-        .swipe-container { position: relative; width: 100%; min-height: 280px; }
+        /* TĂNG KÍCH THƯỚC VÙNG THẺ FLASHCARD */
+        .swipe-container { position: relative; width: 100%; min-height: 340px; }
         .flashcard {
-            width: 100%; min-height: 280px; position: relative;
+            width: 100%; min-height: 340px; position: relative;
             background: var(--card-bg); border-radius: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border);
-            padding: 24px 20px; text-align: center; box-sizing: border-box;
+            padding: 48px 20px 24px 20px; text-align: center; box-sizing: border-box;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; user-select: none;
             transition: left 0.3s ease, opacity 0.3s ease, transform 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
@@ -160,7 +161,8 @@
             border-color: #ff3b30 !important;
         }
 
-        .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+        /* ĐIỀU CHỈNH CHỮ HÁN KHÔNG BỊ NÚT CHE */
+        .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
         
         .card-details {
             display: none; width: 100%; margin-top: 12px; padding-top: 12px;
@@ -172,15 +174,14 @@
         .pinyin-text { font-size: 24px; color: var(--danger); font-weight: 600; margin-bottom: 6px; }
         .meaning-text { font-size: 19px; color: var(--text-main); font-weight: 500; }
 
-        /* Vùng hiển thị từ vựng chứa chữ tương tự */
         .related-box {
-            margin-top: 14px;
+            margin-top: 12px;
             padding: 10px;
             background: rgba(0, 122, 255, 0.05);
             border-radius: 12px;
             border: 1px solid rgba(0, 122, 255, 0.15);
             text-align: left;
-            max-height: 140px;
+            max-height: 130px;
             overflow-y: auto;
         }
         .related-title {
@@ -188,9 +189,6 @@
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
         .related-item {
             font-size: 13px;
@@ -206,10 +204,11 @@
         .related-meaning { color: var(--text-sub); font-size: 12px; }
 
         .click-hint { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
-        .seen-badge { position: absolute; top: 16px; right: 18px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
+        .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
 
-        .card-tools { position: absolute; top: 14px; left: 16px; display: flex; gap: 8px; z-index: 10; }
-        .btn-tool { width: auto; padding: 6px 10px; font-size: 12px; border-radius: 8px; font-weight: 600; }
+        /* TỐI ƯU CỤM NÚT CÔNG CỤ ĐỂ KHÔNG ĐÈ CHỮ HÁN */
+        .card-tools { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 10; }
+        .btn-tool { width: auto; padding: 5px 8px; font-size: 11px; border-radius: 8px; font-weight: 600; }
         .btn-edit { background: #e5e5ea; color: var(--primary); }
         .btn-delete { background: #ffe5e5; color: var(--danger); }
         .btn-speak { background: #e4f2ff; color: var(--primary); }
@@ -397,8 +396,8 @@
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle">Thêm Từ Vựng Mới</h3>
             
             <div class="input-group">
-                <label>Chữ Hán Giản Thể:</label>
-                <input type="text" id="hanziInput" placeholder="Nhập chữ Hán giản thể..." oninput="autoPinyin(); checkDuplicateHanzi();">
+                <label>Chữ Hán:</label>
+                <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." oninput="autoPinyin(); checkDuplicateHanzi();">
             </div>
 
             <div class="duplicate-alert" id="duplicateBox">
@@ -456,9 +455,9 @@
                     <div class="pinyin-text" id="displayPinyin"></div>
                     <div class="meaning-text" id="displayMeaning"></div>
                     
-                    <!-- Khung từ vựng liên quan -->
+                    <!-- Khung chứa từ vựng tương tự -->
                     <div class="related-box" id="relatedContainer" style="display:none;" onclick="event.stopPropagation()">
-                        <div class="related-title">🔗 Từ vựng có chứa chữ giống:</div>
+                        <div class="related-title">🔗 Từ vựng chứa chữ giống:</div>
                         <div id="relatedList"></div>
                     </div>
                 </div>
@@ -933,7 +932,7 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
-    /* HÀM HỖ TRỢ TÌM VÀ HIỂN THỊ CÁC TỪ CÓ CHỮ GIỐNG NHAU */
+    /* HÀM TÌM VÀ HIỂN THỊ CÁC TỪ CÓ CHỮ GIỐNG NHAU */
     function renderRelatedWords(currentHanzi) {
         const container = document.getElementById('relatedContainer');
         const listElem = document.getElementById('relatedList');
@@ -944,10 +943,8 @@
             return;
         }
 
-        // Tách các chữ Hán đơn lẻ của từ hiện tại
         const chars = currentHanzi.split('');
 
-        // Tìm từ trong danh sách chứa ít nhất 1 chữ trong 'chars' (loại trừ từ gốc)
         const matches = vocabList.filter(item => {
             if (item.hanzi === currentHanzi) return false;
             return chars.some(char => item.hanzi.includes(char));
@@ -983,7 +980,6 @@
         document.getElementById('displayMeaning').innerText = selected.meaning;
         document.getElementById('seenCount').innerText = `Hiện: ${selected.seenCount}`;
 
-        // Cập nhật danh sách từ liên quan sẵn cho thẻ này
         renderRelatedWords(selected.hanzi);
 
         if (autoSpeechEnabled) {
