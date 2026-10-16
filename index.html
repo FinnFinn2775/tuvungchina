@@ -37,30 +37,70 @@
             overflow-x: hidden;
         }
 
+        /* ----- HIỆU ỨNG CHÀO MỪNG (WELCOME OVERLAY) ----- */
+        .welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s;
+        }
+        .welcome-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .welcome-content {
+            text-align: center;
+            transform: translateY(30px) scale(0.95);
+            opacity: 0;
+            animation: welcomePopUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            animation-delay: 0.1s;
+        }
+        @keyframes welcomePopUp {
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        .welcome-icon { font-size: 56px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+        .welcome-text { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 6px; letter-spacing: -0.5px; }
+        .welcome-date { font-size: 15px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;}
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+
         .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; }
 
         .card-box {
             background: var(--card-bg);
             border-radius: 18px;
             padding: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
             border: 1px solid rgba(0,0,0,0.03);
+            transition: box-shadow 0.3s ease;
         }
 
+        /* NÂNG CẤP MƯỢT MÀ KHI CHUYỂN TRANG */
         .page {
             display: none;
             opacity: 0;
-            transform: translateY(12px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateY(16px) scale(0.98);
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
             width: 100%;
         }
-        
         .page.active {
             display: flex;
             flex-direction: column;
             gap: 16px;
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
 
         .page-title {
@@ -69,6 +109,15 @@
             text-align: center;
             margin: 0 0 4px 0;
             letter-spacing: -0.4px;
+        }
+
+        /* NÂNG CẤP HIỆU ỨNG TƯƠNG TÁC CHUNG (NÚT, THẺ, CHIP) */
+        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .action-btns button, .vocab-item {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, background 0.2s ease !important;
+            cursor: pointer;
+        }
+        button:active, .btn-menu:active, .stat-item:active, .segment-btn:active, .btn-back:active, .vocab-item:active {
+            transform: scale(0.95) !important;
         }
 
         .btn-back {
@@ -84,8 +133,6 @@
             border-radius: 12px;
             padding: 12px;
             border: none;
-            cursor: pointer;
-            transition: background 0.2s;
         }
 
         .toast-notification {
@@ -99,9 +146,8 @@
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; text-align: center; }
         .stat-item { 
             background: var(--bg-system); padding: 8px 2px; border-radius: 12px; 
-            cursor: pointer; transition: transform 0.1s, background 0.2s;
         }
-        .stat-item:active { transform: scale(0.95); background: #e5e5ea; }
+        .stat-item:hover { background: #e5e5ea; transform: translateY(-2px); }
         .stat-number { font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
         .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
         
@@ -120,16 +166,22 @@
         .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
         .input-group input, .input-group select {
             width: 100%; padding: 12px 14px; border: 1px solid var(--border);
-            border-radius: 12px; font-size: 16px; background: #fafafa; outline: none; transition: border-color 0.2s;
+            border-radius: 12px; font-size: 16px; background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .input-group input:focus, .input-group select:focus { border-color: var(--primary); background: #fff; }
+        .input-group input:focus, .input-group select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         .input-group input[readonly] { background-color: #e5e5ea; color: #3a3a3c; }
 
-        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
-        button:active { transform: scale(0.98); opacity: 0.85; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); }
+        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
+        .btn-primary:hover { box-shadow: 0 6px 16px rgba(0,122,255,0.4); transform: translateY(-1px); }
+        .btn-warning { background: var(--warning); color: white; box-shadow: 0 4px 12px rgba(255,149,0,0.3); }
+        
+        .btn-menu { 
+            background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; 
+            font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; 
+            justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); 
+        }
+        .btn-menu:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
 
         .backup-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
         .backup-row { display: flex; gap: 8px; }
@@ -149,39 +201,19 @@
             padding: 48px 20px 24px 20px; text-align: center; box-sizing: border-box;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; user-select: none;
-            transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         }
+        .flashcard:active { transform: scale(0.96); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
-        /* Class màu nền khi bấm Đã thuộc / Chưa thuộc */
-        .flashcard.learned-bg {
-            background-color: #e4f9e8 !important;
-            border-color: #34c759 !important;
-        }
-        .flashcard.unlearned-bg {
-            background-color: #ffe5e5 !important;
-            border-color: #ff3b30 !important;
-        }
+        .flashcard.learned-bg { background-color: #e4f9e8 !important; border-color: #34c759 !important; }
+        .flashcard.unlearned-bg { background-color: #ffe5e5 !important; border-color: #ff3b30 !important; }
 
-        /* Class hiệu ứng mờ dần thu nhỏ khi ẩn đi */
-        .flashcard.card-exit {
-            opacity: 0 !important;
-            transform: scale(0.92) translateY(-10px) !important;
-        }
+        .flashcard.card-exit { opacity: 0 !important; transform: scale(0.85) translateY(-20px) !important; }
+        .flashcard.card-enter { animation: popInCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 
-        /* Class hiệu ứng nổi lên mượt mà khi hiện thẻ mới */
-        .flashcard.card-enter {
-            animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-
-        @keyframes popIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95) translateY(12px);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
+        @keyframes popInCard {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
@@ -197,39 +229,18 @@
         .meaning-text { font-size: 19px; color: var(--text-main); font-weight: 500; }
 
         .related-box {
-            margin-top: 12px;
-            padding: 10px;
-            background: rgba(0, 122, 255, 0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(0, 122, 255, 0.15);
-            text-align: left;
-            max-height: 130px;
-            overflow-y: auto;
+            margin-top: 12px; padding: 10px; background: rgba(0, 122, 255, 0.05);
+            border-radius: 12px; border: 1px solid rgba(0, 122, 255, 0.15);
+            text-align: left; max-height: 130px; overflow-y: auto;
         }
-        .related-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 6px;
-        }
-        .related-item {
-            font-size: 13px;
-            padding: 4px 0;
-            border-bottom: 1px dashed #e5e5ea;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        .related-title { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+        .related-item { font-size: 13px; padding: 4px 0; border-bottom: 1px dashed #e5e5ea; display: flex; justify-content: space-between; align-items: center; }
         .related-item:last-child { border-bottom: none; }
         .related-hanzi { font-weight: 700; color: var(--text-main); font-size: 14px; }
         .related-py { color: var(--danger); font-size: 12px; }
         .related-meaning { color: var(--text-sub); font-size: 12px; }
 
-        .highlight-char {
-            color: #ff3b30;
-            font-size: 15px;
-            font-weight: 800;
-        }
+        .highlight-char { color: #ff3b30; font-size: 15px; font-weight: 800; }
 
         .click-hint { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
@@ -241,29 +252,24 @@
         .btn-speak { background: #e4f2ff; color: var(--primary); }
 
         .action-btns { display: flex; gap: 12px; }
-        .btn-know { background: #e4f9e8; color: var(--success); }
-        .btn-unknow { background: #ffe5e5; color: var(--danger); }
+        .btn-know { background: #e4f9e8; color: var(--success); box-shadow: 0 4px 12px rgba(52,199,89,0.2); }
+        .btn-unknow { background: #ffe5e5; color: var(--danger); box-shadow: 0 4px 12px rgba(255,59,48,0.2); }
         .btn-undo { background: #e5e5ea; color: #3a3a3c; padding: 10px; font-size: 14px; margin-top: 8px; border-radius: 12px; }
         .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); }
 
-        .streak-card { background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; }
+        .streak-card { background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; box-shadow: 0 8px 20px rgba(0,122,255,0.3); transition: transform 0.2s;}
+        .streak-card:hover { transform: translateY(-3px); }
         .streak-number { font-size: 32px; font-weight: 800; }
 
         .detail-list { margin-top: 12px; max-height: 180px; overflow-y: auto; }
         .detail-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 
-        .duplicate-alert {
-            background: #fff9e6; border: 1px solid #ffe0b2; border-radius: 12px;
-            padding: 12px; margin-bottom: 12px; display: none;
-        }
+        .duplicate-alert { background: #fff9e6; border: 1px solid #ffe0b2; border-radius: 12px; padding: 12px; margin-bottom: 12px; display: none; }
         .duplicate-alert-title { font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 4px; }
         .duplicate-info { font-size: 13px; color: var(--text-main); margin-bottom: 8px; }
 
         .vocab-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; margin-top: 8px; }
-        .vocab-item {
-            background: var(--bg-system); padding: 12px 14px; border-radius: 12px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .vocab-item { background: var(--bg-system); padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
         .vocab-item-left { display: flex; flex-direction: column; }
         .vocab-item-hanzi { font-size: 20px; font-weight: 700; color: var(--text-main); }
         .vocab-item-sub { font-size: 12px; color: var(--text-sub); }
@@ -273,18 +279,20 @@
         .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
         .setting-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translate(-50%, -20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body>
+
+<!-- HIỆU ỨNG CHÀO MỪNG -->
+<div class="welcome-overlay" id="welcomeOverlay">
+    <div class="welcome-content">
+        <div class="welcome-icon" id="welcomeIcon">🌅</div>
+        <div class="welcome-text" id="welcomeText">Chào buổi sáng!</div>
+        <div class="welcome-date" id="welcomeDate">Ngày 16/10</div>
+    </div>
+</div>
 
 <div class="toast-notification" id="toastMsg">✓ Đã thêm từ thành công!</div>
 
@@ -384,7 +392,7 @@
                     <div class="setting-sub">Tự phát âm Chữ Hán mỗi lần lướt đến từ mới</div>
                 </div>
                 <div>
-                    <input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px;">
+                    <input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);">
                 </div>
             </div>
 
@@ -534,6 +542,44 @@
         return d.toISOString().split('T')[0];
     }
 
+    // ----- LOGIC HIỂN THỊ CHÀO MỪNG -----
+    function showWelcomeGreeting() {
+        const overlay = document.getElementById('welcomeOverlay');
+        const iconEl = document.getElementById('welcomeIcon');
+        const textEl = document.getElementById('welcomeText');
+        const dateEl = document.getElementById('welcomeDate');
+
+        const now = new Date();
+        const hour = now.getHours();
+        
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const dateStr = `${day}/${month}`;
+
+        let greeting = "";
+        let icon = "";
+
+        if (hour >= 5 && hour < 12) {
+            greeting = "Chào buổi sáng!";
+            icon = "🌅";
+        } else if (hour >= 12 && hour < 18) {
+            greeting = "Chào buổi chiều!";
+            icon = "☀️";
+        } else {
+            greeting = "Chào buổi tối!";
+            icon = "🌙";
+        }
+
+        iconEl.innerText = icon;
+        textEl.innerText = greeting;
+        dateEl.innerText = `Hôm nay là ngày ${dateStr}`;
+
+        // Tự động mờ đi sau 2.2 giây
+        setTimeout(() => {
+            overlay.classList.add('hidden');
+        }, 2200);
+    }
+
     setInterval(() => {
         const today = getTodayKey();
         if (!dailyStats[today]) {
@@ -579,12 +625,15 @@
         const toast = document.getElementById('toastMsg');
         toast.innerText = msg;
         toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 1000);
+        setTimeout(() => { toast.style.display = 'none'; }, 1500);
     }
 
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
+        // Dùng setTimeout nhỏ để trigger CSS transition mượt hơn
+        setTimeout(() => {
+            document.getElementById(pageId).classList.add('active');
+        }, 10);
 
         if (pageId === 'page-home') updateUI();
         if (pageId === 'page-time-stats') renderTimeStats(currentRange);
@@ -669,7 +718,8 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 cutout: '72%',
-                plugins: { legend: { display: false } }
+                plugins: { legend: { display: false } },
+                animation: { animateScale: true, animateRotate: true }
             }
         });
     }
@@ -706,7 +756,6 @@
         document.getElementById('btn30').classList.toggle('active', rangeDays === 30);
         document.getElementById('btn90').classList.toggle('active', rangeDays === 90);
 
-        // -- TÍNH TỔNG NGÀY & TỔNG THỜI GIAN ALL-TIME --
         const activeDays = Object.keys(dailyStats).filter(key => dailyStats[key].seconds > 0 || dailyStats[key].wordsReviewed > 0).length;
         document.getElementById('totalDaysCount').innerText = `${activeDays} Ngày`;
 
@@ -727,7 +776,6 @@
         }
         document.getElementById('totalTimeCount').innerText = totalTimeDisplay;
 
-        // -- RENDER BIỂU ĐỒ & CHI TIẾT DƯỚI DẠNG DANH SÁCH (TÙY CHỌN SỐ NGÀY) --
         const labels = [];
         const minutesData = [];
         const wordsData = [];
@@ -776,7 +824,8 @@
                 scales: {
                     x: { grid: { display: false }, ticks: { font: { size: 10 } } },
                     y: { grid: { color: '#e5e5ea' }, ticks: { font: { size: 10 } } }
-                }
+                },
+                animation: { duration: 800, easing: 'easeOutQuart' }
             }
         });
     }
@@ -943,7 +992,6 @@
 
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
-    /* HÀM TÔ NỔI BẬT CHỮ HÁN CÓ KÝ TỰ TRÙNG KHỚP */
     function highlightChars(text, matchChars) {
         return text.split('').map(char => {
             if (matchChars.includes(char)) {
@@ -953,7 +1001,6 @@
         }).join('');
     }
 
-    /* HÀM SO SÁNH VÀ HIỂN THỊ CÁC TỪ CÓ CHỮ GIỐNG NHAU (ĐÃ TÔ NỔI BẬT) */
     function renderRelatedWords(currentHanzi) {
         const container = document.getElementById('relatedContainer');
         const listElem = document.getElementById('relatedList');
@@ -965,7 +1012,6 @@
         }
 
         const chars = currentHanzi.split('');
-
         const matches = vocabList.filter(item => {
             if (item.hanzi === currentHanzi) return false;
             return chars.some(char => item.hanzi.includes(char));
@@ -1048,7 +1094,6 @@
         renderCardUI(selected);
     }
 
-    /* CHUYỂN THẺ MƯỢT MÀ VỚI HIỆU ỨNG POP-IN */
     function markCard(isLearned) {
         if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return;
         isAnimating = true;
@@ -1074,7 +1119,6 @@
 
         const cardElem = document.getElementById('flashcard');
         
-        /* Đổi màu nền nhẹ và chạy hiệu ứng mờ dần thu nhỏ */
         if (isLearned) {
             cardElem.classList.add('learned-bg');
         } else {
@@ -1086,14 +1130,13 @@
             cardElem.classList.remove('learned-bg', 'unlearned-bg', 'card-exit');
             loadNextCard();
             
-            /* Thêm hiệu ứng trượt nhẹ phóng to từ dưới lên cho thẻ mới */
             cardElem.classList.add('card-enter');
             
             setTimeout(() => {
                 cardElem.classList.remove('card-enter');
                 isAnimating = false;
-            }, 350);
-        }, 200);
+            }, 400);
+        }, 250);
     }
 
     function undoPreviousCard() {
@@ -1160,6 +1203,7 @@
     }
 
     window.onload = function() {
+        showWelcomeGreeting(); // Khởi chạy hiệu ứng chào mừng khi mở web
         initChart();
         updateUI();
     };
