@@ -396,9 +396,15 @@
     <div id="page-time-stats" class="page">
         <button class="btn-back" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
 
-        <div class="streak-card">
-            <div style="font-size: 13px; opacity: 0.9;">TỔNG SỐ NGÀY ĐÃ HỌC</div>
-            <div class="streak-number" id="totalDaysCount">0 Ngày</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px;">
+            <div class="streak-card" style="padding: 14px;">
+                <div style="font-size: 11px; opacity: 0.9;">TỔNG SỐ NGÀY HỌC</div>
+                <div class="streak-number" id="totalDaysCount" style="font-size: 22px;">0 Ngày</div>
+            </div>
+            <div class="streak-card" style="padding: 14px; background: linear-gradient(135deg, #34c759, #28a745);">
+                <div style="font-size: 11px; opacity: 0.9;">TỔNG THỜI GIAN HỌC</div>
+                <div class="streak-number" id="totalTimeCount" style="font-size: 22px;">0 Phút</div>
+            </div>
         </div>
         
         <div class="card-box">
@@ -537,7 +543,6 @@
         localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
     }, 1000);
 
-    /* GIỮ NGUYÊN HÀM GIỌNG ĐỌC BAN ĐẦU CỦA BẠN */
     function speakText(text) {
         if (!text || !('speechSynthesis' in window)) return;
         window.speechSynthesis.cancel();
@@ -701,9 +706,28 @@
         document.getElementById('btn30').classList.toggle('active', rangeDays === 30);
         document.getElementById('btn90').classList.toggle('active', rangeDays === 90);
 
+        // -- TÍNH TỔNG NGÀY & TỔNG THỜI GIAN ALL-TIME --
         const activeDays = Object.keys(dailyStats).filter(key => dailyStats[key].seconds > 0 || dailyStats[key].wordsReviewed > 0).length;
         document.getElementById('totalDaysCount').innerText = `${activeDays} Ngày`;
 
+        let totalSecondsAllTime = 0;
+        Object.values(dailyStats).forEach(stat => {
+            totalSecondsAllTime += (stat.seconds || 0);
+        });
+        
+        let totalTimeDisplay = "0 Phút";
+        if (totalSecondsAllTime < 60) {
+            totalTimeDisplay = `${totalSecondsAllTime} Giây`;
+        } else if (totalSecondsAllTime < 3600) {
+            totalTimeDisplay = `${Math.floor(totalSecondsAllTime / 60)} Phút`;
+        } else {
+            const h = Math.floor(totalSecondsAllTime / 3600);
+            const m = Math.floor((totalSecondsAllTime % 3600) / 60);
+            totalTimeDisplay = `${h} giờ ${m} phút`;
+        }
+        document.getElementById('totalTimeCount').innerText = totalTimeDisplay;
+
+        // -- RENDER BIỂU ĐỒ & CHI TIẾT DƯỚI DẠNG DANH SÁCH (TÙY CHỌN SỐ NGÀY) --
         const labels = [];
         const minutesData = [];
         const wordsData = [];
