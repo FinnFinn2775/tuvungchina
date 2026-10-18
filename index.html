@@ -4,33 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title data-i18n="app_title">Ôn Tập Tiếng Trung</title>
+    <!-- Thư viện Pinyin & Chart.js -->
     <script src="https://unpkg.com/pinyin-pro"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* BIẾN CSS ĐƯỢC THIẾT KẾ ĐỂ ĐỔI MÀU THEO THỜI TIẾT */
         :root {
-            --primary: #007aff; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
-            --bg-system: #f2f2f7; --card-bg: #ffffff; --text-main: #1c1c1e; --text-sub: #8e8e93; --border: #e5e5ea;
+            --primary: #007aff;
+            --success: #34c759;
+            --danger: #ff3b30;
+            --warning: #ff9500;
+            --bg-system: #f2f2f7;
+            --card-bg: #ffffff;
+            --text-main: #1c1c1e;
+            --text-sub: #8e8e93;
+            --border: #e5e5ea;
+            --input-bg: #fafafa;
+            --item-bg: #f2f2f7;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.8s, color 0.8s; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Arial, sans-serif;
             background-color: var(--bg-system); color: var(--text-main); margin: 0;
             padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden;
         }
 
-        /* --- CANVAS VẬT LÝ --- */
+        /* ----- CANVAS VẬT LÝ HẠT THỜI TIẾT (120FPS) ----- */
         #physicsCanvas {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 9998; opacity: 0.65;
         }
 
-        /* --- CHÀO MỪNG --- */
+        /* ----- HIỆU ỨNG CHÀO MỪNG (WELCOME OVERLAY) ----- */
         .welcome-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            background: var(--card-bg); /* Đổi theo theme */
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;
-            transition: opacity 0.6s, visibility 0.6s;
+            transition: opacity 0.6s, visibility 0.6s; opacity: 0.96;
         }
         .welcome-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .welcome-content {
@@ -38,9 +52,11 @@
             animation: welcomePopUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.1s;
         }
         @keyframes welcomePopUp { to { transform: translateY(0) scale(1); opacity: 1; } }
-        .welcome-icon { font-size: 64px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+        .welcome-icon { font-size: 60px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
         .welcome-text { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 4px; padding: 0 16px; }
-        .welcome-event { font-size: 16px; font-weight: 700; color: var(--danger); margin-top: 8px; animation: pulse 2s infinite; display: none; }
+        .welcome-weather-desc { font-size: 15px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
+        .welcome-event { font-size: 16px; font-weight: 700; color: var(--danger); margin-top: 8px; animation: pulse 2s infinite; display: none;}
+        
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
@@ -49,442 +65,723 @@
         .stagger-item.show { visibility: visible; animation: popInStagger 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popInStagger { to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        .card-box { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.03); }
+        .card-box { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid var(--border); }
         .page { display: none; opacity: 0; transform: translateY(16px) scale(0.98); transition: opacity 0.4s, transform 0.4s; width: 100%; }
         .page.active { display: flex; flex-direction: column; gap: 16px; opacity: 1; transform: translateY(0) scale(1); }
-        .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; }
 
-        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item { transition: transform 0.2s, box-shadow 0.2s, background 0.2s; cursor: pointer; }
-        button:active, .btn-menu:active, .stat-item:active, .btn-back:active, .vocab-item:active { transform: scale(0.95); }
-        .btn-back { background: rgba(120, 120, 128, 0.12); color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none; }
-        
+        .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; color: var(--text-main); }
+
+        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+        button:active, .btn-menu:active, .stat-item:active, .segment-btn:active, .btn-back:active, .vocab-item:active { transform: scale(0.95) !important; }
+
+        .btn-back { background: var(--item-bg); color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none; }
+        .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 10000; display: none; animation: fadeInDown 0.3s ease; }
+
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; text-align: center; }
-        .stat-item { background: var(--bg-system); padding: 8px 2px; border-radius: 12px; }
-        .stat-item:hover { background: #e5e5ea; transform: translateY(-2px); }
-        .stat-number { font-size: 17px; font-weight: 700; }
+        .stat-item { background: var(--item-bg); padding: 8px 2px; border-radius: 12px; border: 1px solid var(--border); }
+        .stat-number { font-size: 17px; font-weight: 700; color: var(--text-main); }
         .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
         
         .chart-wrapper { position: relative; width: 160px; height: 160px; margin: 0 auto; }
         .chart-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
         .chart-center-val { font-size: 22px; font-weight: 800; color: var(--primary); }
         .chart-center-lbl { font-size: 10px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; }
+        .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
 
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
-        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; background: #fafafa; outline: none; font-family: inherit; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; background: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; font-family: inherit; }
         .input-group textarea { resize: vertical; min-height: 60px; }
-        .input-group input:focus, .input-group textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; }
-        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-warning { background: var(--warning); color: white; }
-        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); }
+        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid var(--border); }
         
         .backup-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
         .backup-row { display: flex; gap: 8px; }
-        .btn-backup { background: rgba(0, 122, 255, 0.1); color: var(--primary); padding: 12px 8px; font-size: 13px; border-radius: 12px; flex: 1; font-weight: 600; }
+        .btn-backup { background: var(--item-bg); color: var(--primary); padding: 12px 8px; font-size: 13px; border-radius: 12px; flex: 1; font-weight: 600; border: 1px solid var(--border);}
         .btn-reset { background: rgba(255, 59, 48, 0.1); color: var(--danger); padding: 12px 8px; font-size: 13px; border-radius: 12px; font-weight: 600; }
+
+        .segment-control { display: flex; background: var(--border); padding: 3px; border-radius: 10px; margin-bottom: 12px; }
+        .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; }
+        .segment-btn.active { background: var(--card-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
 
         .swipe-container { position: relative; width: 100%; min-height: 340px; }
         .flashcard { width: 100%; min-height: 340px; position: relative; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); padding: 48px 20px 24px 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; user-select: none; transition: all 0.3s; }
-        .flashcard.learned-bg { background-color: #e4f9e8 !important; border-color: #34c759 !important; }
-        .flashcard.unlearned-bg { background-color: #ffe5e5 !important; border-color: #ff3b30 !important; }
+        .flashcard:active { transform: scale(0.96); }
+        .flashcard.learned-bg { background-color: rgba(52,199,89,0.15) !important; border-color: var(--success) !important; }
+        .flashcard.unlearned-bg { background-color: rgba(255,59,48,0.15) !important; border-color: var(--danger) !important; }
         .flashcard.card-exit { opacity: 0 !important; transform: scale(0.85) translateY(-20px) !important; }
         .flashcard.card-enter { animation: popInCard 0.4s forwards; }
         @keyframes popInCard { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        .hanzi-display { font-size: 56px; font-weight: 700; margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
+        .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
         .card-details { display: none; width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); animation: fadeIn 0.3s ease; }
         .card-details.show { display: block; }
         .pinyin-text { font-size: 24px; color: var(--danger); font-weight: 600; margin-bottom: 6px; }
-        .meaning-text { font-size: 19px; font-weight: 500; }
-        .example-box { margin-top: 10px; padding: 10px 12px; background: rgba(255, 149, 0, 0.08); border-radius: 12px; border-left: 3px solid var(--warning); text-align: left; font-size: 14px; color: #48484a; }
+        .meaning-text { font-size: 19px; color: var(--text-main); font-weight: 500; }
+        
+        .example-box { margin-top: 10px; padding: 10px 12px; background: rgba(255, 149, 0, 0.1); border-radius: 12px; border-left: 3px solid var(--warning); text-align: left; font-size: 14px; color: var(--text-main); }
         .example-title { font-size: 11px; font-weight: 700; color: var(--warning); margin-bottom: 3px; }
 
+        .related-box { margin-top: 10px; padding: 10px; background: var(--item-bg); border-radius: 12px; border: 1px solid var(--border); text-align: left; max-height: 120px; overflow-y: auto; }
+        .related-title { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+        .related-item { font-size: 13px; padding: 4px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-main); }
+        .related-item:last-child { border-bottom: none; }
+        .related-hanzi { font-weight: 700; font-size: 14px; }
+        .related-py { color: var(--danger); font-size: 12px; }
+        .related-meaning { color: var(--text-sub); font-size: 12px; }
+
+        .highlight-char { color: var(--danger); font-size: 15px; font-weight: 800; }
+        .click-hint { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
+        .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
         .card-tools { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 10; }
         .btn-tool { width: auto; padding: 5px 8px; font-size: 11px; border-radius: 8px; font-weight: 600; }
+        .btn-edit { background: var(--border); color: var(--primary); }
+        .btn-delete { background: rgba(255,59,48,0.1); color: var(--danger); }
+        .btn-speak { background: rgba(0,122,255,0.1); color: var(--primary); }
         .action-btns { display: flex; gap: 12px; }
-        .btn-know { background: #e4f9e8; color: var(--success); }
-        .btn-unknow { background: #ffe5e5; color: var(--danger); }
-        
+        .btn-know { background: rgba(52,199,89,0.15); color: var(--success); }
+        .btn-unknow { background: rgba(255,59,48,0.15); color: var(--danger); }
+        .btn-undo { background: var(--item-bg); color: var(--text-main); padding: 10px; font-size: 14px; margin-top: 8px; border-radius: 12px; border: 1px solid var(--border);}
+        .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); }
+
+        .streak-card { background: linear-gradient(135deg, var(--primary), #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
+        .streak-number { font-size: 20px; font-weight: 800; }
+
+        .compare-box { background: var(--card-bg); border-radius: 16px; padding: 14px; margin-bottom: 4px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .compare-title { font-size: 12px; font-weight: 600; color: var(--text-sub); text-transform: uppercase; }
+        .compare-val { font-size: 16px; font-weight: 700; margin-top: 2px; color: var(--text-main); }
+        .compare-tag { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+        .tag-up { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+        .tag-down { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
+        .tag-equal { background: var(--border); color: var(--text-sub); }
+
+        .detail-list { margin-top: 12px; max-height: 180px; overflow-y: auto; }
+        .detail-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--text-main); }
         .vocab-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; margin-top: 8px; }
-        .vocab-item { background: var(--bg-system); padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .vocab-item { background: var(--item-bg); padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid var(--border);}
         .vocab-item-left { display: flex; flex-direction: column; flex: 1; padding-right: 8px; }
-        .vocab-item-hanzi { font-size: 19px; font-weight: 700; }
+        .vocab-item-hanzi { font-size: 19px; font-weight: 700; color: var(--text-main); }
         .vocab-item-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
-        .vocab-item-eg { font-size: 12px; color: #555; background: #e8e8ed; padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: inline-block; }
+        .vocab-item-eg { font-size: 12px; color: var(--text-main); background: var(--border); padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: inline-block; word-break: break-word; }
+        .vocab-item-actions { display: flex; gap: 6px; align-items: center; }
+
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
+        .setting-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body>
 
+<!-- CANVAS VẬT LÝ HẠT (Chạy mượt Delta Time 120 FPS) -->
 <canvas id="physicsCanvas"></canvas>
 
-<!-- CHÀO MỪNG -->
+<!-- HIỆU ỨNG CHÀO MỪNG -->
 <div class="welcome-overlay" id="welcomeOverlay">
     <div class="welcome-content">
         <div class="welcome-icon" id="welcomeIcon">🌅</div>
         <div class="welcome-text" id="welcomeText">Chào buổi sáng</div>
+        <div class="welcome-weather-desc" id="welcomeWeatherDesc">Hà Nội: Đang lấy dữ liệu...</div>
         <div class="welcome-event" id="welcomeEvent"></div>
     </div>
 </div>
 
+<div class="toast-notification" id="toastMsg">✓ Thành công!</div>
+
 <div class="iphone-container">
-    <!-- 1. HOME -->
+
+    <!-- 1. MÀN HÌNH CHÍNH -->
     <div id="page-home" class="page active">
         <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
+        
         <div class="card-box stagger-item physical-obstacle">
             <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Từ Vựng</h3>
             <div class="stats-grid">
-                <div class="stat-item"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label">Tổng từ</div></div>
-                <div class="stat-item"><div class="stat-number" id="learnedCount" data-val="0" style="color: var(--success);">0</div><div class="stat-label">Đã thuộc</div></div>
-                <div class="stat-item"><div class="stat-number" id="unlearnedCount" data-val="0" style="color: var(--danger);">0</div><div class="stat-label">Chưa thuộc</div></div>
-                <div class="stat-item"><div class="stat-number" id="unseenCount" data-val="0" style="color: #8e8e93;">0</div><div class="stat-label">Chưa xem</div></div>
+                <div class="stat-item" onclick="openVocabListFilter('all')"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label" data-i18n="stat_total">Tổng từ</div></div>
+                <div class="stat-item" onclick="openVocabListFilter('learned')"><div class="stat-number" id="learnedCount" data-val="0" style="color: var(--success);">0</div><div class="stat-label" data-i18n="stat_learned">Đã thuộc</div></div>
+                <div class="stat-item" onclick="openVocabListFilter('unlearned')"><div class="stat-number" id="unlearnedCount" data-val="0" style="color: var(--danger);">0</div><div class="stat-label" data-i18n="stat_unlearned">Chưa thuộc</div></div>
+                <div class="stat-item" onclick="openVocabListFilter('unseen')"><div class="stat-number" id="unseenCount" data-val="0" style="color: #8e8e93;">0</div><div class="stat-label" data-i18n="stat_unseen">Chưa xem</div></div>
             </div>
             <div class="chart-wrapper">
                 <canvas id="vocabChart"></canvas>
-                <div class="chart-center-text"><div class="chart-center-val" id="chartPercent" data-val="0">0%</div><div class="chart-center-lbl">Đã xem</div></div>
+                <div class="chart-center-text"><div class="chart-center-val" id="chartPercent" data-val="0">0%</div><div class="chart-center-lbl" data-i18n="stat_seen">Đã xem</div></div>
             </div>
         </div>
-        <button class="btn-menu stagger-item physical-obstacle" style="background: #e4f2ff; border: 1px solid #b3d7ff;" onclick="startStudy('today')">
+
+        <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('today')">
             <span style="color: var(--primary); font-weight:700;"><span data-i18n="btn_today">✨ Chỉ Ôn Từ Mới Thêm HÔM NAY</span> (<span id="todayCountBadge">0</span>)</span> <span>➔</span>
         </button>
         <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('unlearned')"><span data-i18n="btn_unlearned">🎯 Chỉ Ôn Từ CHƯA THUỘC</span> <span>➔</span></button>
         <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('all')"><span data-i18n="btn_all">🎴 Ôn Tập Tất Cả Từ</span> <span>➔</span></button>
         <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-add')"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-list')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
-    </div>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="openVocabListFilter('all')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-time-stats')"><span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-settings')"><span data-i18n="btn_settings">⚙️ Cài Đặt Hệ Thống & Hiệu ứng</span> <span>➔</span></button>
 
-    <!-- 2. ADD WORD -->
-    <div id="page-add" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
-        <div class="card-box physical-obstacle">
-            <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle">Thêm Từ Vựng Mới</h3>
-            <div class="input-group"><label>Chữ Hán:</label><input type="text" id="hanziInput" oninput="autoPinyin()"></div>
-            <div class="input-group"><label>Bính âm (Tự động):</label><input type="text" id="pinyinInput" readonly></div>
-            <div class="input-group"><label>Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput"></div>
-            <div class="input-group"><label>Ví dụ (Tùy chọn):</label><textarea id="exampleInput"></textarea></div>
-            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
-            <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
+        <div class="backup-group stagger-item physical-obstacle">
+            <div class="backup-row">
+                <button class="btn-backup physical-obstacle" onclick="exportData()" data-i18n="btn_backup">📥 Tải sao lưu về máy</button>
+                <button class="btn-backup physical-obstacle" onclick="document.getElementById('importFile').click()" data-i18n="btn_restore">📤 Khôi phục dữ liệu</button>
+                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
+            </div>
+            <button class="btn-reset physical-obstacle" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset số lần hiện của tất cả từ</button>
         </div>
     </div>
 
-    <!-- 3. LIST -->
+    <!-- 2. MÀN HÌNH CÀI ĐẶT -->
+    <div id="page-settings" class="page">
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <div class="card-box physical-obstacle">
+            <h3 style="margin: 0 0 14px 0; font-size: 18px;" data-i18n="settings_title">Cài Đặt Hệ Thống</h3>
+            
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label" data-i18n="effect_title">Chế độ Hiệu ứng (105 loại)</div>
+                    <div class="setting-sub" data-i18n="effect_sub">Chọn hiệu ứng vật lý rơi trên màn hình</div>
+                </div>
+                <div style="width: 140px;">
+                    <select id="effectThemeSelect" onchange="changeEffectMode(this.value)">
+                        <option value="auto">Auto: Thời tiết HN</option>
+                        <option value="random">Ngẫu nhiên mỗi lần mở</option>
+                        <!-- Danh sách 100+ hiệu ứng sẽ được JS load tự động vào đây -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label" data-i18n="lang_title">Ngôn ngữ hiển thị</div>
+                    <div class="setting-sub" data-i18n="lang_sub">Chọn ngôn ngữ cho ứng dụng</div>
+                </div>
+                <div style="width: 120px;">
+                    <select id="languageSelect" onchange="changeLanguage(this.value)">
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="zh">中文 (Chinese)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label" data-i18n="speed_title">Tốc độ đọc giọng nói</div>
+                    <div class="setting-sub" data-i18n="speed_sub">Áp dụng cho tất cả flashcard</div>
+                </div>
+                <div style="width: 100px;">
+                    <select id="speechRateSelect" onchange="updateSpeechRate(this.value)">
+                        <option value="0.5">0.5x</option>
+                        <option value="1" selected>1.0x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="2">2.0x</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label" data-i18n="auto_speech_title">Tự động đọc khi đổi thẻ</div>
+                </div>
+                <div>
+                    <input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);">
+                </div>
+            </div>
+
+            <button class="btn-primary physical-obstacle" style="margin-top: 16px;" onclick="testSpeech()" data-i18n="btn_test_speech">🔊 Thử giọng đọc (你好)</button>
+        </div>
+    </div>
+
+    <!-- 3. MÀN HÌNH THỐNG KÊ THỜI GIAN -->
+    <div id="page-time-stats" class="page">
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px;">
+            <div class="streak-card physical-obstacle" style="padding: 12px;">
+                <div style="font-size: 10px; opacity: 0.9;" data-i18n="total_days">TỔNG NGÀY HỌC</div>
+                <div class="streak-number" id="totalDaysCount">0</div>
+            </div>
+            <div class="streak-card physical-obstacle" style="padding: 12px; background: linear-gradient(135deg, #34c759, #28a745);">
+                <div style="font-size: 10px; opacity: 0.9;" data-i18n="total_time">TỔNG THỜI GIAN HỌC</div>
+                <div class="streak-number" id="totalTimeCount">0</div>
+            </div>
+        </div>
+
+        <div class="compare-box physical-obstacle">
+            <div>
+                <div class="compare-title" data-i18n="compare_title">So với ngày hôm qua</div>
+                <div class="compare-val" id="compareDiffVal">0 phút</div>
+            </div>
+            <div class="compare-tag tag-equal" id="compareTag"><span id="compareTagIcon">➖</span> <span id="compareTagPercent">0%</span></div>
+        </div>
+        
+        <div class="card-box physical-obstacle">
+            <div class="segment-control physical-obstacle">
+                <button class="segment-btn active" id="btn7" onclick="renderTimeStats(7)" data-i18n="time_7">7 Ngày</button>
+                <button class="segment-btn" id="btn30" onclick="renderTimeStats(30)" data-i18n="time_30">30 Ngày</button>
+                <button class="segment-btn" id="btn90" onclick="renderTimeStats(90)" data-i18n="time_90">90 Ngày</button>
+            </div>
+            <div class="bar-chart-wrapper"><canvas id="timeBarChart"></canvas></div>
+            <div class="detail-list" id="detailStatsList"></div>
+        </div>
+    </div>
+
+    <!-- 4. MÀN HÌNH THÊM TỪ -->
+    <div id="page-add" class="page">
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <div class="card-box physical-obstacle">
+            <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle" data-i18n="add_title">Thêm Từ Vựng Mới</h3>
+            
+            <div class="input-group">
+                <label data-i18n="lbl_hanzi">Chữ Hán:</label>
+                <input type="text" id="hanziInput" data-i18n-ph="ph_hanzi" oninput="autoPinyin(); checkDuplicateHanzi();">
+            </div>
+            <div class="duplicate-alert" id="duplicateBox" style="display:none; background: rgba(255,149,0,0.1); border: 1px solid var(--warning); padding:10px; border-radius:12px; margin-bottom:12px;">
+                <div style="font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 4px;" data-i18n="dup_warn">⚠️ Từ này đã tồn tại!</div>
+                <div style="font-size: 13px; color: var(--text-main); margin-bottom: 8px;" id="duplicateText"></div>
+                <button class="btn-warning physical-obstacle" style="padding: 8px; font-size: 13px;" onclick="loadDuplicateToEdit()" data-i18n="btn_edit_old">✏️ Sửa từ cũ này</button>
+            </div>
+            <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" readonly data-i18n-ph="ph_pinyin"></div>
+            <div class="input-group"><label data-i18n="lbl_meaning">Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput" data-i18n-ph="ph_meaning"></div>
+            <div class="input-group"><label data-i18n="lbl_example">Ví dụ (Tùy chọn):</label><textarea id="exampleInput" data-i18n-ph="ph_example"></textarea></div>
+            
+            <button class="btn-primary physical-obstacle" id="saveBtn" onclick="addOrUpdateWord()" data-i18n="btn_save_word">Lưu Từ Vựng</button>
+            <button class="btn-back physical-obstacle" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;" data-i18n="btn_cancel">Hủy Chỉnh Sửa</button>
+        </div>
+    </div>
+
+    <!-- 5. DANH SÁCH TỪ -->
     <div id="page-list" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div class="card-box physical-obstacle">
             <h3 style="margin: 0 0 10px 0; font-size: 18px;" id="listTitleHeader">Tất Cả Từ Vựng (<span id="listTotalCount">0</span>)</h3>
-            <div class="input-group" style="margin-bottom: 8px;"><input type="text" id="searchVocabInput" placeholder="🔍 Tìm kiếm..." oninput="renderVocabList()"></div>
+            <div class="input-group" style="margin-bottom: 8px;"><input type="text" id="searchVocabInput" data-i18n-ph="ph_search" oninput="renderVocabList()"></div>
             <div class="vocab-list-container" id="vocabListContainer"></div>
         </div>
     </div>
 
-    <!-- 4. FLASHCARD -->
+    <!-- 6. FLASHCARD -->
     <div id="page-flashcard" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
-        <div class="swipe-container physical-obstacle">
-            <div class="flashcard" id="flashcard">
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <div class="hint-swipe" data-i18n="hint_swipe">Bấm các nút bên dưới để chọn Đã thuộc / Chưa thuộc</div>
+        <div class="swipe-container">
+            <div class="flashcard physical-obstacle" id="flashcard">
+                <div class="card-tools" onclick="event.stopPropagation()">
+                    <button class="btn-tool btn-speak physical-obstacle" onclick="speakCurrentCard()" data-i18n="tool_speak">🔊 Đọc</button>
+                    <button class="btn-tool btn-edit physical-obstacle" onclick="editCurrentCard()" data-i18n="tool_edit">✏️ Sửa</button>
+                    <button class="btn-tool btn-delete physical-obstacle" onclick="deleteCurrentCard()" data-i18n="tool_del">🗑️ Xóa</button>
+                </div>
+                <span class="seen-badge" id="seenCount">Hiện: 0</span>
                 <div class="hanzi-display" id="displayHanzi">Vui lòng thêm từ</div>
+                <div class="click-hint" id="clickHint" data-i18n="click_hint">Bấm vào thẻ để hiện Pinyin & Nghĩa</div>
                 <div class="card-details" id="cardDetails">
                     <div class="pinyin-text" id="displayPinyin"></div>
                     <div class="meaning-text" id="displayMeaning"></div>
-                    <div class="example-box" id="displayExampleBox" style="display:none;">
-                        <div class="example-title">💡 VÍ DỤ:</div>
-                        <div id="displayExampleText"></div>
-                    </div>
+                    <div class="example-box" id="displayExampleBox" style="display:none;"><div class="example-title" data-i18n="lbl_example_tag">💡 VÍ DỤ:</div><div id="displayExampleText"></div></div>
+                    <div class="related-box" id="relatedContainer" style="display:none;" onclick="event.stopPropagation()"><div class="related-title" data-i18n="related_title">🔗 Từ vựng chứa chữ giống:</div><div id="relatedList"></div></div>
                 </div>
             </div>
         </div>
-        <div class="action-btns physical-obstacle">
-            <button class="btn-know" onclick="markCard(true)">👈 Đã thuộc</button>
-            <button class="btn-unknow" onclick="markCard(false)">Chưa thuộc 👉</button>
+        <div class="action-btns">
+            <button class="btn-know physical-obstacle" onclick="markCard(true)" data-i18n="btn_know">👈 Đã thuộc</button>
+            <button class="btn-unknow physical-obstacle" onclick="markCard(false)" data-i18n="btn_unknow">Chưa thuộc 👉</button>
         </div>
+        <button class="btn-undo physical-obstacle" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;" data-i18n="btn_undo">↩ Quay lại từ trước đó</button>
     </div>
+
 </div>
 
 <script>
     const { pinyin } = pinyinPro;
-    let currentLang = 'vi';
+
+    // ----- BỘ TỪ ĐIỂN I18N -----
+    const dict = {
+        vi: {
+            app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Từ Vựng", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Chưa thuộc", stat_unseen: "Chưa xem", stat_seen: "Đã xem",
+            btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_unlearned: "🎯 Chỉ Ôn Từ CHƯA THUỘC", btn_all: "🎴 Ôn Tập Tất Cả Từ", btn_add: "➕ Thêm Từ Vựng Mới",
+            btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống & Hiệu ứng", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
+            btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset số lần hiện của tất cả từ",
+            btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị", lang_sub: "Chọn ngôn ngữ",
+            speed_title: "Tốc độ đọc giọng nói", speed_sub: "Áp dụng cho tất cả flashcard", auto_speech_title: "Tự động đọc khi đổi thẻ",
+            btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
+            compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
+            btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
+            lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
+            hint_swipe: "Bấm nút dưới để chọn Đã thuộc / Chưa thuộc", tool_speak: "🔊 Đọc", tool_edit: "✏️ Sửa", tool_del: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", related_title: "🔗 Từ vựng chứa chữ giống:", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước đó",
+            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật từ thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hết từ ôn!", seen_count: "Hiện:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", effect_title: "Chế độ Hiệu ứng (105 loại)", effect_sub: "Vật lý rơi trên màn hình"
+        },
+        zh: {
+            app_title: "中文复习", stats_title: "词汇统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "未掌握", stat_unseen: "未查看", stat_seen: "已查看",
+            btn_today: "✨ 仅复习今天新增的词汇", btn_unlearned: "🎯 仅复习未掌握的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇",
+            btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 语音、特效与系统设置", btn_time_stats: "📈 时间与进度统计",
+            btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有词汇出现次数",
+            btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言", lang_sub: "选择语言",
+            speed_title: "语音播放速度", speed_sub: "适用于所有抽认卡", auto_speech_title: "切换卡片时自动朗读",
+            btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
+            compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
+            btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
+            lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
+            hint_swipe: "点击下方按钮选择 已掌握 / 未掌握", tool_speak: "🔊 朗读", tool_edit: "✏️ 编辑", tool_del: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", related_title: "🔗 包含相同汉字的词汇:", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "没有更多词汇！", seen_count: "出现:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", effect_title: "特效模式 (105 种)", effect_sub: "屏幕上的物理坠落效果"
+        }
+    };
+
+    let currentLang = localStorage.getItem('my_app_lang') || 'vi';
+    function changeLanguage(lang) {
+        currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage();
+        if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
+    }
+    function applyLanguage() {
+        document.getElementById('languageSelect').value = currentLang; const d = dict[currentLang];
+        document.querySelectorAll('[data-i18n]').forEach(el => { if (d[el.getAttribute('data-i18n')]) el.innerHTML = d[el.getAttribute('data-i18n')]; });
+        document.querySelectorAll('[data-i18n-ph]').forEach(el => { if (d[el.getAttribute('data-i18n-ph')]) el.placeholder = d[el.getAttribute('data-i18n-ph')]; });
+    }
+    function t(key) { return dict[currentLang][key] || key; }
+
+    // ----- DỮ LIỆU APP -----
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
-    let currentCardIndex = -1;
-    let chartInstance = null;
-    let autoSpeechEnabled = true;
+    let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
+    let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
+    let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
+    let currentEffectMode = localStorage.getItem('my_effect_mode') || 'auto';
+    let currentFilter = 'all', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, previousCardState = null, chartInstance = null, timeChartInstance = null, currentRange = 7;
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
+    function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
 
-    // --- HIỆU ỨNG THỜI TIẾT, SỰ KIỆN & VẬT LÝ ---
+    // THỜI GIAN HỌC (CHỈ TÍNH KHI Ở MÀN FLASHCARD)
+    setInterval(() => {
+        const p = document.getElementById('page-flashcard');
+        if (p && p.classList.contains('active') && !document.hidden) {
+            const today = getTodayKey(); if (!dailyStats[today]) dailyStats[today] = { seconds: 0 };
+            dailyStats[today].seconds += 1; localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+        }
+    }, 1000);
+
+    // ----- 105 HIỆU ỨNG VẬT LÝ -----
+    const ALL_EFFECTS = [
+        // 1-10: Thời tiết
+        {id: 1, name: "Nắng Đẹp", emj: ['☀️','✨','🌻']}, {id: 2, name: "Trời Mưa", emj: ['💧','💦','🌧️']}, {id: 3, name: "Tuyết Rơi", emj: ['❄️','⛄','🌨️']}, {id: 4, name: "Nhiều Mây", emj: ['☁️','🫧']}, {id: 5, name: "Sấm Chớp", emj: ['⚡','🌩️']}, {id: 6, name: "Cầu Vồng", emj: ['🌈','✨']}, {id: 7, name: "Gió Cuốn", emj: ['🌪️','🍃']}, {id: 8, name: "Mưa Đá", emj: ['🧊','💧']}, {id: 9, name: "Sương Mù", emj: ['🌫️','☁️']}, {id: 10, name: "Trời Sao", emj: ['🌌','⭐']},
+        // 11-30: Thiên nhiên & Hoa lá
+        {id: 11, name: "Hoa Đào", emj: ['🌸','💮']}, {id: 12, name: "Lá Mùa Thu", emj: ['🍁','🍂']}, {id: 13, name: "Hoa Hồng", emj: ['🌹','🥀']}, {id: 14, name: "Hoa Cúc", emj: ['🌼','🌿']}, {id: 15, name: "Cây Tre", emj: ['🎋','🎍']}, {id: 16, name: "Nấm Rừng", emj: ['🍄','🌲']}, {id: 17, name: "Xương Rồng", emj: ['🌵','☀️']}, {id: 18, name: "Hoa Dâm Bụt", emj: ['🌺','🌴']}, {id: 19, name: "Cỏ Ba Lá", emj: ['🍀','🐞']}, {id: 20, name: "Quả Thông", emj: ['🌰','🌲']},
+        // 21-40: Động vật
+        {id: 21, name: "Bướm Bay", emj: ['🦋','✨']}, {id: 22, name: "Chim Chóc", emj: ['🐦','🕊️']}, {id: 23, name: "Ong Thợ", emj: ['🐝','🍯']}, {id: 24, name: "Cá Bơi", emj: ['🐟','🐠','🫧']}, {id: 25, name: "Mèo Con", emj: ['🐱','🐾']}, {id: 26, name: "Cún Con", emj: ['🐶','🦴']}, {id: 27, name: "Thỏ Trắng", emj: ['🐰','🥕']}, {id: 28, name: "Ếch Xanh", emj: ['🐸','💧']}, {id: 29, name: "Rùa Biển", emj: ['🐢','🌊']}, {id: 30, name: "Sứa Đèn", emj: ['🪼','🫧']},
+        // 31-50: Đồ ăn uống
+        {id: 31, name: "Trà Sữa", emj: ['🧋','✨']}, {id: 32, name: "Cà Phê", emj: ['☕','🍩']}, {id: 33, name: "Dâu Tây", emj: ['🍓','✨']}, {id: 34, name: "Dưa Hấu", emj: ['🍉','☀️']}, {id: 35, name: "Pizza", emj: ['🍕','🧀']}, {id: 36, name: "Hamburger", emj: ['🍔','🍟']}, {id: 37, name: "Sushi", emj: ['🍣','🍙']}, {id: 38, name: "Kem Mát", emj: ['🍦','🍨']}, {id: 39, name: "Kẹo Ngọt", emj: ['🍬','🍭']}, {id: 40, name: "Bánh Kem", emj: ['🎂','🍰']},
+        // 41-60: Vũ trụ & Đồ vật
+        {id: 41, name: "Mặt Trăng", emj: ['🌙','✨']}, {id: 42, name: "Hành Tinh", emj: ['🪐','🌍']}, {id: 43, name: "Tên Lửa", emj: ['🚀','☄️']}, {id: 44, name: "UFO", emj: ['🛸','👽']}, {id: 45, name: "Ngôi Sao Đêm", emj: ['🌟','💫']}, {id: 46, name: "Tiền Vàng", emj: ['💰','🪙']}, {id: 47, name: "Kim Cương", emj: ['💎','✨']}, {id: 48, name: "Sách Mở", emj: ['📖','📚']}, {id: 49, name: "Chìa Khóa", emj: ['🔑','🗝️']}, {id: 50, name: "Đồng Hồ", emj: ['⏰','⏳']},
+        // 61-80: Lễ hội & Phép thuật
+        {id: 61, name: "Valentine", emj: ['💖','💌','💘']}, {id: 62, name: "Halloween", emj: ['🎃','👻','🦇']}, {id: 63, name: "Giáng Sinh", emj: ['🎄','🎅','🎁']}, {id: 64, name: "Năm Mới", emj: ['🎇','🎆','🎊']}, {id: 65, name: "Sinh Nhật", emj: ['🎉','🎈']}, {id: 66, name: "Nhẫn Cưới", emj: ['💍','✨']}, {id: 67, name: "Phép Thuật", emj: ['🪄','✨','🔮']}, {id: 68, name: "Lửa Cháy", emj: ['🔥','💥']}, {id: 69, name: "Đầu Lâu", emj: ['💀','🦴']}, {id: 70, name: "Rồng Lửa", emj: ['🐉','🔥']},
+        // 81-105: Icon Biểu cảm & Sở thích & Random
+        {id: 81, name: "Cười Vui", emj: ['😂','😆']}, {id: 82, name: "Mắt Trái Tim", emj: ['😍','🥰']}, {id: 83, name: "Ngầu Lòi", emj: ['😎','🔥']}, {id: 84, name: "Giận Dữ", emj: ['😡','💢']}, {id: 85, name: "Buồn Khóc", emj: ['😭','💧']}, {id: 86, name: "Ngủ Gật", emj: ['😴','💤']}, {id: 87, name: "Nổ Não", emj: ['🤯','✨']}, {id: 88, name: "Bóng Đá", emj: ['⚽','🥅']}, {id: 89, name: "Bóng Rổ", emj: ['🏀','🔥']}, {id: 90, name: "Âm Nhạc", emj: ['🎵','🎧']},
+        {id: 91, name: "Chơi Game", emj: ['🎮','🕹️']}, {id: 92, name: "Nghệ Thuật", emj: ['🎨','🖌️']}, {id: 93, name: "Nhiếp Ảnh", emj: ['📸','🎞️']}, {id: 94, name: "Máy Bay", emj: ['✈️','☁️']}, {id: 95, name: "Tàu Hỏa", emj: ['🚂','🛤️']}, {id: 96, name: "Xe Đạp", emj: ['🚲','🌳']}, {id: 97, name: "Trái Tim Vỡ", emj: ['💔','🩹']}, {id: 98, name: "Thiên Thần", emj: ['👼','✨']}, {id: 99, name: "Ác Quỷ", emj: ['😈','🔥']}, {id: 100, name: "Phân Xanh", emj: ['💩','🪰']},
+        {id: 101, name: "Gấu Bông", emj: ['🧸','🎀']}, {id: 102, name: "Lốc Xoáy", emj: ['🌀','✨']}, {id: 103, name: "Cỏ Xanh", emj: ['🌿','🌱']}, {id: 104, name: "Trăng Khuyết", emj: ['🌛','✨']}, {id: 105, name: "Hoa Sen", emj: ['🪷','💧']}
+    ];
+
+    function populateEffectSelect() {
+        const sel = document.getElementById('effectThemeSelect');
+        ALL_EFFECTS.forEach(ef => {
+            const opt = document.createElement('option');
+            opt.value = ef.id; opt.innerText = `Hiệu ứng ${ef.id}: ${ef.name} ${ef.emj[0]}`;
+            sel.appendChild(opt);
+        });
+        sel.value = currentEffectMode;
+    }
+    function changeEffectMode(val) {
+        currentEffectMode = val; localStorage.setItem('my_effect_mode', val);
+        applyEffectLogic();
+    }
+
+    // ----- PHYSICS ENGINE (Delta Time 120 FPS) -----
     const canvas = document.getElementById('physicsCanvas');
     const ctx = canvas.getContext('2d');
-    let particles = [];
-    let obstacles = [];
-    let activeEmojis = ['✨', '🌸', '🍃']; // Default
+    let particles = []; let obstacles = []; let activeEmojis = ['✨', '🌸', '🍃'];
+    let lastTime = 0;
 
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        updateObstacles();
-    }
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updateObstacles(); }
     window.addEventListener('resize', resizeCanvas);
 
     function updateObstacles() {
         obstacles = Array.from(document.querySelectorAll('.physical-obstacle')).map(el => {
-            const rect = el.getBoundingClientRect();
-            return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
-        });
+            if(el.offsetParent === null) return null; 
+            const rect = el.getBoundingClientRect(); return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+        }).filter(o => o !== null);
     }
 
     class Particle {
         constructor(emoji) {
-            this.emoji = emoji;
-            this.x = Math.random() * canvas.width;
-            this.y = -30;
-            this.size = Math.random() * 12 + 14;
-            this.vx = (Math.random() - 0.5) * 2;
-            this.vy = Math.random() * 2 + 1;
-            this.rotation = Math.random() * 360;
-            this.vRot = (Math.random() - 0.5) * 4;
-            this.elasticity = 0.5 + Math.random() * 0.3; // Bounciness
+            this.emoji = emoji; this.x = Math.random() * canvas.width; this.y = -50 - Math.random() * 200;
+            this.size = Math.random() * 12 + 16; this.vx = (Math.random() - 0.5) * 1.5; this.vy = Math.random() * 1.5 + 0.5;
+            this.rotation = Math.random() * 360; this.vRot = (Math.random() - 0.5) * 3; this.elasticity = 0.4 + Math.random() * 0.3; 
         }
-        update() {
-            this.vy += 0.08; // Gravity
-            this.x += this.vx;
-            this.y += this.vy;
-            this.rotation += this.vRot;
+        update(dtMultiplier) {
+            this.vy += 0.05 * dtMultiplier; // Trọng lực mượt mà 120Hz/60Hz
+            this.x += this.vx * dtMultiplier; this.y += this.vy * dtMultiplier; this.rotation += this.vRot * dtMultiplier;
 
-            // Collision with obstacles
+            // Va chạm với nút/thẻ
             for (let obs of obstacles) {
-                if (this.x > obs.x && this.x < obs.x + obs.w &&
-                    this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) {
-                    
-                    // Hit top of obstacle
-                    if (this.vy > 0 && this.y < obs.y + 10) {
-                        this.y = obs.y - this.size/2;
-                        this.vy *= -this.elasticity;
-                        this.vx *= 0.8; // Friction
-                        this.vRot *= 0.8;
+                if (this.x > obs.x && this.x < obs.x + obs.w && this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) {
+                    if (this.vy > 0 && this.y < obs.y + 15) { 
+                        this.y = obs.y - this.size/2; this.vy *= -this.elasticity; this.vx *= 0.8; this.vRot *= 0.8;
                     }
                 }
             }
-
-            // Reset if out of bounds
             if (this.y > canvas.height + 50) {
-                this.y = -30;
-                this.x = Math.random() * canvas.width;
-                this.vy = Math.random() * 2 + 1;
-                this.vx = (Math.random() - 0.5) * 2;
+                this.y = -50; this.x = Math.random() * canvas.width; this.vy = Math.random() * 1.5 + 0.5; this.vx = (Math.random() - 0.5) * 1.5;
             }
         }
         draw() {
-            ctx.save();
-            ctx.translate(this.x, this.y);
-            ctx.rotate(this.rotation * Math.PI / 180);
-            ctx.font = `${this.size}px Arial`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(this.emoji, 0, 0);
-            ctx.restore();
+            ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation * Math.PI / 180);
+            ctx.font = `${this.size}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(this.emoji, 0, 0); ctx.restore();
         }
     }
 
-    function animatePhysics() {
+    function animatePhysics(time) {
+        if (!lastTime) lastTime = time;
+        let dt = time - lastTime; lastTime = time;
+        if(dt > 100) dt = 16.66; // Cứu lag
+        const dtMultiplier = dt / 16.66; // 1 ở 60fps, 0.5 ở 120fps
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        updateObstacles(); // Continuously update in case scrolling/animations move them
-        particles.forEach(p => { p.update(); p.draw(); });
+        if(Math.random() < 0.1) updateObstacles(); // Cập nhật rải rác để giảm CPU
+        particles.forEach(p => { p.update(dtMultiplier); p.draw(); });
         requestAnimationFrame(animatePhysics);
     }
 
-    async function initWeatherAndEvents() {
-        const now = new Date();
-        const hour = now.getHours();
-        const d = now.getDate();
-        const m = now.getMonth() + 1;
+    function startParticles() {
+        resizeCanvas(); particles = [];
+        const particleCount = Math.min(window.innerWidth / 12, 35); 
+        for(let i=0; i<particleCount; i++) particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)]));
+    }
 
-        // Xử lý Lời chào Thời gian
+    // ----- THỜI TIẾT THỜI GIAN THỰC & ĐỔI MÀU GIAO DIỆN HÀ NỘI -----
+    async function applyWeatherThemeAndGetEmojis() {
+        const root = document.documentElement;
+        try {
+            // Lấy thời tiết Hà Nội
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`);
+            const data = await res.json();
+            const code = data.current_weather.weathercode;
+            const temp = data.current_weather.temperature;
+            
+            let descVi = "", descZh = "", emojis = [];
+
+            if(code === 0 || code === 1) { // Nắng đẹp
+                descVi = `Trời nắng, trong xanh (${temp}°C)`; descZh = `晴天 (${temp}°C)`; emojis = ['☀️', '✨', '🌻'];
+                root.style.setProperty('--bg-system', '#f0f8ff'); root.style.setProperty('--card-bg', '#ffffff');
+                root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#ff9500');
+                root.style.setProperty('--input-bg', '#fcfcfc'); root.style.setProperty('--item-bg', '#f4f9fd');
+            } 
+            else if(code >= 51 && code <= 67) { // Mưa
+                descVi = `Trời mưa (${temp}°C)`; descZh = `下雨 (${temp}°C)`; emojis = ['💧', '🌧️', '💦'];
+                root.style.setProperty('--bg-system', '#e1e5ea'); root.style.setProperty('--card-bg', '#f4f6f8');
+                root.style.setProperty('--text-main', '#2c3e50'); root.style.setProperty('--primary', '#007aff');
+                root.style.setProperty('--input-bg', '#ffffff'); root.style.setProperty('--item-bg', '#ebf0f5');
+            } 
+            else if(code >= 71 && code <= 86) { // Tuyết / Siêu lạnh
+                descVi = `Trời rét/Tuyết (${temp}°C)`; descZh = `下雪/寒冷 (${temp}°C)`; emojis = ['❄️', '⛄', '🌨️'];
+                root.style.setProperty('--bg-system', '#e0f7fa'); root.style.setProperty('--card-bg', '#ffffff');
+                root.style.setProperty('--text-main', '#006064'); root.style.setProperty('--primary', '#00bcd4');
+                root.style.setProperty('--input-bg', '#f5fdff'); root.style.setProperty('--item-bg', '#e8fafd');
+            } 
+            else if(code >= 95) { // Sấm chớp (Bật DARK MODE)
+                descVi = `Giông bão, Sấm chớp (${temp}°C)`; descZh = `雷暴 (${temp}°C)`; emojis = ['⚡', '🌩️'];
+                root.style.setProperty('--bg-system', '#1c1c1e'); root.style.setProperty('--card-bg', '#2c2c2e');
+                root.style.setProperty('--text-main', '#f2f2f7'); root.style.setProperty('--text-sub', '#aeaeb2');
+                root.style.setProperty('--primary', '#ffcc00'); root.style.setProperty('--border', '#3a3a3c');
+                root.style.setProperty('--input-bg', '#3a3a3c'); root.style.setProperty('--item-bg', '#323234');
+            } 
+            else { // Mây mù / Âm u
+                descVi = `Trời nhiều mây (${temp}°C)`; descZh = `多云 (${temp}°C)`; emojis = ['☁️', '🫧'];
+                root.style.setProperty('--bg-system', '#f2f2f7'); root.style.setProperty('--card-bg', '#ffffff');
+                root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#007aff');
+                root.style.setProperty('--input-bg', '#fafafa'); root.style.setProperty('--item-bg', '#f2f2f7');
+            }
+
+            document.getElementById('welcomeWeatherDesc').innerText = currentLang === 'vi' ? `Thời tiết Hà Nội: ${descVi}` : `河内天气: ${descZh}`;
+            return emojis;
+        } catch(e) {
+            document.getElementById('welcomeWeatherDesc').innerText = "Hà Nội: Lỗi tải thời tiết";
+            return ['☀️', '✨', '🌻'];
+        }
+    }
+
+    async function applyEffectLogic() {
+        const d = new Date(); const day = d.getDate(); const month = d.getMonth() + 1;
+        
+        // 1. Kiểm tra Lễ hội ưu tiên (Valentine, Noel...)
+        let evVi="", evZh="";
+        if (day==14 && month==2) { activeEmojis = ['💖', '🌹', '🥰']; evVi = "Chúc mừng Valentine!"; evZh = "情人节快乐！"; }
+        else if (day==8 && month==3) { activeEmojis = ['💐', '🌸', '👩']; evVi = "Quốc tế Phụ nữ!"; evZh = "妇女节快乐！"; }
+        else if (day==31 && month==10) { activeEmojis = ['🎃', '👻', '🦇']; evVi = "Chúc mừng Halloween!"; evZh = "万圣节快乐！"; }
+        else if ((day==24 || day==25) && month==12) { activeEmojis = ['🎄', '🎅', '❄️']; evVi = "Chúc mừng Giáng sinh!"; evZh = "圣诞节快乐！"; }
+        else if (day==1 && month==1) { activeEmojis = ['🎆', '🎉', '✨']; evVi = "Chúc mừng Năm mới!"; evZh = "新年快乐！"; }
+
+        if (evVi) {
+            const evEl = document.getElementById('welcomeEvent');
+            evEl.innerText = currentLang === 'vi' ? evVi : evZh; evEl.style.display = 'block';
+            startParticles(); return;
+        }
+
+        // 2. Không có lễ -> Xét cài đặt
+        if (currentEffectMode === 'auto') {
+            activeEmojis = await applyWeatherThemeAndGetEmojis();
+        } else if (currentEffectMode === 'random') {
+            const r = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
+            activeEmojis = r.emj;
+            applyWeatherThemeAndGetEmojis(); // Vẫn chỉnh màu nền theo thời tiết
+        } else {
+            const id = parseInt(currentEffectMode);
+            const found = ALL_EFFECTS.find(e => e.id === id);
+            if(found) activeEmojis = found.emj;
+            applyWeatherThemeAndGetEmojis(); // Vẫn chỉnh màu nền
+        }
+        startParticles();
+    }
+
+    async function initWelcome() {
+        populateEffectSelect(); applyLanguage();
+        
+        const now = new Date(); const h = now.getHours(); const d = now.getDate(); const m = now.getMonth() + 1;
         let pVi = "", pZh = "", icon = "";
-        if (hour >= 5 && hour < 12) { pVi = "buổi sáng"; pZh = "早上好"; icon = "🌅"; }
-        else if (hour >= 12 && hour < 13) { pVi = "buổi trưa"; pZh = "中午好"; icon = "☀️"; }
-        else if (hour >= 13 && hour < 18) { pVi = "buổi chiều"; pZh = "下午好"; icon = "☀️"; }
-        else { pVi = "buổi tối"; pZh = "晚上好"; icon = "🌙"; }
-
-        document.getElementById('welcomeText').innerText = currentLang === 'vi' 
-            ? `Chào ${pVi} ngày ${d} tháng ${m}` 
-            : `${pZh} ${m}月${d}日`;
+        if (h >= 5 && h < 12) { pVi = "buổi sáng"; pZh = "早上好"; icon = "🌅"; } else if (h >= 12 && h < 13) { pVi = "buổi trưa"; pZh = "中午好"; icon = "☀️"; } else if (h >= 13 && h < 18) { pVi = "buổi chiều"; pZh = "下午好"; icon = "☀️"; } else { pVi = "buổi tối"; pZh = "晚上好"; icon = "🌙"; }
+        document.getElementById('welcomeText').innerText = currentLang === 'vi' ? `Chào ${pVi} ngày ${d} tháng ${m}` : `${pZh} ${m}月${d}日`;
         document.getElementById('welcomeIcon').innerText = icon;
 
-        // Xử lý Lễ hội (Ưu tiên cao hơn thời tiết)
-        let eventVi = "", eventZh = "";
-        if (d==14 && m==2) { activeEmojis = ['💖', '🌹', '🥰']; eventVi = "Chúc mừng Valentine!"; eventZh = "情人节快乐！"; }
-        else if (d==8 && m==3) { activeEmojis = ['💐', '🌸', '👩']; eventVi = "Mừng ngày Quốc tế Phụ nữ!"; eventZh = "妇女节快乐！"; }
-        else if (d==31 && m==10) { activeEmojis = ['🎃', '👻', '🦇']; eventVi = "Chúc mừng Halloween!"; eventZh = "万圣节快乐！"; }
-        else if ((d==24 || d==25) && m==12) { activeEmojis = ['🎄', '🎅', '❄️']; eventVi = "Chúc mừng Giáng sinh!"; eventZh = "圣诞节快乐！"; }
-        else if (d==1 && m==1) { activeEmojis = ['🎆', '🎉', '✨']; eventVi = "Chúc mừng Năm mới!"; eventZh = "新年快乐！"; }
-
-        if (eventVi) {
-            const evEl = document.getElementById('welcomeEvent');
-            evEl.innerText = currentLang === 'vi' ? eventVi : eventZh;
-            evEl.style.display = 'block';
-            startParticles(); // Start with event emojis
-        } else {
-            // Lấy thời tiết thực tế nếu không có sự kiện
-            fetchWeather();
-        }
+        await applyEffectLogic();
 
         setTimeout(() => {
             document.getElementById('welcomeOverlay').classList.add('hidden');
             const items = document.querySelectorAll('#page-home .stagger-item');
             items.forEach((item, idx) => { item.style.animationDelay = `${idx * 0.12}s`; item.classList.add('show'); });
-            setTimeout(() => { if(chartInstance) updateUI(); }, 300);
+            setTimeout(() => {
+                animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true);
+                if(chartInstance) chartInstance.update();
+            }, 300);
         }, 2500);
+
+        requestAnimationFrame(animatePhysics); // Khởi chạy Loop Vật lý
     }
 
-    async function fetchWeather() {
-        try {
-            // Dùng API miễn phí Open-Meteo cho Hà Nội (có thể nâng cấp lấy định vị người dùng)
-            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`);
-            const data = await res.json();
-            const code = data.current_weather.weathercode;
-
-            if(code === 0 || code === 1) activeEmojis = ['☀️', '✨', '🌻']; // Nắng đẹp
-            else if(code >= 51 && code <= 67) activeEmojis = ['💧', '🌧️', '💦']; // Mưa
-            else if(code >= 71 && code <= 86) activeEmojis = ['❄️', '⛄', '🌨️']; // Tuyết
-            else if(code >= 95) activeEmojis = ['⚡', '🌩️']; // Sấm chớp
-            else if(code >= 2 && code <= 3) activeEmojis = ['☁️', '🫧']; // Mây/Âm u
-            
-            startParticles();
-        } catch(e) {
-            startParticles(); // Chạy default nếu lỗi mạng
-        }
+    // ----- CÁC HÀM APP CŨ -----
+    function animateNumber(elementId, isPct = false) {
+        const obj = document.getElementById(elementId); const end = parseInt(obj.getAttribute('data-val') || 0); let start = null; const duration = 1000;
+        const step = (ts) => { if (!start) start = ts; const progress = Math.min((ts - start) / duration, 1); const ease = 1 - Math.pow(1 - progress, 4); obj.innerText = Math.floor(ease * end) + (isPct ? "%" : ""); if (progress < 1) window.requestAnimationFrame(step); else obj.innerText = end + (isPct ? "%" : ""); };
+        window.requestAnimationFrame(step);
     }
+    function speakText(text) { if (!text || !('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-CN'; u.rate = globalSpeechRate; window.speechSynthesis.speak(u); }
+    function speakCurrentCard() { if (currentCardIndex !== -1 && vocabList[currentCardIndex]) speakText(vocabList[currentCardIndex].hanzi); }
+    function testSpeech() { speakText('你好'); }
+    function updateSpeechRate(val) { globalSpeechRate = parseFloat(val); localStorage.setItem('my_speech_rate', globalSpeechRate); }
+    function toggleAutoSpeech(val) { autoSpeechEnabled = val; localStorage.setItem('my_auto_speech', autoSpeechEnabled); }
+    function showToast(msgKey) { const tst = document.getElementById('toastMsg'); tst.innerText = t(msgKey); tst.style.display = 'block'; setTimeout(() => { tst.style.display = 'none'; }, 1500); }
 
-    function startParticles() {
-        resizeCanvas();
-        particles = [];
-        const particleCount = Math.min(window.innerWidth / 15, 40); // Tối ưu hiệu năng
-        for(let i=0; i<particleCount; i++) {
-            particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)]));
-        }
-        animatePhysics();
-    }
-
-    // --- APP LOGIC ---
     function showPage(pageId) {
-        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-        setTimeout(() => { document.getElementById(pageId).classList.add('active'); }, 10);
-        if (pageId === 'page-home') updateUI();
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        setTimeout(() => { document.getElementById(pageId).classList.add('active'); updateObstacles(); }, 10);
+        if (pageId === 'page-home') { updateUI(); document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); }
+        if (pageId === 'page-time-stats') renderTimeStats(currentRange);
         if (pageId === 'page-list') renderVocabList();
+        if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('effectThemeSelect').value = currentEffectMode; }
     }
 
+    function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
+    function startStudy(f) { currentFilter = f; previousCardState = null; document.getElementById('btnUndoCard').style.display = 'none'; showPage('page-flashcard'); loadNextCard(); }
+    function autoPinyin() { const ip = document.getElementById('hanziInput').value.trim(); document.getElementById('pinyinInput').value = ip ? pinyin(ip, { toneType: 'symbol' }) : ''; }
+
+    function checkDuplicateHanzi() {
+        if (editingId) return;
+        const hz = document.getElementById('hanziInput').value.trim(); const bx = document.getElementById('duplicateBox');
+        if (!hz) { bx.style.display = 'none'; matchedDuplicateItem = null; return; }
+        const f = vocabList.find(v => v.hanzi === hz);
+        if (f) { matchedDuplicateItem = f; document.getElementById('duplicateText').innerText = `Chữ: "${f.hanzi}" (${f.pinyin}) - Nghĩa: ${f.meaning}`; bx.style.display = 'block'; } else { bx.style.display = 'none'; matchedDuplicateItem = null; }
+    }
+    function loadDuplicateToEdit() {
+        if (!matchedDuplicateItem) return; editingId = matchedDuplicateItem.id;
+        document.getElementById('hanziInput').value = matchedDuplicateItem.hanzi; document.getElementById('pinyinInput').value = matchedDuplicateItem.pinyin; document.getElementById('meaningInput').value = matchedDuplicateItem.meaning; document.getElementById('exampleInput').value = matchedDuplicateItem.example || '';
+        document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; document.getElementById('duplicateBox').style.display = 'none';
+    }
+
+    function initChart() { const ctx = document.getElementById('vocabChart').getContext('2d'); chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')], datasets: [{ data: [0, 0, 0], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } } }); }
+    
     function updateUI() {
-        const total = vocabList.length;
-        const learned = vocabList.filter(v => v.status === 'learned').length;
-        const unlearned = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned').length;
-        const unseen = vocabList.filter(v => !v.seenCount || v.seenCount === 0).length;
-        
-        document.getElementById('totalCount').innerText = total;
-        document.getElementById('learnedCount').innerText = learned;
-        document.getElementById('unlearnedCount').innerText = unlearned;
-        document.getElementById('unseenCount').innerText = unseen;
-        document.getElementById('todayCountBadge').innerText = vocabList.filter(v => v.dateAdded === getTodayKey()).length;
-        
-        const percent = total > 0 ? Math.round(((total - unseen) / total) * 100) : 0;
-        document.getElementById('chartPercent').innerText = `${percent}%`;
-
-        if (!chartInstance) {
-            const ctx = document.getElementById('vocabChart').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: { labels: ['Đã thuộc', 'Chưa thuộc', 'Chưa xem'], datasets: [{ data: [learned, unlearned, unseen], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
-            });
-        } else {
-            chartInstance.data.datasets[0].data = [learned, unlearned, unseen];
-            chartInstance.update();
-        }
+        const tk = getTodayKey(); const tot = vocabList.length; const lr = vocabList.filter(v => v.status === 'learned').length; const ulr = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned').length; const usn = vocabList.filter(v => !v.seenCount || v.seenCount === 0).length; const ta = vocabList.filter(v => v.dateAdded === tk).length;
+        document.getElementById('totalCount').setAttribute('data-val', tot); document.getElementById('learnedCount').setAttribute('data-val', lr); document.getElementById('unlearnedCount').setAttribute('data-val', ulr); document.getElementById('unseenCount').setAttribute('data-val', usn); document.getElementById('todayCountBadge').innerText = ta;
+        const pct = tot > 0 ? Math.round(((tot - usn) / tot) * 100) : 0; document.getElementById('chartPercent').setAttribute('data-val', pct);
+        if (chartInstance) { chartInstance.data.datasets[0].data = [lr, ulr, usn]; }
     }
 
-    function autoPinyin() {
-        const input = document.getElementById('hanziInput').value.trim();
-        document.getElementById('pinyinInput').value = input ? pinyin(input, { toneType: 'symbol' }) : '';
+    function formatSecs(sec) { if (sec < 60) return `${sec} ${t('time_sec')}`; const m = Math.floor(sec / 60); const s = sec % 60; if (sec < 3600) return s > 0 ? `${m} ${t('time_min')} ${s}s` : `${m} ${t('time_min')}`; const h = Math.floor(sec / 3600); const rm = Math.floor((sec % 3600) / 60); return `${h} ${t('time_hr')} ${rm} ${t('time_min')}`; }
+
+    function renderTimeStats(rd) {
+        currentRange = rd; document.getElementById('btn7').classList.toggle('active', rd === 7); document.getElementById('btn30').classList.toggle('active', rd === 30); document.getElementById('btn90').classList.toggle('active', rd === 90);
+        const ad = Object.keys(dailyStats).filter(k => (dailyStats[k].seconds || 0) > 0).length; document.getElementById('totalDaysCount').innerText = `${ad} ${t('day_lbl')}`;
+        let tsa = 0; Object.values(dailyStats).forEach(s => { tsa += (s.seconds || 0); }); document.getElementById('totalTimeCount').innerText = formatSecs(tsa);
+        const tSec = dailyStats[getTodayKey()] ? (dailyStats[getTodayKey()].seconds || 0) : 0; const ySec = dailyStats[getYesterdayKey()] ? (dailyStats[getYesterdayKey()].seconds || 0) : 0; const dSec = tSec - ySec;
+        document.getElementById('compareDiffVal').innerText = (dSec >= 0 ? "+ " : "- ") + formatSecs(Math.abs(dSec));
+        const tg = document.getElementById('compareTag'); const ic = document.getElementById('compareTagIcon'); const pt = document.getElementById('compareTagPercent');
+        if (ySec === 0) { if (tSec > 0) { tg.className = "compare-tag tag-up"; ic.innerText = "▲"; pt.innerText = "+100%"; } else { tg.className = "compare-tag tag-equal"; ic.innerText = "➖"; pt.innerText = "0%"; } } else { const pct = Math.round(((tSec - ySec) / ySec) * 100); if (pct > 0) { tg.className = "compare-tag tag-up"; ic.innerText = "▲"; pt.innerText = `+${pct}%`; } else if (pct < 0) { tg.className = "compare-tag tag-down"; ic.innerText = "▼"; pt.innerText = `${pct}%`; } else { tg.className = "compare-tag tag-equal"; ic.innerText = "➖"; pt.innerText = "0%"; } }
+        const lbls = [], mDts = []; const dl = document.getElementById('detailStatsList'); dl.innerHTML = '';
+        for (let i = rd - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; const ds = `${d.getDate()}/${d.getMonth() + 1}`; const st = dailyStats[key] || { seconds: 0 }; lbls.push(ds); mDts.push((st.seconds / 60).toFixed(1)); if (st.seconds > 0) { const r = document.createElement('div'); r.className = 'detail-item'; r.innerHTML = `<span><strong>${ds}</strong></span><span>⏱️ ${formatSecs(st.seconds)}</span>`; dl.appendChild(r); } }
+        const ctx = document.getElementById('timeBarChart').getContext('2d'); if (timeChartInstance) timeChartInstance.destroy(); timeChartInstance = new Chart(ctx, { type: 'bar', data: { labels: lbls, datasets: [ { label: t('time_min'), data: mDts, backgroundColor: '#007aff', borderRadius: 6 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5ea' } } }, animation: { duration: 800 } } });
     }
 
+    function renderVocabList() {
+        const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); c.innerHTML = ''; let tl = vocabList; let tt = t('btn_all').replace("🎴 ", ""); const tk = getTodayKey();
+        if (currentListFilter === 'learned') { tl = vocabList.filter(v => v.status === 'learned'); tt = t('stat_learned'); } else if (currentListFilter === 'unlearned') { tl = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned'); tt = t('stat_unlearned'); } else if (currentListFilter === 'unseen') { tl = vocabList.filter(v => !v.seenCount || v.seenCount === 0); tt = t('stat_unseen'); } else if (currentListFilter === 'today') { tl = vocabList.filter(v => v.dateAdded === tk); tt = t('btn_today').replace("✨ ", ""); }
+        const flt = tl.filter(v => v.hanzi.toLowerCase().includes(q) || v.meaning.toLowerCase().includes(q) || v.pinyin.toLowerCase().includes(q) || (v.example && v.example.toLowerCase().includes(q))); document.getElementById('listTitleHeader').innerHTML = `${tt} (<span id="listTotalCount">${flt.length}</span>)`;
+        if (flt.length === 0) { c.innerHTML = `<div style="text-align:center; color:var(--text-sub); padding:20px;">${t('empty_list')}</div>`; return; }
+        flt.forEach(it => { const d = document.createElement('div'); d.className = 'vocab-item physical-obstacle'; let st = it.status === 'learned' ? `• <span style="color:var(--success);">${t('stat_learned')}</span>` : ''; let eg = it.example ? `<div class="vocab-item-eg">💬 ${it.example}</div>` : ''; d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${it.pinyin}</span></div><div class="vocab-item-sub">${it.meaning} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak physical-obstacle" onclick="speakText('${it.hanzi}')">🔊</button><button class="btn-tool btn-edit physical-obstacle" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete physical-obstacle" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; c.appendChild(d); }); updateObstacles();
+    }
+
+    function editWordFromList(id) { const i = vocabList.find(v => v.id === id); if (!i) return; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
+    function deleteWordFromList(id) { if (confirm(currentLang === 'vi' ? "Bạn có chắc chắn muốn xóa từ này khỏi danh sách?" : "您确定要从列表中删除此词汇吗？")) { vocabList = vocabList.filter(v => v.id !== id); saveData(); renderVocabList(); updateUI(); } }
+    
     function addOrUpdateWord() {
-        const hanzi = document.getElementById('hanziInput').value.trim();
-        const py = document.getElementById('pinyinInput').value.trim();
-        const meaning = document.getElementById('meaningInput').value.trim();
-        const example = document.getElementById('exampleInput').value.trim();
-
-        if (!hanzi || !meaning) return alert('Vui lòng nhập Chữ Hán và Nghĩa!');
-        vocabList.push({ id: Date.now(), hanzi, pinyin: py, meaning, example, status: 'unlearned', seenCount: 0, dateAdded: getTodayKey() });
-        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
-        
-        document.getElementById('hanziInput').value = '';
-        document.getElementById('meaningInput').value = '';
-        document.getElementById('exampleInput').value = '';
-        autoPinyin(); updateUI(); alert('Thêm thành công!');
+        const hz = document.getElementById('hanziInput').value.trim(); const py = document.getElementById('pinyinInput').value.trim(); const mn = document.getElementById('meaningInput').value.trim(); const eg = document.getElementById('exampleInput').value.trim();
+        if (!hz || !mn) { alert(currentLang === 'vi' ? 'Vui lòng nhập Chữ Hán và Nghĩa!' : '请输入汉字和含义！'); return; }
+        if (editingId) { const idx = vocabList.findIndex(v => v.id === editingId); if (idx !== -1) { vocabList[idx].hanzi = hz; vocabList[idx].pinyin = py; vocabList[idx].meaning = mn; vocabList[idx].example = eg; } showToast('msg_update'); } else { vocabList.push({ id: Date.now(), hanzi: hz, pinyin: py, meaning: mn, example: eg, status: 'unlearned', seenCount: 0, dateAdded: getTodayKey() }); showToast('msg_save'); }
+        saveData(); resetForm(); updateUI();
+    }
+    function resetAllSeenCounts() { if (vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn Reset lại số lần hiện của tất cả từ vựng về 0?" : "您确定要重置所有词汇的出现次数吗？")) { vocabList.forEach(v => { v.seenCount = 0; v.status = 'unlearned'; }); saveData(); updateUI(); showToast('msg_update'); } }
+    function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; const i = vocabList[currentCardIndex]; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
+    function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Xóa từ này?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); loadNextCard(); updateUI(); } }
+    function resetForm() { editingId = null; matchedDuplicateItem = null; document.getElementById('hanziInput').value = ''; document.getElementById('pinyinInput').value = ''; document.getElementById('meaningInput').value = ''; document.getElementById('exampleInput').value = ''; document.getElementById('duplicateBox').style.display = 'none'; document.getElementById('formTitle').innerText = t('add_title'); document.getElementById('saveBtn').innerText = t('btn_save_word'); document.getElementById('cancelEditBtn').style.display = "none"; }
+    function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
+    
+    function renderRelatedWords(hz) {
+        const c = document.getElementById('relatedContainer'); const l = document.getElementById('relatedList'); l.innerHTML = ''; if (!hz) { c.style.display = 'none'; return; } const chars = hz.split(''); const m = vocabList.filter(i => { if (i.hanzi === hz) return false; return chars.some(ch => i.hanzi.includes(ch)); }); if (m.length === 0) { c.style.display = 'none'; return; }
+        m.forEach(i => { const d = document.createElement('div'); d.className = 'related-item'; const hl = i.hanzi.split('').map(ch => chars.includes(ch) ? `<span class="highlight-char">${ch}</span>` : ch).join(''); d.innerHTML = `<div><span class="related-hanzi">${hl}</span> <span class="related-py">(${i.pinyin})</span></div><div class="related-meaning">${i.meaning}</div>`; l.appendChild(d); }); c.style.display = 'block';
     }
 
-    function startStudy(filter) {
-        showPage('page-flashcard');
-        loadNextCard();
+    function renderCardUI(sel) {
+        document.getElementById('cardDetails').classList.remove('show'); document.getElementById('clickHint').style.display = 'block'; document.getElementById('displayHanzi').innerText = sel.hanzi; document.getElementById('displayPinyin').innerText = sel.pinyin; document.getElementById('displayMeaning').innerText = sel.meaning; document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.seenCount}`;
+        const eb = document.getElementById('displayExampleBox'); const et = document.getElementById('displayExampleText'); if (sel.example && sel.example.trim() !== '') { et.innerText = sel.example; eb.style.display = 'block'; } else { eb.style.display = 'none'; }
+        renderRelatedWords(sel.hanzi); if (autoSpeechEnabled) speakText(sel.hanzi);
     }
 
     function loadNextCard() {
-        let pool = vocabList;
-        if (pool.length === 0) {
-            document.getElementById('displayHanzi').innerText = 'Hết từ!';
-            currentCardIndex = -1; return;
-        }
-        const selected = pool[Math.floor(Math.random() * pool.length)];
-        currentCardIndex = vocabList.findIndex(v => v.id === selected.id);
-
-        document.getElementById('cardDetails').classList.remove('show');
-        document.getElementById('displayHanzi').innerText = selected.hanzi;
-        document.getElementById('displayPinyin').innerText = selected.pinyin;
-        document.getElementById('displayMeaning').innerText = selected.meaning;
-        
-        if (selected.example) {
-            document.getElementById('displayExampleText').innerText = selected.example;
-            document.getElementById('displayExampleBox').style.display = 'block';
-        } else {
-            document.getElementById('displayExampleBox').style.display = 'none';
-        }
-
-        if(autoSpeechEnabled && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-            const u = new SpeechSynthesisUtterance(selected.hanzi);
-            u.lang = 'zh-CN'; window.speechSynthesis.speak(u);
-        }
+        let p = vocabList; const tk = getTodayKey(); if (currentFilter === 'unlearned') p = vocabList.filter(v => v.status === 'unlearned'); else if (currentFilter === 'today') p = vocabList.filter(v => v.dateAdded === tk);
+        if (p.length === 0) { document.getElementById('displayHanzi').innerText = t('end_card'); document.getElementById('displayPinyin').innerText = ""; document.getElementById('displayMeaning').innerText = ""; document.getElementById('seenCount').innerText = ""; document.getElementById('relatedContainer').style.display = 'none'; document.getElementById('displayExampleBox').style.display = 'none'; currentCardIndex = -1; return; }
+        let wp = []; p.forEach(v => { const w = (v.status !== 'learned') ? 3 : 1; for (let i = 0; i < w; i++) wp.push(v); }); wp.sort((a, b) => a.seenCount - b.seenCount); const ms = wp[0].seenCount; const cp = wp.filter(v => v.seenCount === ms); const sel = cp[Math.floor(Math.random() * cp.length)]; currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
+        renderCardUI(sel);
     }
 
-    function markCard(isLearned) {
-        if (currentCardIndex === -1) return;
-        vocabList[currentCardIndex].status = isLearned ? 'learned' : 'unlearned';
-        vocabList[currentCardIndex].seenCount++;
-        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
-        loadNextCard();
+    function markCard(isL) {
+        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; isAnimating = true; const i = vocabList[currentCardIndex]; previousCardState = { index: currentCardIndex, oldStatus: i.status, oldSeenCount: i.seenCount }; document.getElementById('btnUndoCard').style.display = 'block';
+        i.status = isL ? 'learned' : 'unlearned'; i.seenCount += 1; saveData(); updateUI();
+        const c = document.getElementById('flashcard'); if (isL) c.classList.add('learned-bg'); else c.classList.add('unlearned-bg'); c.classList.add('card-exit');
+        setTimeout(() => { c.classList.remove('learned-bg', 'unlearned-bg', 'card-exit'); loadNextCard(); c.classList.add('card-enter'); setTimeout(() => { c.classList.remove('card-enter'); isAnimating = false; }, 400); }, 250);
     }
+    function undoPreviousCard() { if (!previousCardState) return; const i = vocabList[previousCardState.index]; if (i) { i.status = previousCardState.oldStatus; i.seenCount = previousCardState.oldSeenCount; saveData(); updateUI(); currentCardIndex = previousCardState.index; renderCardUI(i); showToast('btn_undo'); } previousCardState = null; document.getElementById('btnUndoCard').style.display = 'none'; }
+    document.getElementById('flashcard').addEventListener('click', function() { const d = document.getElementById('cardDetails'); const h = document.getElementById('clickHint'); if (d.classList.contains('show')) { d.classList.remove('show'); h.style.display = 'block'; } else { d.classList.add('show'); h.style.display = 'none'; } speakCurrentCard(); });
+    function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
+    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imp.vocab)); if (imp.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imp.dailyStats)); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); location.reload(); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
 
-    document.getElementById('flashcard').addEventListener('click', function() {
-        const details = document.getElementById('cardDetails');
-        details.classList.toggle('show');
-    });
-
-    function renderVocabList() {
-        const container = document.getElementById('vocabListContainer');
-        container.innerHTML = '';
-        vocabList.forEach(item => {
-            const div = document.createElement('div'); div.className = 'vocab-item physical-obstacle';
-            let exHtml = item.example ? `<div class="vocab-item-eg">${item.example}</div>` : '';
-            div.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${item.hanzi} <span style="font-size:14px; color:var(--danger);">${item.pinyin}</span></div><div class="vocab-item-sub">${item.meaning}</div>${exHtml}</div>`;
-            container.appendChild(div);
-        });
-        document.getElementById('listTotalCount').innerText = vocabList.length;
-    }
-
-    window.onload = function() {
-        initWeatherAndEvents();
-    };
+    window.onload = function() { initChart(); updateUI(); initWelcome(); };
 </script>
 </body>
 </html>
