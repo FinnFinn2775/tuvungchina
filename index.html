@@ -4,112 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title data-i18n="app_title">Ôn Tập Tiếng Trung</title>
-    <!-- Thư viện Pinyin -->
     <script src="https://unpkg.com/pinyin-pro"></script>
-    <!-- Thư viện Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #007aff;
-            --success: #34c759;
-            --danger: #ff3b30;
-            --warning: #ff9500;
-            --unseen: #e5e5ea;
-            --bg-system: #f2f2f7;
-            --card-bg: #ffffff;
-            --text-main: #1c1c1e;
-            --text-sub: #8e8e93;
-            --border: #e5e5ea;
+            --primary: #007aff; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
+            --bg-system: #f2f2f7; --card-bg: #ffffff; --text-main: #1c1c1e; --text-sub: #8e8e93; --border: #e5e5ea;
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-system);
-            color: var(--text-main);
-            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+            background-color: var(--bg-system); color: var(--text-main); margin: 0;
             padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            overflow-x: hidden;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden;
         }
 
-        /* ----- HIỆU ỨNG CHÀO MỪNG (WELCOME OVERLAY) ----- */
+        /* --- CANVAS VẬT LÝ --- */
+        #physicsCanvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 9998; opacity: 0.65;
+        }
+
+        /* --- CHÀO MỪNG --- */
         .welcome-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
-            flex-direction: column;
-            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s;
+            background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;
+            transition: opacity 0.6s, visibility 0.6s;
         }
         .welcome-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .welcome-content {
             text-align: center; transform: translateY(30px) scale(0.95); opacity: 0;
-            animation: welcomePopUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-            animation-delay: 0.1s;
+            animation: welcomePopUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.1s;
         }
         @keyframes welcomePopUp { to { transform: translateY(0) scale(1); opacity: 1; } }
-        .welcome-icon { font-size: 56px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
-        .welcome-text { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 6px; letter-spacing: -0.5px; }
-        
+        .welcome-icon { font-size: 64px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+        .welcome-text { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 4px; padding: 0 16px; }
+        .welcome-event { font-size: 16px; font-weight: 700; color: var(--danger); margin-top: 8px; animation: pulse 2s infinite; display: none; }
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; }
+        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
+        .stagger-item { opacity: 0; transform: translateY(20px) scale(0.98); visibility: hidden; }
+        .stagger-item.show { visibility: visible; animation: popInStagger 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popInStagger { to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* ----- HIỆU ỨNG HIỆN LẦN LƯỢT (STAGGERED) ----- */
-        .stagger-item {
-            opacity: 0;
-            transform: translateY(20px) scale(0.98);
-            visibility: hidden;
-        }
-        .stagger-item.show {
-            visibility: visible;
-            animation: popInStagger 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        @keyframes popInStagger {
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .card-box {
-            background: var(--card-bg); border-radius: 18px; padding: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.03);
-            transition: box-shadow 0.3s ease;
-        }
-
-        .page {
-            display: none; opacity: 0; transform: translateY(16px) scale(0.98);
-            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-            width: 100%;
-        }
+        .card-box { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.03); }
+        .page { display: none; opacity: 0; transform: translateY(16px) scale(0.98); transition: opacity 0.4s, transform 0.4s; width: 100%; }
         .page.active { display: flex; flex-direction: column; gap: 16px; opacity: 1; transform: translateY(0) scale(1); }
+        .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; }
 
-        .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; letter-spacing: -0.4px; }
-
-        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .action-btns button, .vocab-item {
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease, background 0.2s ease !important;
-            cursor: pointer;
-        }
-        button:active, .btn-menu:active, .stat-item:active, .segment-btn:active, .btn-back:active, .vocab-item:active { transform: scale(0.95) !important; }
-
-        .btn-back {
-            background: rgba(120, 120, 128, 0.12); color: var(--primary); margin-bottom: 4px; display: flex;
-            align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none;
-        }
-
-        .toast-notification {
-            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(52, 199, 89, 0.95); color: white;
-            padding: 12px 24px; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 1000;
-            display: none; animation: fadeInDown 0.3s ease;
-        }
-
+        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item { transition: transform 0.2s, box-shadow 0.2s, background 0.2s; cursor: pointer; }
+        button:active, .btn-menu:active, .stat-item:active, .btn-back:active, .vocab-item:active { transform: scale(0.95); }
+        .btn-back { background: rgba(120, 120, 128, 0.12); color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none; }
+        
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; text-align: center; }
         .stat-item { background: var(--bg-system); padding: 8px 2px; border-radius: 12px; }
         .stat-item:hover { background: #e5e5ea; transform: translateY(-2px); }
-        .stat-number { font-size: 17px; font-weight: 700; letter-spacing: -0.5px; }
+        .stat-number { font-size: 17px; font-weight: 700; }
         .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
         
         .chart-wrapper { position: relative; width: 160px; height: 160px; margin: 0 auto; }
@@ -117,933 +69,422 @@
         .chart-center-val { font-size: 22px; font-weight: 800; color: var(--primary); }
         .chart-center-lbl { font-size: 10px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; }
 
-        .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
-
         .input-group { margin-bottom: 12px; }
-        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .input-group input, .input-group select {
-            width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: #fafafa; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .input-group input:focus, .input-group select:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
-        .input-group input[readonly] { background-color: #e5e5ea; color: #3a3a3c; }
-
-        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,122,255,0.3); }
-        .btn-primary:hover { box-shadow: 0 6px 16px rgba(0,122,255,0.4); transform: translateY(-1px); }
-        .btn-warning { background: var(--warning); color: white; box-shadow: 0 4px 12px rgba(255,149,0,0.3); }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 15px; background: #fafafa; outline: none; font-family: inherit; }
+        .input-group textarea { resize: vertical; min-height: 60px; }
+        .input-group input:focus, .input-group textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         
-        .btn-menu { 
-            background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; 
-            font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; 
-            justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); 
-        }
-        .btn-menu:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
-
+        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
+        .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid rgba(0,0,0,0.02); }
+        
         .backup-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
         .backup-row { display: flex; gap: 8px; }
         .btn-backup { background: rgba(0, 122, 255, 0.1); color: var(--primary); padding: 12px 8px; font-size: 13px; border-radius: 12px; flex: 1; font-weight: 600; }
         .btn-reset { background: rgba(255, 59, 48, 0.1); color: var(--danger); padding: 12px 8px; font-size: 13px; border-radius: 12px; font-weight: 600; }
 
-        .segment-control { display: flex; background: #e3e3e8; padding: 3px; border-radius: 10px; margin-bottom: 12px; }
-        .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; cursor: pointer; }
-        .segment-btn.active { background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
-
         .swipe-container { position: relative; width: 100%; min-height: 340px; }
-        .flashcard {
-            width: 100%; min-height: 340px; position: relative; background: var(--card-bg); border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); padding: 48px 20px 24px 20px;
-            text-align: center; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; user-select: none; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-        }
-        .flashcard:active { transform: scale(0.96); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-
+        .flashcard { width: 100%; min-height: 340px; position: relative; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); padding: 48px 20px 24px 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; user-select: none; transition: all 0.3s; }
         .flashcard.learned-bg { background-color: #e4f9e8 !important; border-color: #34c759 !important; }
         .flashcard.unlearned-bg { background-color: #ffe5e5 !important; border-color: #ff3b30 !important; }
         .flashcard.card-exit { opacity: 0 !important; transform: scale(0.85) translateY(-20px) !important; }
-        .flashcard.card-enter { animation: popInCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
+        .flashcard.card-enter { animation: popInCard 0.4s forwards; }
         @keyframes popInCard { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
-        .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
+        .hanzi-display { font-size: 56px; font-weight: 700; margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
         .card-details { display: none; width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); animation: fadeIn 0.3s ease; }
         .card-details.show { display: block; }
         .pinyin-text { font-size: 24px; color: var(--danger); font-weight: 600; margin-bottom: 6px; }
-        .meaning-text { font-size: 19px; color: var(--text-main); font-weight: 500; }
+        .meaning-text { font-size: 19px; font-weight: 500; }
+        .example-box { margin-top: 10px; padding: 10px 12px; background: rgba(255, 149, 0, 0.08); border-radius: 12px; border-left: 3px solid var(--warning); text-align: left; font-size: 14px; color: #48484a; }
+        .example-title { font-size: 11px; font-weight: 700; color: var(--warning); margin-bottom: 3px; }
 
-        .related-box { margin-top: 12px; padding: 10px; background: rgba(0, 122, 255, 0.05); border-radius: 12px; border: 1px solid rgba(0, 122, 255, 0.15); text-align: left; max-height: 130px; overflow-y: auto; }
-        .related-title { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
-        .related-item { font-size: 13px; padding: 4px 0; border-bottom: 1px dashed #e5e5ea; display: flex; justify-content: space-between; align-items: center; }
-        .related-item:last-child { border-bottom: none; }
-        .related-hanzi { font-weight: 700; color: var(--text-main); font-size: 14px; }
-        .related-py { color: var(--danger); font-size: 12px; }
-        .related-meaning { color: var(--text-sub); font-size: 12px; }
-
-        .highlight-char { color: #ff3b30; font-size: 15px; font-weight: 800; }
-        .click-hint { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
-        .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
         .card-tools { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 10; }
         .btn-tool { width: auto; padding: 5px 8px; font-size: 11px; border-radius: 8px; font-weight: 600; }
-        .btn-edit { background: #e5e5ea; color: var(--primary); }
-        .btn-delete { background: #ffe5e5; color: var(--danger); }
-        .btn-speak { background: #e4f2ff; color: var(--primary); }
         .action-btns { display: flex; gap: 12px; }
-        .btn-know { background: #e4f9e8; color: var(--success); box-shadow: 0 4px 12px rgba(52,199,89,0.2); }
-        .btn-unknow { background: #ffe5e5; color: var(--danger); box-shadow: 0 4px 12px rgba(255,59,48,0.2); }
-        .btn-undo { background: #e5e5ea; color: #3a3a3c; padding: 10px; font-size: 14px; margin-top: 8px; border-radius: 12px; }
-        .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); }
-
-        .streak-card { background: linear-gradient(135deg, #007aff, #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; box-shadow: 0 8px 20px rgba(0,122,255,0.3); transition: transform 0.2s;}
-        .streak-card:hover { transform: translateY(-3px); }
-        .streak-number { font-size: 32px; font-weight: 800; }
-
-        .detail-list { margin-top: 12px; max-height: 180px; overflow-y: auto; }
-        .detail-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-
-        .duplicate-alert { background: #fff9e6; border: 1px solid #ffe0b2; border-radius: 12px; padding: 12px; margin-bottom: 12px; display: none; }
-        .duplicate-alert-title { font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 4px; }
-        .duplicate-info { font-size: 13px; color: var(--text-main); margin-bottom: 8px; }
-
+        .btn-know { background: #e4f9e8; color: var(--success); }
+        .btn-unknow { background: #ffe5e5; color: var(--danger); }
+        
         .vocab-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; margin-top: 8px; }
-        .vocab-item { background: var(--bg-system); padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .vocab-item-left { display: flex; flex-direction: column; }
-        .vocab-item-hanzi { font-size: 20px; font-weight: 700; color: var(--text-main); }
-        .vocab-item-sub { font-size: 12px; color: var(--text-sub); }
-        .vocab-item-actions { display: flex; gap: 6px; }
-
-        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
-        .setting-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+        .vocab-item { background: var(--bg-system); padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .vocab-item-left { display: flex; flex-direction: column; flex: 1; padding-right: 8px; }
+        .vocab-item-hanzi { font-size: 19px; font-weight: 700; }
+        .vocab-item-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+        .vocab-item-eg { font-size: 12px; color: #555; background: #e8e8ed; padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: inline-block; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
 </head>
 <body>
 
-<!-- HIỆU ỨNG CHÀO MỪNG -->
+<canvas id="physicsCanvas"></canvas>
+
+<!-- CHÀO MỪNG -->
 <div class="welcome-overlay" id="welcomeOverlay">
     <div class="welcome-content">
         <div class="welcome-icon" id="welcomeIcon">🌅</div>
-        <div class="welcome-text" id="welcomeText">Chào buổi sáng ngày 16 tháng 10</div>
+        <div class="welcome-text" id="welcomeText">Chào buổi sáng</div>
+        <div class="welcome-event" id="welcomeEvent"></div>
     </div>
 </div>
 
-<div class="toast-notification" id="toastMsg">✓ Đã thêm từ thành công!</div>
-
 <div class="iphone-container">
-
-    <!-- 1. MÀN HÌNH CHÍNH -->
+    <!-- 1. HOME -->
     <div id="page-home" class="page active">
         <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
-        
-        <div class="card-box stagger-item">
+        <div class="card-box stagger-item physical-obstacle">
             <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Từ Vựng</h3>
             <div class="stats-grid">
-                <div class="stat-item" onclick="openVocabListFilter('all')">
-                    <div class="stat-number" id="totalCount" data-val="0">0</div>
-                    <div class="stat-label" data-i18n="stat_total">Tổng từ</div>
-                </div>
-                <div class="stat-item" onclick="openVocabListFilter('learned')">
-                    <div class="stat-number" id="learnedCount" data-val="0" style="color: var(--success);">0</div>
-                    <div class="stat-label" data-i18n="stat_learned">Đã thuộc</div>
-                </div>
-                <div class="stat-item" onclick="openVocabListFilter('unlearned')">
-                    <div class="stat-number" id="unlearnedCount" data-val="0" style="color: var(--danger);">0</div>
-                    <div class="stat-label" data-i18n="stat_unlearned">Chưa thuộc</div>
-                </div>
-                <div class="stat-item" onclick="openVocabListFilter('unseen')">
-                    <div class="stat-number" id="unseenCount" data-val="0" style="color: #8e8e93;">0</div>
-                    <div class="stat-label" data-i18n="stat_unseen">Chưa xem</div>
-                </div>
+                <div class="stat-item"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label">Tổng từ</div></div>
+                <div class="stat-item"><div class="stat-number" id="learnedCount" data-val="0" style="color: var(--success);">0</div><div class="stat-label">Đã thuộc</div></div>
+                <div class="stat-item"><div class="stat-number" id="unlearnedCount" data-val="0" style="color: var(--danger);">0</div><div class="stat-label">Chưa thuộc</div></div>
+                <div class="stat-item"><div class="stat-number" id="unseenCount" data-val="0" style="color: #8e8e93;">0</div><div class="stat-label">Chưa xem</div></div>
             </div>
-            
             <div class="chart-wrapper">
                 <canvas id="vocabChart"></canvas>
-                <div class="chart-center-text">
-                    <div class="chart-center-val" id="chartPercent" data-val="0">0%</div>
-                    <div class="chart-center-lbl" data-i18n="stat_seen">Đã xem</div>
-                </div>
+                <div class="chart-center-text"><div class="chart-center-val" id="chartPercent" data-val="0">0%</div><div class="chart-center-lbl">Đã xem</div></div>
             </div>
         </div>
-
-        <button class="btn-menu stagger-item" style="background: #e4f2ff; border: 1px solid #b3d7ff;" onclick="startStudy('today')">
+        <button class="btn-menu stagger-item physical-obstacle" style="background: #e4f2ff; border: 1px solid #b3d7ff;" onclick="startStudy('today')">
             <span style="color: var(--primary); font-weight:700;"><span data-i18n="btn_today">✨ Chỉ Ôn Từ Mới Thêm HÔM NAY</span> (<span id="todayCountBadge">0</span>)</span> <span>➔</span>
         </button>
-
-        <button class="btn-menu stagger-item" onclick="startStudy('unlearned')">
-            <span data-i18n="btn_unlearned">🎯 Chỉ Ôn Từ CHƯA THUỘC</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="startStudy('all')">
-            <span data-i18n="btn_all">🎴 Ôn Tập Tất Cả Từ</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="showPage('page-add')">
-            <span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="openVocabListFilter('all')">
-            <span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="showPage('page-settings')">
-            <span data-i18n="btn_settings">⚙️ Cài Đặt Giọng Đọc & Hệ Thống</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="showPage('page-time-stats')">
-            <span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span>
-        </button>
-
-        <div class="backup-group stagger-item">
-            <div class="backup-row">
-                <button class="btn-backup" onclick="exportData()" data-i18n="btn_backup">📥 Tải sao lưu về máy</button>
-                <button class="btn-backup" onclick="document.getElementById('importFile').click()" data-i18n="btn_restore">📤 Khôi phục dữ liệu</button>
-                <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
-            </div>
-            <button class="btn-reset" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset số lần hiện của tất cả từ</button>
-        </div>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('unlearned')"><span data-i18n="btn_unlearned">🎯 Chỉ Ôn Từ CHƯA THUỘC</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('all')"><span data-i18n="btn_all">🎴 Ôn Tập Tất Cả Từ</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-add')"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-list')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
     </div>
 
-    <!-- 2. MÀN HÌNH CÀI ĐẶT -->
-    <div id="page-settings" class="page">
-        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="card-box">
-            <h3 style="margin: 0 0 14px 0; font-size: 18px;" data-i18n="settings_title">Cài Đặt Hệ Thống</h3>
-            
-            <!-- Chọn Ngôn Ngữ -->
-            <div class="setting-item">
-                <div>
-                    <div class="setting-label" data-i18n="lang_title">Ngôn ngữ hiển thị</div>
-                    <div class="setting-sub" data-i18n="lang_sub">Chọn ngôn ngữ cho ứng dụng</div>
-                </div>
-                <div style="width: 120px;">
-                    <select id="languageSelect" onchange="changeLanguage(this.value)">
-                        <option value="vi">Tiếng Việt</option>
-                        <option value="zh">中文 (Chinese)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="setting-item">
-                <div>
-                    <div class="setting-label" data-i18n="speed_title">Tốc độ đọc giọng nói</div>
-                    <div class="setting-sub" data-i18n="speed_sub">Tốc độ chung áp dụng cho tất cả flashcard</div>
-                </div>
-                <div style="width: 100px;">
-                    <select id="speechRateSelect" onchange="updateSpeechRate(this.value)">
-                        <option value="0.5">0.5x</option>
-                        <option value="1" selected>1.0x</option>
-                        <option value="1.5">1.5x</option>
-                        <option value="2">2.0x</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="setting-item">
-                <div>
-                    <div class="setting-label" data-i18n="auto_speech_title">Tự động đọc khi đổi thẻ</div>
-                    <div class="setting-sub" data-i18n="auto_speech_sub">Tự phát âm Chữ Hán mỗi lần lướt đến từ mới</div>
-                </div>
-                <div>
-                    <input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);">
-                </div>
-            </div>
-
-            <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()" data-i18n="btn_test_speech">🔊 Thử giọng đọc (你好)</button>
-        </div>
-    </div>
-
-    <!-- 3. MÀN HÌNH THỐNG KÊ THỜI GIAN -->
-    <div id="page-time-stats" class="page">
-        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 4px;">
-            <div class="streak-card" style="padding: 14px;">
-                <div style="font-size: 11px; opacity: 0.9;" data-i18n="total_days">TỔNG SỐ NGÀY HỌC</div>
-                <div class="streak-number" id="totalDaysCount" style="font-size: 22px;">0</div>
-            </div>
-            <div class="streak-card" style="padding: 14px; background: linear-gradient(135deg, #34c759, #28a745);">
-                <div style="font-size: 11px; opacity: 0.9;" data-i18n="total_time">TỔNG THỜI GIAN HỌC</div>
-                <div class="streak-number" id="totalTimeCount" style="font-size: 22px;">0</div>
-            </div>
-        </div>
-        
-        <div class="card-box">
-            <div class="segment-control">
-                <button class="segment-btn active" id="btn7" onclick="renderTimeStats(7)" data-i18n="time_7">7 Ngày</button>
-                <button class="segment-btn" id="btn30" onclick="renderTimeStats(30)" data-i18n="time_30">30 Ngày</button>
-                <button class="segment-btn" id="btn90" onclick="renderTimeStats(90)" data-i18n="time_90">90 Ngày</button>
-            </div>
-            <div class="bar-chart-wrapper">
-                <canvas id="timeBarChart"></canvas>
-            </div>
-            <div class="detail-list" id="detailStatsList"></div>
-        </div>
-    </div>
-
-    <!-- 4. MÀN HÌNH THÊM TỪ -->
+    <!-- 2. ADD WORD -->
     <div id="page-add" class="page">
-        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="card-box">
-            <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle" data-i18n="add_title">Thêm Từ Vựng Mới</h3>
-            
-            <div class="input-group">
-                <label data-i18n="lbl_hanzi">Chữ Hán:</label>
-                <input type="text" id="hanziInput" placeholder="Nhập chữ Hán..." data-i18n-ph="ph_hanzi" oninput="autoPinyin(); checkDuplicateHanzi();">
-            </div>
-
-            <div class="duplicate-alert" id="duplicateBox">
-                <div class="duplicate-alert-title" data-i18n="dup_warn">⚠️ Từ này đã tồn tại trong danh sách!</div>
-                <div class="duplicate-info" id="duplicateText"></div>
-                <div style="display: flex; gap: 8px;">
-                    <button class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="loadDuplicateToEdit()" data-i18n="btn_edit_old">✏️ Sửa từ cũ này</button>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label data-i18n="lbl_pinyin">Bính âm (Pinyin - Tự động):</label>
-                <input type="text" id="pinyinInput" readonly placeholder="Tự động hiện Pinyin" data-i18n-ph="ph_pinyin">
-            </div>
-            <div class="input-group">
-                <label data-i18n="lbl_meaning">Nghĩa Tiếng Việt:</label>
-                <input type="text" id="meaningInput" placeholder="Nhập nghĩa giải thích..." data-i18n-ph="ph_meaning">
-            </div>
-            
-            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()" data-i18n="btn_save_word">Lưu Từ Vựng</button>
-            <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;" data-i18n="btn_cancel">Hủy Chỉnh Sửa</button>
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        <div class="card-box physical-obstacle">
+            <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle">Thêm Từ Vựng Mới</h3>
+            <div class="input-group"><label>Chữ Hán:</label><input type="text" id="hanziInput" oninput="autoPinyin()"></div>
+            <div class="input-group"><label>Bính âm (Tự động):</label><input type="text" id="pinyinInput" readonly></div>
+            <div class="input-group"><label>Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput"></div>
+            <div class="input-group"><label>Ví dụ (Tùy chọn):</label><textarea id="exampleInput"></textarea></div>
+            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()">Lưu Từ Vựng</button>
+            <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;">Hủy Chỉnh Sửa</button>
         </div>
     </div>
 
-    <!-- 5. MÀN HÌNH DANH SÁCH TỪ -->
+    <!-- 3. LIST -->
     <div id="page-list" class="page">
-        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="card-box">
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        <div class="card-box physical-obstacle">
             <h3 style="margin: 0 0 10px 0; font-size: 18px;" id="listTitleHeader">Tất Cả Từ Vựng (<span id="listTotalCount">0</span>)</h3>
-            <div class="input-group" style="margin-bottom: 8px;">
-                <input type="text" id="searchVocabInput" placeholder="🔍 Tìm kiếm chữ Hán hoặc nghĩa..." data-i18n-ph="ph_search" oninput="renderVocabList()">
-            </div>
+            <div class="input-group" style="margin-bottom: 8px;"><input type="text" id="searchVocabInput" placeholder="🔍 Tìm kiếm..." oninput="renderVocabList()"></div>
             <div class="vocab-list-container" id="vocabListContainer"></div>
         </div>
     </div>
 
-    <!-- 6. MÀN HÌNH FLASHCARD -->
+    <!-- 4. FLASHCARD -->
     <div id="page-flashcard" class="page">
-        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        
-        <div class="hint-swipe" data-i18n="hint_swipe">Bấm các nút bên dưới để chọn Đã thuộc / Chưa thuộc</div>
-        <div class="swipe-container">
+        <button class="btn-back physical-obstacle" onclick="showPage('page-home')">⬅ Quay về ban đầu</button>
+        <div class="swipe-container physical-obstacle">
             <div class="flashcard" id="flashcard">
-                <div class="card-tools" onclick="event.stopPropagation()">
-                    <button class="btn-tool btn-speak" onclick="speakCurrentCard()" data-i18n="tool_speak">🔊 Đọc</button>
-                    <button class="btn-tool btn-edit" onclick="editCurrentCard()" data-i18n="tool_edit">✏️ Sửa</button>
-                    <button class="btn-tool btn-delete" onclick="deleteCurrentCard()" data-i18n="tool_del">🗑️ Xóa</button>
-                </div>
-                <span class="seen-badge" id="seenCount">Hiện: 0</span>
-                
                 <div class="hanzi-display" id="displayHanzi">Vui lòng thêm từ</div>
-                <div class="click-hint" id="clickHint" data-i18n="click_hint">Bấm vào thẻ để hiện Pinyin & Nghĩa</div>
-
                 <div class="card-details" id="cardDetails">
                     <div class="pinyin-text" id="displayPinyin"></div>
                     <div class="meaning-text" id="displayMeaning"></div>
-                    
-                    <div class="related-box" id="relatedContainer" style="display:none;" onclick="event.stopPropagation()">
-                        <div class="related-title" data-i18n="related_title">🔗 Từ vựng chứa chữ giống:</div>
-                        <div id="relatedList"></div>
+                    <div class="example-box" id="displayExampleBox" style="display:none;">
+                        <div class="example-title">💡 VÍ DỤ:</div>
+                        <div id="displayExampleText"></div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="action-btns">
-            <button class="btn-know" onclick="markCard(true)" data-i18n="btn_know">👈 Đã thuộc</button>
-            <button class="btn-unknow" onclick="markCard(false)" data-i18n="btn_unknow">Chưa thuộc 👉</button>
+        <div class="action-btns physical-obstacle">
+            <button class="btn-know" onclick="markCard(true)">👈 Đã thuộc</button>
+            <button class="btn-unknow" onclick="markCard(false)">Chưa thuộc 👉</button>
         </div>
-        
-        <button class="btn-undo" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;" data-i18n="btn_undo">↩ Quay lại từ trước đó</button>
     </div>
-
 </div>
 
 <script>
     const { pinyin } = pinyinPro;
-
-    // ----- BỘ TỪ ĐIỂN ĐA NGÔN NGỮ (I18N) -----
-    const dict = {
-        vi: {
-            app_title: "Ôn Tập Tiếng Trung",
-            stats_title: "Thống Kê Từ Vựng", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Chưa thuộc", stat_unseen: "Chưa xem", stat_seen: "Đã xem",
-            btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_unlearned: "🎯 Chỉ Ôn Từ CHƯA THUỘC", btn_all: "🎴 Ôn Tập Tất Cả Từ", btn_add: "➕ Thêm Từ Vựng Mới",
-            btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Giọng Đọc & Hệ Thống", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
-            btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset số lần hiện của tất cả từ",
-            btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị", lang_sub: "Chọn ngôn ngữ cho ứng dụng",
-            speed_title: "Tốc độ đọc giọng nói", speed_sub: "Tốc độ chung áp dụng cho tất cả flashcard", auto_speech_title: "Tự động đọc khi đổi thẻ", auto_speech_sub: "Tự phát âm Chữ Hán mỗi lần lướt đến từ mới",
-            btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG SỐ NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
-            add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại trong danh sách!",
-            btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin - Tự động):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
-            btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
-            hint_swipe: "Bấm các nút bên dưới để chọn Đã thuộc / Chưa thuộc", tool_speak: "🔊 Đọc", tool_edit: "✏️ Sửa", tool_del: "🗑️ Xóa",
-            click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", related_title: "🔗 Từ vựng chứa chữ giống:", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước đó",
-            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật từ thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hết từ ôn!",
-            seen_count: "Hiện:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", words_swiped: "từ lướt"
-        },
-        zh: {
-            app_title: "中文复习",
-            stats_title: "词汇统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "未掌握", stat_unseen: "未查看", stat_seen: "已查看",
-            btn_today: "✨ 仅复习今天新增的词汇", btn_unlearned: "🎯 仅复习未掌握的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇",
-            btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 语音与系统设置", btn_time_stats: "📈 时间与进度统计",
-            btn_backup: "📥 下载备份到本地", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有词汇的出现次数",
-            btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言", lang_sub: "选择应用程序的语言",
-            speed_title: "语音播放速度", speed_sub: "适用于所有抽认卡的全局速度", auto_speech_title: "切换卡片时自动朗读", auto_speech_sub: "每次浏览新词时自动发音",
-            btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
-            add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在于列表中！",
-            btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音 (自动):", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
-            btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索汉字或含义...",
-            hint_swipe: "点击下方按钮选择 已掌握 / 未掌握", tool_speak: "🔊 朗读", tool_edit: "✏️ 编辑", tool_del: "🗑️ 删除",
-            click_hint: "点击卡片显示拼音和含义", related_title: "🔗 包含相同汉字的词汇:", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
-            msg_save: "✓ 成功添加词汇！", msg_update: "✓ 成功更新词汇！", empty_list: "此类别中没有词汇", end_card: "没有更多词汇！",
-            seen_count: "出现次数:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", words_swiped: "个词汇"
-        }
-    };
-
-    let currentLang = localStorage.getItem('my_app_lang') || 'vi';
-
-    function changeLanguage(lang) {
-        currentLang = lang;
-        localStorage.setItem('my_app_lang', lang);
-        applyLanguage();
-        if (chartInstance) updateUI();
-        if (currentRange) renderTimeStats(currentRange);
-        if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
-    }
-
-    function applyLanguage() {
-        document.getElementById('languageSelect').value = currentLang;
-        const d = dict[currentLang];
-        document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (d[key]) el.innerHTML = d[key];
-        });
-        document.querySelectorAll('[data-i18n-ph]').forEach(el => {
-            const key = el.getAttribute('data-i18n-ph');
-            if (d[key]) el.placeholder = d[key];
-        });
-    }
-
-    function t(key) { return dict[currentLang][key] || key; }
-
-    // ----- DỮ LIỆU & BIẾN TOÀN CỤC -----
+    let currentLang = 'vi';
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
-    let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
-    let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
-    let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
-    let currentFilter = 'all';
-    let currentListFilter = 'all';
     let currentCardIndex = -1;
-    let editingId = null;
-    let matchedDuplicateItem = null;
-    let isAnimating = false;
-    let previousCardState = null;
     let chartInstance = null;
-    let timeChartInstance = null;
-    let currentRange = 7;
+    let autoSpeechEnabled = true;
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
 
-    // ----- LOGIC HIỂN THỊ CHÀO MỪNG CẬP NHẬT ĐỊNH DẠNG -----
-    function showWelcomeGreeting() {
-        const overlay = document.getElementById('welcomeOverlay');
-        const iconEl = document.getElementById('welcomeIcon');
-        const textEl = document.getElementById('welcomeText');
+    // --- HIỆU ỨNG THỜI TIẾT, SỰ KIỆN & VẬT LÝ ---
+    const canvas = document.getElementById('physicsCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let obstacles = [];
+    let activeEmojis = ['✨', '🌸', '🍃']; // Default
 
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        updateObstacles();
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function updateObstacles() {
+        obstacles = Array.from(document.querySelectorAll('.physical-obstacle')).map(el => {
+            const rect = el.getBoundingClientRect();
+            return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
+        });
+    }
+
+    class Particle {
+        constructor(emoji) {
+            this.emoji = emoji;
+            this.x = Math.random() * canvas.width;
+            this.y = -30;
+            this.size = Math.random() * 12 + 14;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = Math.random() * 2 + 1;
+            this.rotation = Math.random() * 360;
+            this.vRot = (Math.random() - 0.5) * 4;
+            this.elasticity = 0.5 + Math.random() * 0.3; // Bounciness
+        }
+        update() {
+            this.vy += 0.08; // Gravity
+            this.x += this.vx;
+            this.y += this.vy;
+            this.rotation += this.vRot;
+
+            // Collision with obstacles
+            for (let obs of obstacles) {
+                if (this.x > obs.x && this.x < obs.x + obs.w &&
+                    this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) {
+                    
+                    // Hit top of obstacle
+                    if (this.vy > 0 && this.y < obs.y + 10) {
+                        this.y = obs.y - this.size/2;
+                        this.vy *= -this.elasticity;
+                        this.vx *= 0.8; // Friction
+                        this.vRot *= 0.8;
+                    }
+                }
+            }
+
+            // Reset if out of bounds
+            if (this.y > canvas.height + 50) {
+                this.y = -30;
+                this.x = Math.random() * canvas.width;
+                this.vy = Math.random() * 2 + 1;
+                this.vx = (Math.random() - 0.5) * 2;
+            }
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation * Math.PI / 180);
+            ctx.font = `${this.size}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(this.emoji, 0, 0);
+            ctx.restore();
+        }
+    }
+
+    function animatePhysics() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        updateObstacles(); // Continuously update in case scrolling/animations move them
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animatePhysics);
+    }
+
+    async function initWeatherAndEvents() {
         const now = new Date();
         const hour = now.getHours();
-        const day = now.getDate();
-        const month = now.getMonth() + 1;
+        const d = now.getDate();
+        const m = now.getMonth() + 1;
 
-        let greetingText = "";
-        let icon = "";
+        // Xử lý Lời chào Thời gian
+        let pVi = "", pZh = "", icon = "";
+        if (hour >= 5 && hour < 12) { pVi = "buổi sáng"; pZh = "早上好"; icon = "🌅"; }
+        else if (hour >= 12 && hour < 13) { pVi = "buổi trưa"; pZh = "中午好"; icon = "☀️"; }
+        else if (hour >= 13 && hour < 18) { pVi = "buổi chiều"; pZh = "下午好"; icon = "☀️"; }
+        else { pVi = "buổi tối"; pZh = "晚上好"; icon = "🌙"; }
 
-        if (currentLang === 'vi') {
-            let period = "";
-            if (hour >= 5 && hour < 12) { period = "Chủ nhật sáng"; period = "buổi sáng"; icon = "🌅"; }
-            else if (hour >= 12 && hour < 13) { period = "buổi trưa"; icon = "☀️"; }
-            else if (hour >= 13 && hour < 18) { period = "buổi chiều"; icon = "☀️"; }
-            else { period = "buổi tối"; icon = "🌙"; }
-            
-            greetingText = `Chào ${period} ngày ${day} tháng ${month}`;
+        document.getElementById('welcomeText').innerText = currentLang === 'vi' 
+            ? `Chào ${pVi} ngày ${d} tháng ${m}` 
+            : `${pZh} ${m}月${d}日`;
+        document.getElementById('welcomeIcon').innerText = icon;
+
+        // Xử lý Lễ hội (Ưu tiên cao hơn thời tiết)
+        let eventVi = "", eventZh = "";
+        if (d==14 && m==2) { activeEmojis = ['💖', '🌹', '🥰']; eventVi = "Chúc mừng Valentine!"; eventZh = "情人节快乐！"; }
+        else if (d==8 && m==3) { activeEmojis = ['💐', '🌸', '👩']; eventVi = "Mừng ngày Quốc tế Phụ nữ!"; eventZh = "妇女节快乐！"; }
+        else if (d==31 && m==10) { activeEmojis = ['🎃', '👻', '🦇']; eventVi = "Chúc mừng Halloween!"; eventZh = "万圣节快乐！"; }
+        else if ((d==24 || d==25) && m==12) { activeEmojis = ['🎄', '🎅', '❄️']; eventVi = "Chúc mừng Giáng sinh!"; eventZh = "圣诞节快乐！"; }
+        else if (d==1 && m==1) { activeEmojis = ['🎆', '🎉', '✨']; eventVi = "Chúc mừng Năm mới!"; eventZh = "新年快乐！"; }
+
+        if (eventVi) {
+            const evEl = document.getElementById('welcomeEvent');
+            evEl.innerText = currentLang === 'vi' ? eventVi : eventZh;
+            evEl.style.display = 'block';
+            startParticles(); // Start with event emojis
         } else {
-            let periodZh = "";
-            if (hour >= 5 && hour < 12) { periodZh = "早上好"; icon = "🌅"; }
-            else if (hour >= 12 && hour < 13) { periodZh = "中午好"; icon = "☀️"; }
-            else if (hour >= 13 && hour < 18) { periodZh = "下午好"; icon = "☀️"; }
-            else { periodZh = "晚上好"; icon = "🌙"; }
-
-            greetingText = `${periodZh}${month}月${day}日`;
+            // Lấy thời tiết thực tế nếu không có sự kiện
+            fetchWeather();
         }
 
-        iconEl.innerText = icon;
-        textEl.innerText = greetingText;
-
         setTimeout(() => {
-            overlay.classList.add('hidden');
-            startHomeAnimations();
-        }, 2200);
+            document.getElementById('welcomeOverlay').classList.add('hidden');
+            const items = document.querySelectorAll('#page-home .stagger-item');
+            items.forEach((item, idx) => { item.style.animationDelay = `${idx * 0.12}s`; item.classList.add('show'); });
+            setTimeout(() => { if(chartInstance) updateUI(); }, 300);
+        }, 2500);
     }
 
-    // ----- ANIMATION SEQUENCE (HIỆN LẦN LƯỢT) -----
-    function startHomeAnimations() {
-        const items = document.querySelectorAll('#page-home .stagger-item');
-        items.forEach((item, index) => {
-            item.style.animationDelay = `${index * 0.12}s`;
-            item.classList.add('show');
-        });
+    async function fetchWeather() {
+        try {
+            // Dùng API miễn phí Open-Meteo cho Hà Nội (có thể nâng cấp lấy định vị người dùng)
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`);
+            const data = await res.json();
+            const code = data.current_weather.weathercode;
 
-        setTimeout(() => {
-            animateNumber('totalCount');
-            animateNumber('learnedCount');
-            animateNumber('unlearnedCount');
-            animateNumber('unseenCount');
-            animateNumber('chartPercent', true);
-            if(chartInstance) chartInstance.update();
-        }, 300);
+            if(code === 0 || code === 1) activeEmojis = ['☀️', '✨', '🌻']; // Nắng đẹp
+            else if(code >= 51 && code <= 67) activeEmojis = ['💧', '🌧️', '💦']; // Mưa
+            else if(code >= 71 && code <= 86) activeEmojis = ['❄️', '⛄', '🌨️']; // Tuyết
+            else if(code >= 95) activeEmojis = ['⚡', '🌩️']; // Sấm chớp
+            else if(code >= 2 && code <= 3) activeEmojis = ['☁️', '🫧']; // Mây/Âm u
+            
+            startParticles();
+        } catch(e) {
+            startParticles(); // Chạy default nếu lỗi mạng
+        }
     }
 
-    function animateNumber(elementId, isPercent = false) {
-        const obj = document.getElementById(elementId);
-        const end = parseInt(obj.getAttribute('data-val') || 0);
-        let startTimestamp = null;
-        const duration = 1000;
-        const step = (timestamp) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            const easeOut = 1 - Math.pow(1 - progress, 4);
-            const currentVal = Math.floor(easeOut * end);
-            obj.innerText = currentVal + (isPercent ? "%" : "");
-            if (progress < 1) window.requestAnimationFrame(step);
-            else obj.innerText = end + (isPercent ? "%" : "");
-        };
-        window.requestAnimationFrame(step);
+    function startParticles() {
+        resizeCanvas();
+        particles = [];
+        const particleCount = Math.min(window.innerWidth / 15, 40); // Tối ưu hiệu năng
+        for(let i=0; i<particleCount; i++) {
+            particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)]));
+        }
+        animatePhysics();
     }
 
-    setInterval(() => {
-        const today = getTodayKey();
-        if (!dailyStats[today]) dailyStats[today] = { seconds: 0, wordsReviewed: 0 };
-        dailyStats[today].seconds += 1;
-        localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
-    }, 1000);
-
-    function speakText(text) {
-        if (!text || !('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'zh-CN'; utterance.rate = globalSpeechRate;
-        window.speechSynthesis.speak(utterance);
-    }
-
-    function speakCurrentCard() { if (currentCardIndex !== -1 && vocabList[currentCardIndex]) speakText(vocabList[currentCardIndex].hanzi); }
-    function testSpeech() { speakText('你好'); }
-    function updateSpeechRate(val) { globalSpeechRate = parseFloat(val); localStorage.setItem('my_speech_rate', globalSpeechRate); }
-    function toggleAutoSpeech(val) { autoSpeechEnabled = val; localStorage.setItem('my_auto_speech', autoSpeechEnabled); }
-
-    function showToast(msgKey) {
-        const toast = document.getElementById('toastMsg');
-        toast.innerText = t(msgKey);
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 1500);
-    }
-
+    // --- APP LOGIC ---
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
         setTimeout(() => { document.getElementById(pageId).classList.add('active'); }, 10);
-        if (pageId === 'page-home') {
-            updateUI(); 
-            document.querySelectorAll('#page-home .stagger-item').forEach(el => {
-                el.style.animationDelay = '0s';
-                el.classList.add('show');
-            });
-            setTimeout(() => {
-                animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true);
-            }, 50);
-        }
-        if (pageId === 'page-time-stats') renderTimeStats(currentRange);
+        if (pageId === 'page-home') updateUI();
         if (pageId === 'page-list') renderVocabList();
-        if (pageId === 'page-settings') {
-            document.getElementById('speechRateSelect').value = globalSpeechRate;
-            document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled;
-            document.getElementById('languageSelect').value = currentLang;
-        }
-    }
-
-    function openVocabListFilter(filterType) { currentListFilter = filterType; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
-
-    function startStudy(filter) {
-        currentFilter = filter; previousCardState = null;
-        document.getElementById('btnUndoCard').style.display = 'none';
-        showPage('page-flashcard'); loadNextCard();
-    }
-
-    function autoPinyin() {
-        const input = document.getElementById('hanziInput').value.trim();
-        if (input) document.getElementById('pinyinInput').value = pinyin(input, { toneType: 'symbol' });
-        else document.getElementById('pinyinInput').value = '';
-    }
-
-    function checkDuplicateHanzi() {
-        if (editingId) return;
-        const hanzi = document.getElementById('hanziInput').value.trim();
-        const box = document.getElementById('duplicateBox');
-        if (!hanzi) { box.style.display = 'none'; matchedDuplicateItem = null; return; }
-        const found = vocabList.find(v => v.hanzi === hanzi);
-        if (found) {
-            matchedDuplicateItem = found;
-            let info = currentLang === 'vi' ? `Chữ Hán: "${found.hanzi}" (${found.pinyin}) - Nghĩa: ${found.meaning}` : `汉字: "${found.hanzi}" (${found.pinyin}) - 含义: ${found.meaning}`;
-            document.getElementById('duplicateText').innerText = info;
-            box.style.display = 'block';
-        } else { box.style.display = 'none'; matchedDuplicateItem = null; }
-    }
-
-    function loadDuplicateToEdit() {
-        if (!matchedDuplicateItem) return;
-        editingId = matchedDuplicateItem.id;
-        document.getElementById('hanziInput').value = matchedDuplicateItem.hanzi;
-        document.getElementById('pinyinInput').value = matchedDuplicateItem.pinyin;
-        document.getElementById('meaningInput').value = matchedDuplicateItem.meaning;
-        document.getElementById('formTitle').innerText = t('edit_title');
-        document.getElementById('saveBtn').innerText = t('btn_update_word');
-        document.getElementById('cancelEditBtn').style.display = "block";
-        document.getElementById('duplicateBox').style.display = 'none';
-    }
-
-    function initChart() {
-        const ctx = document.getElementById('vocabChart').getContext('2d');
-        chartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: { labels: [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')], datasets: [{ data: [0, 0, 0], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } }, animation: { duration: 1200, easing: 'easeOutQuart' } }
-        });
     }
 
     function updateUI() {
-        const todayKey = getTodayKey();
         const total = vocabList.length;
         const learned = vocabList.filter(v => v.status === 'learned').length;
         const unlearned = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned').length;
         const unseen = vocabList.filter(v => !v.seenCount || v.seenCount === 0).length;
-        const todayAdded = vocabList.filter(v => v.dateAdded === todayKey).length;
-
-        document.getElementById('totalCount').setAttribute('data-val', total);
-        document.getElementById('learnedCount').setAttribute('data-val', learned);
-        document.getElementById('unlearnedCount').setAttribute('data-val', unlearned);
-        document.getElementById('unseenCount').setAttribute('data-val', unseen);
-        document.getElementById('todayCountBadge').innerText = todayAdded;
-
-        const seenTotal = total - unseen;
-        const percent = total > 0 ? Math.round((seenTotal / total) * 100) : 0;
-        document.getElementById('chartPercent').setAttribute('data-val', percent);
-
-        if (chartInstance) {
-            chartInstance.data.labels = [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')];
-            chartInstance.data.datasets[0].data = [learned, unlearned, unseen];
-        }
-    }
-
-    function renderTimeStats(rangeDays) {
-        currentRange = rangeDays;
-        document.getElementById('btn7').classList.toggle('active', rangeDays === 7);
-        document.getElementById('btn30').classList.toggle('active', rangeDays === 30);
-        document.getElementById('btn90').classList.toggle('active', rangeDays === 90);
-
-        const activeDays = Object.keys(dailyStats).filter(key => dailyStats[key].seconds > 0 || dailyStats[key].wordsReviewed > 0).length;
-        document.getElementById('totalDaysCount').innerText = `${activeDays} ${t('day_lbl')}`;
-
-        let totalSecondsAllTime = 0;
-        Object.values(dailyStats).forEach(stat => { totalSecondsAllTime += (stat.seconds || 0); });
         
-        let totalTimeDisplay = "";
-        if (totalSecondsAllTime < 60) totalTimeDisplay = `${totalSecondsAllTime} ${t('time_sec')}`;
-        else if (totalSecondsAllTime < 3600) totalTimeDisplay = `${Math.floor(totalSecondsAllTime / 60)} ${t('time_min')}`;
-        else totalTimeDisplay = `${Math.floor(totalSecondsAllTime / 3600)} ${t('time_hr')} ${Math.floor((totalSecondsAllTime % 3600) / 60)} ${t('time_min')}`;
-        document.getElementById('totalTimeCount').innerText = totalTimeDisplay;
+        document.getElementById('totalCount').innerText = total;
+        document.getElementById('learnedCount').innerText = learned;
+        document.getElementById('unlearnedCount').innerText = unlearned;
+        document.getElementById('unseenCount').innerText = unseen;
+        document.getElementById('todayCountBadge').innerText = vocabList.filter(v => v.dateAdded === getTodayKey()).length;
+        
+        const percent = total > 0 ? Math.round(((total - unseen) / total) * 100) : 0;
+        document.getElementById('chartPercent').innerText = `${percent}%`;
 
-        const labels = [], minutesData = [], wordsData = [];
-        const detailListContainer = document.getElementById('detailStatsList');
-        detailListContainer.innerHTML = '';
-
-        for (let i = rangeDays - 1; i >= 0; i--) {
-            const d = new Date(); d.setDate(d.getDate() - i);
-            const key = d.toISOString().split('T')[0];
-            const displayDate = `${d.getDate()}/${d.getMonth() + 1}`;
-            
-            const stats = dailyStats[key] || { seconds: 0, wordsReviewed: 0 };
-            const mins = (stats.seconds / 60).toFixed(1);
-
-            labels.push(displayDate); minutesData.push(mins); wordsData.push(stats.wordsReviewed);
-
-            if (stats.seconds > 0 || stats.wordsReviewed > 0) {
-                const row = document.createElement('div');
-                row.className = 'detail-item';
-                let txtM = t('time_min'); let txtS = currentLang === 'vi' ? 's' : '秒';
-                row.innerHTML = `<span><strong>${displayDate}</strong></span><span>⏱️ ${Math.floor(stats.seconds / 60)} ${txtM} ${stats.seconds % 60}${txtS} | 🎴 ${stats.wordsReviewed} ${t('words_swiped')}</span>`;
-                detailListContainer.appendChild(row);
-            }
+        if (!chartInstance) {
+            const ctx = document.getElementById('vocabChart').getContext('2d');
+            chartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: ['Đã thuộc', 'Chưa thuộc', 'Chưa xem'], datasets: [{ data: [learned, unlearned, unseen], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } }
+            });
+        } else {
+            chartInstance.data.datasets[0].data = [learned, unlearned, unseen];
+            chartInstance.update();
         }
-
-        const ctx = document.getElementById('timeBarChart').getContext('2d');
-        if (timeChartInstance) timeChartInstance.destroy();
-        timeChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: labels, datasets: [ { label: t('time_min'), data: minutesData, backgroundColor: '#007aff', borderRadius: 6 }, { label: t('words_swiped'), data: wordsData, backgroundColor: '#ff9500', borderRadius: 6 } ] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5ea' } } }, animation: { duration: 800, easing: 'easeOutQuart' } }
-        });
     }
 
-    function renderVocabList() {
-        const container = document.getElementById('vocabListContainer');
-        const query = document.getElementById('searchVocabInput').value.trim().toLowerCase();
-        container.innerHTML = '';
-
-        let targetList = vocabList;
-        let titleText = t('btn_all').replace("🎴 ", "");
-        const todayKey = getTodayKey();
-
-        if (currentListFilter === 'learned') { targetList = vocabList.filter(v => v.status === 'learned'); titleText = t('stat_learned'); }
-        else if (currentListFilter === 'unlearned') { targetList = vocabList.filter(v => v.seenCount > 0 && v.status !== 'learned'); titleText = t('stat_unlearned'); }
-        else if (currentListFilter === 'unseen') { targetList = vocabList.filter(v => !v.seenCount || v.seenCount === 0); titleText = t('stat_unseen'); }
-        else if (currentListFilter === 'today') { targetList = vocabList.filter(v => v.dateAdded === todayKey); titleText = t('btn_today').replace("✨ ", ""); }
-
-        const filtered = targetList.filter(v => v.hanzi.toLowerCase().includes(query) || v.meaning.toLowerCase().includes(query) || v.pinyin.toLowerCase().includes(query));
-        document.getElementById('listTitleHeader').innerHTML = `${titleText} (<span id="listTotalCount">${filtered.length}</span>)`;
-
-        if (filtered.length === 0) {
-            container.innerHTML = `<div style="text-align:center; color:var(--text-sub); padding:20px;">${t('empty_list')}</div>`;
-            return;
-        }
-
-        filtered.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'vocab-item';
-            let statusHtml = item.status === 'learned' ? `• <span style="color:var(--success);">${t('stat_learned')}</span>` : '';
-            div.innerHTML = `
-                <div class="vocab-item-left">
-                    <div class="vocab-item-hanzi">${item.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${item.pinyin}</span></div>
-                    <div class="vocab-item-sub">${item.meaning} ${statusHtml}</div>
-                </div>
-                <div class="vocab-item-actions">
-                    <button class="btn-tool btn-speak" onclick="speakText('${item.hanzi}')">🔊</button>
-                    <button class="btn-tool btn-edit" onclick="editWordFromList(${item.id})">✏️</button>
-                    <button class="btn-tool btn-delete" onclick="deleteWordFromList(${item.id})">🗑️</button>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    function editWordFromList(id) {
-        const item = vocabList.find(v => v.id === id);
-        if (!item) return;
-        editingId = item.id;
-        document.getElementById('hanziInput').value = item.hanzi;
-        document.getElementById('pinyinInput').value = item.pinyin;
-        document.getElementById('meaningInput').value = item.meaning;
-        document.getElementById('formTitle').innerText = t('edit_title');
-        document.getElementById('saveBtn').innerText = t('btn_update_word');
-        document.getElementById('cancelEditBtn').style.display = "block";
-        showPage('page-add');
-    }
-
-    function deleteWordFromList(id) {
-        let confirmMsg = currentLang === 'vi' ? "Bạn có chắc chắn muốn xóa từ này khỏi danh sách?" : "您确定要从列表中删除此词汇吗？";
-        if (confirm(confirmMsg)) { vocabList = vocabList.filter(v => v.id !== id); saveData(); renderVocabList(); updateUI(); }
+    function autoPinyin() {
+        const input = document.getElementById('hanziInput').value.trim();
+        document.getElementById('pinyinInput').value = input ? pinyin(input, { toneType: 'symbol' }) : '';
     }
 
     function addOrUpdateWord() {
         const hanzi = document.getElementById('hanziInput').value.trim();
         const py = document.getElementById('pinyinInput').value.trim();
         const meaning = document.getElementById('meaningInput').value.trim();
-        if (!hanzi || !meaning) { alert(currentLang === 'vi' ? 'Vui lòng nhập Chữ Hán và Nghĩa!' : '请输入汉字和含义！'); return; }
+        const example = document.getElementById('exampleInput').value.trim();
 
-        if (editingId) {
-            const idx = vocabList.findIndex(v => v.id === editingId);
-            if (idx !== -1) { vocabList[idx].hanzi = hanzi; vocabList[idx].pinyin = py; vocabList[idx].meaning = meaning; }
-            showToast('msg_update');
-        } else {
-            vocabList.push({ id: Date.now(), hanzi: hanzi, pinyin: py, meaning: meaning, status: 'unlearned', seenCount: 0, dateAdded: getTodayKey() });
-            showToast('msg_save');
-        }
-        saveData(); resetForm(); updateUI();
+        if (!hanzi || !meaning) return alert('Vui lòng nhập Chữ Hán và Nghĩa!');
+        vocabList.push({ id: Date.now(), hanzi, pinyin: py, meaning, example, status: 'unlearned', seenCount: 0, dateAdded: getTodayKey() });
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+        
+        document.getElementById('hanziInput').value = '';
+        document.getElementById('meaningInput').value = '';
+        document.getElementById('exampleInput').value = '';
+        autoPinyin(); updateUI(); alert('Thêm thành công!');
     }
 
-    function resetAllSeenCounts() {
-        if (vocabList.length === 0) return;
-        let confirmMsg = currentLang === 'vi' ? "Bạn có chắc muốn Reset lại số lần hiện của tất cả từ vựng về 0?" : "您确定要重置所有词汇的出现次数吗？";
-        if (confirm(confirmMsg)) {
-            vocabList.forEach(v => { v.seenCount = 0; v.status = 'unlearned'; });
-            saveData(); updateUI();
-            let succMsg = currentLang === 'vi' ? "✓ Đã Reset thành công!" : "✓ 成功重置！";
-            document.getElementById('toastMsg').innerText = succMsg;
-            document.getElementById('toastMsg').style.display = 'block';
-            setTimeout(() => { document.getElementById('toastMsg').style.display = 'none'; }, 1500);
-        }
-    }
-
-    function editCurrentCard() {
-        if (currentCardIndex === -1 || vocabList.length === 0) return;
-        const item = vocabList[currentCardIndex];
-        editingId = item.id;
-        document.getElementById('hanziInput').value = item.hanzi;
-        document.getElementById('pinyinInput').value = item.pinyin;
-        document.getElementById('meaningInput').value = item.meaning;
-        document.getElementById('formTitle').innerText = t('edit_title');
-        document.getElementById('saveBtn').innerText = t('btn_update_word');
-        document.getElementById('cancelEditBtn').style.display = "block";
-        showPage('page-add');
-    }
-
-    function deleteCurrentCard() {
-        if (currentCardIndex === -1 || vocabList.length === 0) return;
-        let confirmMsg = currentLang === 'vi' ? "Bạn có chắc chắn muốn xóa từ này khỏi danh sách?" : "您确定要删除此词汇吗？";
-        if (confirm(confirmMsg)) { vocabList.splice(currentCardIndex, 1); saveData(); loadNextCard(); updateUI(); }
-    }
-
-    function resetForm() {
-        editingId = null; matchedDuplicateItem = null;
-        document.getElementById('hanziInput').value = ''; document.getElementById('pinyinInput').value = ''; document.getElementById('meaningInput').value = '';
-        document.getElementById('duplicateBox').style.display = 'none';
-        document.getElementById('formTitle').innerText = t('add_title');
-        document.getElementById('saveBtn').innerText = t('btn_save_word');
-        document.getElementById('cancelEditBtn').style.display = "none";
-    }
-
-    function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
-
-    function highlightChars(text, matchChars) {
-        return text.split('').map(char => { if (matchChars.includes(char)) return `<span class="highlight-char">${char}</span>`; return char; }).join('');
-    }
-
-    function renderRelatedWords(currentHanzi) {
-        const container = document.getElementById('relatedContainer');
-        const listElem = document.getElementById('relatedList');
-        listElem.innerHTML = '';
-        if (!currentHanzi) { container.style.display = 'none'; return; }
-        const chars = currentHanzi.split('');
-        const matches = vocabList.filter(item => { if (item.hanzi === currentHanzi) return false; return chars.some(char => item.hanzi.includes(char)); });
-        if (matches.length === 0) { container.style.display = 'none'; return; }
-        matches.forEach(item => {
-            const div = document.createElement('div'); div.className = 'related-item';
-            const highlightedHanzi = highlightChars(item.hanzi, chars);
-            div.innerHTML = `<div><span class="related-hanzi">${highlightedHanzi}</span> <span class="related-py">(${item.pinyin})</span></div><div class="related-meaning">${item.meaning}</div>`;
-            listElem.appendChild(div);
-        });
-        container.style.display = 'block';
-    }
-
-    function renderCardUI(selected) {
-        document.getElementById('cardDetails').classList.remove('show');
-        document.getElementById('clickHint').style.display = 'block';
-        document.getElementById('displayHanzi').innerText = selected.hanzi;
-        document.getElementById('displayPinyin').innerText = selected.pinyin;
-        document.getElementById('displayMeaning').innerText = selected.meaning;
-        document.getElementById('seenCount').innerText = `${t('seen_count')} ${selected.seenCount}`;
-        renderRelatedWords(selected.hanzi);
-        if (autoSpeechEnabled) speakText(selected.hanzi);
+    function startStudy(filter) {
+        showPage('page-flashcard');
+        loadNextCard();
     }
 
     function loadNextCard() {
         let pool = vocabList;
-        const todayKey = getTodayKey();
-        if (currentFilter === 'unlearned') pool = vocabList.filter(v => v.status === 'unlearned');
-        else if (currentFilter === 'today') pool = vocabList.filter(v => v.dateAdded === todayKey);
-
         if (pool.length === 0) {
-            document.getElementById('displayHanzi').innerText = t('end_card');
-            document.getElementById('displayPinyin').innerText = ""; document.getElementById('displayMeaning').innerText = "";
-            document.getElementById('seenCount').innerText = ""; document.getElementById('relatedContainer').style.display = 'none';
+            document.getElementById('displayHanzi').innerText = 'Hết từ!';
             currentCardIndex = -1; return;
         }
-
-        let weightedPool = [];
-        pool.forEach(v => { const weight = (v.status !== 'learned') ? 3 : 1; for (let i = 0; i < weight; i++) { weightedPool.push(v); } });
-        weightedPool.sort((a, b) => a.seenCount - b.seenCount);
-        const minSeen = weightedPool[0].seenCount;
-        const candidatePool = weightedPool.filter(v => v.seenCount === minSeen);
-        const selected = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+        const selected = pool[Math.floor(Math.random() * pool.length)];
         currentCardIndex = vocabList.findIndex(v => v.id === selected.id);
 
-        renderCardUI(selected);
+        document.getElementById('cardDetails').classList.remove('show');
+        document.getElementById('displayHanzi').innerText = selected.hanzi;
+        document.getElementById('displayPinyin').innerText = selected.pinyin;
+        document.getElementById('displayMeaning').innerText = selected.meaning;
+        
+        if (selected.example) {
+            document.getElementById('displayExampleText').innerText = selected.example;
+            document.getElementById('displayExampleBox').style.display = 'block';
+        } else {
+            document.getElementById('displayExampleBox').style.display = 'none';
+        }
+
+        if(autoSpeechEnabled && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(selected.hanzi);
+            u.lang = 'zh-CN'; window.speechSynthesis.speak(u);
+        }
     }
 
     function markCard(isLearned) {
-        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return;
-        isAnimating = true;
-        const item = vocabList[currentCardIndex];
-        previousCardState = { index: currentCardIndex, oldStatus: item.status, oldSeenCount: item.seenCount };
-        document.getElementById('btnUndoCard').style.display = 'block';
-
-        item.status = isLearned ? 'learned' : 'unlearned'; item.seenCount += 1;
-        const today = getTodayKey();
-        if (!dailyStats[today]) dailyStats[today] = { seconds: 0, wordsReviewed: 0 };
-        dailyStats[today].wordsReviewed += 1; localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
-        saveData(); updateUI();
-
-        const cardElem = document.getElementById('flashcard');
-        if (isLearned) cardElem.classList.add('learned-bg'); else cardElem.classList.add('unlearned-bg');
-        cardElem.classList.add('card-exit');
-
-        setTimeout(() => {
-            cardElem.classList.remove('learned-bg', 'unlearned-bg', 'card-exit');
-            loadNextCard();
-            cardElem.classList.add('card-enter');
-            setTimeout(() => { cardElem.classList.remove('card-enter'); isAnimating = false; }, 400);
-        }, 250);
-    }
-
-    function undoPreviousCard() {
-        if (!previousCardState) return;
-        const item = vocabList[previousCardState.index];
-        if (item) {
-            item.status = previousCardState.oldStatus; item.seenCount = previousCardState.oldSeenCount;
-            saveData(); updateUI(); currentCardIndex = previousCardState.index; renderCardUI(item);
-            let msg = currentLang === 'vi' ? '↩ Đã quay lại từ trước đó!' : '↩ 已返回上一个词！';
-            document.getElementById('toastMsg').innerText = msg;
-            document.getElementById('toastMsg').style.display = 'block';
-            setTimeout(() => { document.getElementById('toastMsg').style.display = 'none'; }, 1500);
-        }
-        previousCardState = null; document.getElementById('btnUndoCard').style.display = 'none';
+        if (currentCardIndex === -1) return;
+        vocabList[currentCardIndex].status = isLearned ? 'learned' : 'unlearned';
+        vocabList[currentCardIndex].seenCount++;
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+        loadNextCard();
     }
 
     document.getElementById('flashcard').addEventListener('click', function() {
         const details = document.getElementById('cardDetails');
-        const hint = document.getElementById('clickHint');
-        if (details.classList.contains('show')) { details.classList.remove('show'); hint.style.display = 'block'; }
-        else { details.classList.add('show'); hint.style.display = 'none'; }
-        speakCurrentCard();
+        details.classList.toggle('show');
     });
 
-    function exportData() {
-        const backupData = { vocab: JSON.parse(localStorage.getItem('my_infinite_vocab')) || [], dailyStats: JSON.parse(localStorage.getItem('my_daily_stats')) || {} };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
-        const downloadAnchor = document.createElement('a'); downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", `TuVung_Backup_${getTodayKey()}.json`);
-        document.body.appendChild(downloadAnchor); downloadAnchor.click(); downloadAnchor.remove();
-    }
-
-    function importData(event) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (imported.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imported.vocab));
-                if (imported.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imported.dailyStats));
-                alert(currentLang === 'vi' ? "Đã khôi phục dữ liệu thành công!" : "成功恢复数据！");
-                location.reload();
-            } catch (err) { alert(currentLang === 'vi' ? "File sao lưu không đúng định dạng!" : "备份文件格式不正确！"); }
-        };
-        reader.readAsText(event.target.files[0]);
+    function renderVocabList() {
+        const container = document.getElementById('vocabListContainer');
+        container.innerHTML = '';
+        vocabList.forEach(item => {
+            const div = document.createElement('div'); div.className = 'vocab-item physical-obstacle';
+            let exHtml = item.example ? `<div class="vocab-item-eg">${item.example}</div>` : '';
+            div.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${item.hanzi} <span style="font-size:14px; color:var(--danger);">${item.pinyin}</span></div><div class="vocab-item-sub">${item.meaning}</div>${exHtml}</div>`;
+            container.appendChild(div);
+        });
+        document.getElementById('listTotalCount').innerText = vocabList.length;
     }
 
     window.onload = function() {
-        applyLanguage();
-        initChart();
-        updateUI();
-        showWelcomeGreeting(); 
+        initWeatherAndEvents();
     };
 </script>
-
 </body>
 </html>
