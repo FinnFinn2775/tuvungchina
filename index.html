@@ -41,7 +41,7 @@
         /* ----- HIỆU ỨNG CHÀO MỪNG (WELCOME OVERLAY) ----- */
         .welcome-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: var(--card-bg); /* Đổi theo theme */
+            background: var(--card-bg); 
             backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;
             transition: opacity 0.6s, visibility 0.6s; opacity: 0.96;
@@ -242,11 +242,12 @@
             
             <div class="setting-item">
                 <div>
-                    <div class="setting-label" data-i18n="effect_title">Chế độ Hiệu ứng (105 loại)</div>
-                    <div class="setting-sub" data-i18n="effect_sub">Chọn hiệu ứng vật lý rơi trên màn hình</div>
+                    <div class="setting-label" data-i18n="effect_title">Chế độ Hiệu ứng</div>
+                    <div class="setting-sub" data-i18n="effect_sub">Vật lý rơi trên màn hình</div>
                 </div>
                 <div style="width: 140px;">
                     <select id="effectThemeSelect" onchange="changeEffectMode(this.value)">
+                        <option value="none">❌ Tắt hiệu ứng (None)</option>
                         <option value="auto">Auto: Thời tiết HN</option>
                         <option value="random">Ngẫu nhiên mỗi lần mở</option>
                         <!-- Danh sách 100+ hiệu ứng sẽ được JS load tự động vào đây -->
@@ -256,8 +257,17 @@
 
             <div class="setting-item">
                 <div>
+                    <div class="setting-label" data-i18n="welcome_title">Màn hình Chào mừng</div>
+                    <div class="setting-sub" data-i18n="welcome_sub">Bật/tắt màn chào mừng & thời tiết</div>
+                </div>
+                <div>
+                    <input type="checkbox" id="welcomeToggle" onchange="toggleWelcome(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);">
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <div>
                     <div class="setting-label" data-i18n="lang_title">Ngôn ngữ hiển thị</div>
-                    <div class="setting-sub" data-i18n="lang_sub">Chọn ngôn ngữ cho ứng dụng</div>
                 </div>
                 <div style="width: 120px;">
                     <select id="languageSelect" onchange="changeLanguage(this.value)">
@@ -270,7 +280,6 @@
             <div class="setting-item">
                 <div>
                     <div class="setting-label" data-i18n="speed_title">Tốc độ đọc giọng nói</div>
-                    <div class="setting-sub" data-i18n="speed_sub">Áp dụng cho tất cả flashcard</div>
                 </div>
                 <div style="width: 100px;">
                     <select id="speechRateSelect" onchange="updateSpeechRate(this.value)">
@@ -404,28 +413,28 @@
             btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_unlearned: "🎯 Chỉ Ôn Từ CHƯA THUỘC", btn_all: "🎴 Ôn Tập Tất Cả Từ", btn_add: "➕ Thêm Từ Vựng Mới",
             btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống & Hiệu ứng", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
             btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset số lần hiện của tất cả từ",
-            btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị", lang_sub: "Chọn ngôn ngữ",
-            speed_title: "Tốc độ đọc giọng nói", speed_sub: "Áp dụng cho tất cả flashcard", auto_speech_title: "Tự động đọc khi đổi thẻ",
+            btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị",
+            speed_title: "Tốc độ đọc giọng nói", auto_speech_title: "Tự động đọc khi đổi thẻ",
             btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
             hint_swipe: "Bấm nút dưới để chọn Đã thuộc / Chưa thuộc", tool_speak: "🔊 Đọc", tool_edit: "✏️ Sửa", tool_del: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", related_title: "🔗 Từ vựng chứa chữ giống:", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước đó",
-            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật từ thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hết từ ôn!", seen_count: "Hiện:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", effect_title: "Chế độ Hiệu ứng (105 loại)", effect_sub: "Vật lý rơi trên màn hình"
+            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật từ thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hết từ ôn!", seen_count: "Hiện:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", effect_title: "Chế độ Hiệu ứng", effect_sub: "Vật lý rơi trên màn hình", welcome_title: "Màn hình Chào mừng", welcome_sub: "Bật/tắt màn chào mừng & thời tiết"
         },
         zh: {
             app_title: "中文复习", stats_title: "词汇统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "未掌握", stat_unseen: "未查看", stat_seen: "已查看",
             btn_today: "✨ 仅复习今天新增的词汇", btn_unlearned: "🎯 仅复习未掌握的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇",
             btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 语音、特效与系统设置", btn_time_stats: "📈 时间与进度统计",
             btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有词汇出现次数",
-            btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言", lang_sub: "选择语言",
-            speed_title: "语音播放速度", speed_sub: "适用于所有抽认卡", auto_speech_title: "切换卡片时自动朗读",
+            btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言",
+            speed_title: "语音播放速度", auto_speech_title: "切换卡片时自动朗读",
             btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
             lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
             hint_swipe: "点击下方按钮选择 已掌握 / 未掌握", tool_speak: "🔊 朗读", tool_edit: "✏️ 编辑", tool_del: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", related_title: "🔗 包含相同汉字的词汇:", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
-            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "没有更多词汇！", seen_count: "出现:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", effect_title: "特效模式 (105 种)", effect_sub: "屏幕上的物理坠落效果"
+            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "没有更多词汇！", seen_count: "出现:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", effect_title: "特效模式", effect_sub: "屏幕上的物理坠落效果", welcome_title: "欢迎屏幕", welcome_sub: "启用/禁用欢迎屏幕"
         }
     };
 
@@ -447,6 +456,8 @@
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
     let currentEffectMode = localStorage.getItem('my_effect_mode') || 'auto';
+    let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
+    
     let currentFilter = 'all', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, previousCardState = null, chartInstance = null, timeChartInstance = null, currentRange = 7;
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
@@ -490,15 +501,22 @@
         });
         sel.value = currentEffectMode;
     }
-    function changeEffectMode(val) {
-        currentEffectMode = val; localStorage.setItem('my_effect_mode', val);
-        applyEffectLogic();
+    
+    function changeEffectMode(val) { currentEffectMode = val; localStorage.setItem('my_effect_mode', val); applyEffectLogic(); }
+    function toggleWelcome(val) { showWelcomeScreen = val; localStorage.setItem('my_show_welcome', val); }
+
+    function setDefaultTheme() {
+        const root = document.documentElement;
+        root.style.setProperty('--bg-system', '#f2f2f7'); root.style.setProperty('--card-bg', '#ffffff');
+        root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--text-sub', '#8e8e93');
+        root.style.setProperty('--primary', '#007aff'); root.style.setProperty('--border', '#e5e5ea');
+        root.style.setProperty('--input-bg', '#fafafa'); root.style.setProperty('--item-bg', '#f2f2f7');
     }
 
     // ----- PHYSICS ENGINE (Delta Time 120 FPS) -----
     const canvas = document.getElementById('physicsCanvas');
     const ctx = canvas.getContext('2d');
-    let particles = []; let obstacles = []; let activeEmojis = ['✨', '🌸', '🍃'];
+    let particles = []; let obstacles = []; let activeEmojis = [];
     let lastTime = 0;
 
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updateObstacles(); }
@@ -518,10 +536,9 @@
             this.rotation = Math.random() * 360; this.vRot = (Math.random() - 0.5) * 3; this.elasticity = 0.4 + Math.random() * 0.3; 
         }
         update(dtMultiplier) {
-            this.vy += 0.05 * dtMultiplier; // Trọng lực mượt mà 120Hz/60Hz
+            this.vy += 0.05 * dtMultiplier; 
             this.x += this.vx * dtMultiplier; this.y += this.vy * dtMultiplier; this.rotation += this.vRot * dtMultiplier;
 
-            // Va chạm với nút/thẻ
             for (let obs of obstacles) {
                 if (this.x > obs.x && this.x < obs.x + obs.w && this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) {
                     if (this.vy > 0 && this.y < obs.y + 15) { 
@@ -542,17 +559,18 @@
     function animatePhysics(time) {
         if (!lastTime) lastTime = time;
         let dt = time - lastTime; lastTime = time;
-        if(dt > 100) dt = 16.66; // Cứu lag
-        const dtMultiplier = dt / 16.66; // 1 ở 60fps, 0.5 ở 120fps
+        if(dt > 100) dt = 16.66; 
+        const dtMultiplier = dt / 16.66; 
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if(Math.random() < 0.1) updateObstacles(); // Cập nhật rải rác để giảm CPU
+        if(Math.random() < 0.1) updateObstacles(); 
         particles.forEach(p => { p.update(dtMultiplier); p.draw(); });
         requestAnimationFrame(animatePhysics);
     }
 
     function startParticles() {
         resizeCanvas(); particles = [];
+        if (activeEmojis.length === 0) return;
         const particleCount = Math.min(window.innerWidth / 12, 35); 
         for(let i=0; i<particleCount; i++) particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)]));
     }
@@ -561,7 +579,6 @@
     async function applyWeatherThemeAndGetEmojis() {
         const root = document.documentElement;
         try {
-            // Lấy thời tiết Hà Nội
             const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`);
             const data = await res.json();
             const code = data.current_weather.weathercode;
@@ -569,32 +586,32 @@
             
             let descVi = "", descZh = "", emojis = [];
 
-            if(code === 0 || code === 1) { // Nắng đẹp
+            if(code === 0 || code === 1) { 
                 descVi = `Trời nắng, trong xanh (${temp}°C)`; descZh = `晴天 (${temp}°C)`; emojis = ['☀️', '✨', '🌻'];
                 root.style.setProperty('--bg-system', '#f0f8ff'); root.style.setProperty('--card-bg', '#ffffff');
                 root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#ff9500');
                 root.style.setProperty('--input-bg', '#fcfcfc'); root.style.setProperty('--item-bg', '#f4f9fd');
             } 
-            else if(code >= 51 && code <= 67) { // Mưa
+            else if(code >= 51 && code <= 67) { 
                 descVi = `Trời mưa (${temp}°C)`; descZh = `下雨 (${temp}°C)`; emojis = ['💧', '🌧️', '💦'];
                 root.style.setProperty('--bg-system', '#e1e5ea'); root.style.setProperty('--card-bg', '#f4f6f8');
                 root.style.setProperty('--text-main', '#2c3e50'); root.style.setProperty('--primary', '#007aff');
                 root.style.setProperty('--input-bg', '#ffffff'); root.style.setProperty('--item-bg', '#ebf0f5');
             } 
-            else if(code >= 71 && code <= 86) { // Tuyết / Siêu lạnh
+            else if(code >= 71 && code <= 86) { 
                 descVi = `Trời rét/Tuyết (${temp}°C)`; descZh = `下雪/寒冷 (${temp}°C)`; emojis = ['❄️', '⛄', '🌨️'];
                 root.style.setProperty('--bg-system', '#e0f7fa'); root.style.setProperty('--card-bg', '#ffffff');
                 root.style.setProperty('--text-main', '#006064'); root.style.setProperty('--primary', '#00bcd4');
                 root.style.setProperty('--input-bg', '#f5fdff'); root.style.setProperty('--item-bg', '#e8fafd');
             } 
-            else if(code >= 95) { // Sấm chớp (Bật DARK MODE)
+            else if(code >= 95) { 
                 descVi = `Giông bão, Sấm chớp (${temp}°C)`; descZh = `雷暴 (${temp}°C)`; emojis = ['⚡', '🌩️'];
                 root.style.setProperty('--bg-system', '#1c1c1e'); root.style.setProperty('--card-bg', '#2c2c2e');
                 root.style.setProperty('--text-main', '#f2f2f7'); root.style.setProperty('--text-sub', '#aeaeb2');
                 root.style.setProperty('--primary', '#ffcc00'); root.style.setProperty('--border', '#3a3a3c');
                 root.style.setProperty('--input-bg', '#3a3a3c'); root.style.setProperty('--item-bg', '#323234');
             } 
-            else { // Mây mù / Âm u
+            else { 
                 descVi = `Trời nhiều mây (${temp}°C)`; descZh = `多云 (${temp}°C)`; emojis = ['☁️', '🫧'];
                 root.style.setProperty('--bg-system', '#f2f2f7'); root.style.setProperty('--card-bg', '#ffffff');
                 root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#007aff');
@@ -612,7 +629,15 @@
     async function applyEffectLogic() {
         const d = new Date(); const day = d.getDate(); const month = d.getMonth() + 1;
         
-        // 1. Kiểm tra Lễ hội ưu tiên (Valentine, Noel...)
+        // Nếu Tắt hiệu ứng hoàn toàn
+        if (currentEffectMode === 'none') {
+            activeEmojis = [];
+            setDefaultTheme();
+            document.getElementById('welcomeWeatherDesc').style.display = 'none';
+            startParticles();
+            return;
+        }
+
         let evVi="", evZh="";
         if (day==14 && month==2) { activeEmojis = ['💖', '🌹', '🥰']; evVi = "Chúc mừng Valentine!"; evZh = "情人节快乐！"; }
         else if (day==8 && month==3) { activeEmojis = ['💐', '🌸', '👩']; evVi = "Quốc tế Phụ nữ!"; evZh = "妇女节快乐！"; }
@@ -623,50 +648,63 @@
         if (evVi) {
             const evEl = document.getElementById('welcomeEvent');
             evEl.innerText = currentLang === 'vi' ? evVi : evZh; evEl.style.display = 'block';
+            setDefaultTheme();
+            document.getElementById('welcomeWeatherDesc').style.display = 'none';
             startParticles(); return;
         }
 
-        // 2. Không có lễ -> Xét cài đặt
         if (currentEffectMode === 'auto') {
             activeEmojis = await applyWeatherThemeAndGetEmojis();
-        } else if (currentEffectMode === 'random') {
-            const r = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
-            activeEmojis = r.emj;
-            applyWeatherThemeAndGetEmojis(); // Vẫn chỉnh màu nền theo thời tiết
+            document.getElementById('welcomeWeatherDesc').style.display = 'block';
         } else {
-            const id = parseInt(currentEffectMode);
-            const found = ALL_EFFECTS.find(e => e.id === id);
-            if(found) activeEmojis = found.emj;
-            applyWeatherThemeAndGetEmojis(); // Vẫn chỉnh màu nền
+            document.getElementById('welcomeWeatherDesc').style.display = 'none';
+            setDefaultTheme();
+            if (currentEffectMode === 'random') {
+                const r = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)];
+                activeEmojis = r.emj;
+            } else {
+                const id = parseInt(currentEffectMode);
+                const found = ALL_EFFECTS.find(e => e.id === id);
+                if(found) activeEmojis = found.emj;
+            }
         }
         startParticles();
     }
 
     async function initWelcome() {
         populateEffectSelect(); applyLanguage();
-        
-        const now = new Date(); const h = now.getHours(); const d = now.getDate(); const m = now.getMonth() + 1;
-        let pVi = "", pZh = "", icon = "";
-        if (h >= 5 && h < 12) { pVi = "buổi sáng"; pZh = "早上好"; icon = "🌅"; } else if (h >= 12 && h < 13) { pVi = "buổi trưa"; pZh = "中午好"; icon = "☀️"; } else if (h >= 13 && h < 18) { pVi = "buổi chiều"; pZh = "下午好"; icon = "☀️"; } else { pVi = "buổi tối"; pZh = "晚上好"; icon = "🌙"; }
-        document.getElementById('welcomeText').innerText = currentLang === 'vi' ? `Chào ${pVi} ngày ${d} tháng ${m}` : `${pZh} ${m}月${d}日`;
-        document.getElementById('welcomeIcon').innerText = icon;
+        document.getElementById('welcomeToggle').checked = showWelcomeScreen;
 
         await applyEffectLogic();
 
-        setTimeout(() => {
-            document.getElementById('welcomeOverlay').classList.add('hidden');
-            const items = document.querySelectorAll('#page-home .stagger-item');
-            items.forEach((item, idx) => { item.style.animationDelay = `${idx * 0.12}s`; item.classList.add('show'); });
-            setTimeout(() => {
-                animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true);
-                if(chartInstance) chartInstance.update();
-            }, 300);
-        }, 2500);
+        if (showWelcomeScreen) {
+            const now = new Date(); const h = now.getHours(); const d = now.getDate(); const m = now.getMonth() + 1;
+            let pVi = "", pZh = "", icon = "";
+            if (h >= 5 && h < 12) { pVi = "buổi sáng"; pZh = "早上好"; icon = "🌅"; } else if (h >= 12 && h < 13) { pVi = "buổi trưa"; pZh = "中午好"; icon = "☀️"; } else if (h >= 13 && h < 18) { pVi = "buổi chiều"; pZh = "下午好"; icon = "☀️"; } else { pVi = "buổi tối"; pZh = "晚上好"; icon = "🌙"; }
+            document.getElementById('welcomeText').innerText = currentLang === 'vi' ? `Chào ${pVi} ngày ${d} tháng ${m}` : `${pZh} ${m}月${d}日`;
+            document.getElementById('welcomeIcon').innerText = icon;
+            document.getElementById('welcomeOverlay').style.display = 'flex';
+            document.getElementById('welcomeOverlay').classList.remove('hidden');
 
-        requestAnimationFrame(animatePhysics); // Khởi chạy Loop Vật lý
+            setTimeout(() => {
+                document.getElementById('welcomeOverlay').classList.add('hidden');
+                startHomeAnimations();
+            }, 2500);
+        } else {
+            document.getElementById('welcomeOverlay').style.display = 'none';
+            startHomeAnimations();
+        }
+
+        requestAnimationFrame(animatePhysics); 
     }
 
-    // ----- CÁC HÀM APP CŨ -----
+    // ----- CÁC HÀM APP -----
+    function startHomeAnimations() {
+        const items = document.querySelectorAll('#page-home .stagger-item');
+        items.forEach((item, index) => { item.style.animationDelay = `${index * 0.12}s`; item.classList.add('show'); });
+        setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); if(chartInstance) chartInstance.update(); }, 300);
+    }
+
     function animateNumber(elementId, isPct = false) {
         const obj = document.getElementById(elementId); const end = parseInt(obj.getAttribute('data-val') || 0); let start = null; const duration = 1000;
         const step = (ts) => { if (!start) start = ts; const progress = Math.min((ts - start) / duration, 1); const ease = 1 - Math.pow(1 - progress, 4); obj.innerText = Math.floor(ease * end) + (isPct ? "%" : ""); if (progress < 1) window.requestAnimationFrame(step); else obj.innerText = end + (isPct ? "%" : ""); };
@@ -685,7 +723,7 @@
         if (pageId === 'page-home') { updateUI(); document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); }
         if (pageId === 'page-time-stats') renderTimeStats(currentRange);
         if (pageId === 'page-list') renderVocabList();
-        if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('effectThemeSelect').value = currentEffectMode; }
+        if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('effectThemeSelect').value = currentEffectMode; document.getElementById('welcomeToggle').checked = showWelcomeScreen; }
     }
 
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
