@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title data-i18n="app_title">Ôn Tập Tiếng Trung</title>
-    <!-- Thư viện Pinyin & Chart.js -->
     <script src="https://unpkg.com/pinyin-pro"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -130,9 +129,9 @@
         .btn-edit { background: var(--border); color: var(--primary); }
         .btn-delete { background: rgba(255,59,48,0.1); color: var(--danger); }
         .btn-speak { background: rgba(0,122,255,0.1); color: var(--primary); }
-        .btn-mic { background: rgba(52,199,89,0.1); color: var(--success); transition: 0.3s; }
-        .btn-mic.listening { background: var(--danger) !important; color: white !important; animation: pulseMic 1s infinite; }
-        @keyframes pulseMic { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .btn-mic { background: rgba(52,199,89,0.1); color: var(--success); transition: 0.3s; user-select: none; -webkit-user-select: none; touch-action: manipulation;}
+        .btn-mic.listening { background: var(--danger) !important; color: white !important; animation: pulseMic 1s infinite; transform: scale(0.95); }
+        @keyframes pulseMic { 0% { transform: scale(0.95); } 50% { transform: scale(1.05); } 100% { transform: scale(0.95); } }
 
         .action-btns { display: flex; gap: 12px; }
         .btn-know { background: rgba(52,199,89,0.15); color: var(--success); }
@@ -200,7 +199,7 @@
         <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
         
         <div class="card-box stagger-item physical-obstacle">
-            <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Từ Vựng</h3>
+            <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Tiến Độ SRS</h3>
             <div class="stats-grid">
                 <div class="stat-item" onclick="openVocabListFilter('all')"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label" data-i18n="stat_total">Tổng từ</div></div>
                 <div class="stat-item" onclick="openVocabListFilter('learned')"><div class="stat-number" id="learnedCount" data-val="0" style="color: var(--success);">0</div><div class="stat-label" data-i18n="stat_learned">Đã thuộc</div></div>
@@ -221,7 +220,7 @@
         </button>
         <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('all')"><span data-i18n="btn_all">🎴 Ôn Lại Tất Cả Từ Vựng</span> <span>➔</span></button>
         <button class="btn-menu stagger-item physical-obstacle" style="background: rgba(255,149,0,0.1); border-color: var(--warning);" onclick="startQuizMode()">
-            <span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Minigame Trắc Nghiệm Từ</span> <span>➔</span>
+            <span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Trắc Nghiệm Chơi Vô Tận</span> <span>➔</span>
         </button>
         
         <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-add')"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
@@ -326,11 +325,14 @@
     <!-- 6. FLASHCARD & Luyện Phát Âm (SRS) -->
     <div id="page-flashcard" class="page">
         <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="hint-swipe" data-i18n="hint_swipe">Bấm các nút bên dưới để chọn mức độ thuộc</div>
+        <div class="hint-swipe" data-i18n="hint_swipe">Bấm các nút bên dưới để chọn mức độ thuộc (SRS)</div>
         <div class="swipe-container">
             <div class="flashcard physical-obstacle" id="flashcard">
                 <div class="card-tools" onclick="event.stopPropagation()">
-                    <button class="btn-tool btn-mic physical-obstacle" id="btnMic" onclick="toggleMic()" data-i18n="tool_mic">🎤 Đọc</button>
+                    <button class="btn-tool btn-mic physical-obstacle" id="btnMic" 
+                        onmousedown="startMic(event)" onmouseup="stopMic(event)" onmouseleave="stopMic(event)"
+                        ontouchstart="startMic(event)" ontouchend="stopMic(event)" oncontextmenu="return false;"
+                        data-i18n="tool_mic">🎤 Nhấn giữ để đọc</button>
                     <button class="btn-tool btn-speak physical-obstacle" onclick="speakCurrentCard()" data-i18n="tool_speak">🔊 Nghe</button>
                     <button class="btn-tool btn-edit physical-obstacle" onclick="editCurrentCard()" data-i18n="tool_edit">✏️</button>
                 </div>
@@ -351,11 +353,11 @@
         <button class="btn-undo physical-obstacle" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;" data-i18n="btn_undo">↩ Quay lại từ trước đó</button>
     </div>
 
-    <!-- 7. MINIGAME QUIZ -->
+    <!-- 7. MINIGAME QUIZ CHƠI VÔ TẬN -->
     <div id="page-quiz" class="page">
         <button class="btn-back physical-obstacle" onclick="endQuiz(true)"><span data-i18n="btn_quit_quiz">⬅ Thoát Minigame</span></button>
         <div class="quiz-question-box physical-obstacle">
-            <div class="quiz-status" id="quizStatus">Câu 1/10 | Điểm: 0</div>
+            <div class="quiz-status" id="quizStatus">Câu 1 | Điểm: 0</div>
             <div class="quiz-hanzi" id="quizHanzi">字</div>
         </div>
         <div class="quiz-options-grid" id="quizOptions">
@@ -372,7 +374,7 @@
     const dict = {
         vi: {
             app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ SRS", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem", stat_seen: "Đã xem",
-            btn_due: "🎯 Ôn Tập SRS (Từ Cần Ôn Hôm Nay)", btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_all: "🎴 Ôn Lại Tất Cả Từ Vựng", btn_add: "➕ Thêm Từ Vựng Mới", btn_quiz: "🎮 Minigame Trắc Nghiệm Từ",
+            btn_due: "🎯 Ôn Tập SRS (Từ Cần Ôn Hôm Nay)", btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_all: "🎴 Ôn Lại Tất Cả Từ Vựng", btn_add: "➕ Thêm Từ Vựng Mới", btn_quiz: "🎮 Trắc Nghiệm Chơi Vô Tận",
             btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống & Hiệu ứng", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
             btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset toàn bộ tiến độ học SRS về 0",
             btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị",
@@ -381,13 +383,13 @@
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
-            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️", tool_mic: "🎤 Đọc", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước đó",
+            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️", tool_mic: "🎤 Nhấn giữ để đọc", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước đó",
             msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", effect_title: "Chế độ Hiệu ứng", welcome_title: "Màn hình Chào mừng",
-            msg_mic_correct: "🎙️ Chuẩn xác! Tự động chuyển thẻ.", msg_mic_wrong: "🎙️ Sai rồi! Bạn đã đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame"
+            msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame"
         },
         zh: {
             app_title: "中文复习", stats_title: "SRS 进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看", stat_seen: "已查看",
-            btn_due: "🎯 SRS 每日复习", btn_today: "✨ 仅复习今天新增的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇", btn_quiz: "🎮 测验迷你游戏",
+            btn_due: "🎯 SRS 每日复习", btn_today: "✨ 仅复习今天新增的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇", btn_quiz: "🎮 无限测验迷你游戏",
             btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 语音、特效与系统设置", btn_time_stats: "📈 时间与进度统计",
             btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有 SRS 学习进度",
             btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言",
@@ -396,17 +398,14 @@
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
             lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
-            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️", tool_mic: "🎤 读", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️", tool_mic: "🎤 长按录音", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
             msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "SRS 级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", effect_title: "特效模式", welcome_title: "欢迎屏幕",
-            msg_mic_correct: "🎙️ 准确！自动切换卡片。", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏"
+            msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏"
         }
     };
 
     let currentLang = localStorage.getItem('my_app_lang') || 'vi';
-    function changeLanguage(lang) {
-        currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage();
-        if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
-    }
+    function changeLanguage(lang) { currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage(); if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); if (document.getElementById('page-list').classList.contains('active')) renderVocabList(); }
     function applyLanguage() {
         document.getElementById('languageSelect').value = currentLang; const d = dict[currentLang];
         document.querySelectorAll('[data-i18n]').forEach(el => { if (d[el.getAttribute('data-i18n')]) el.innerHTML = d[el.getAttribute('data-i18n')]; });
@@ -423,12 +422,13 @@
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
     
     let currentFilter = 'due', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, previousCardState = null, chartInstance = null, timeChartInstance = null, currentRange = 7;
+    let blockManualMark = false; let micTimeout = null;
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
     function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
     function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return d.toISOString().split('T')[0]; }
 
-    // Đảm bảo dữ liệu cũ tương thích với cấu trúc SRS mới
+    // Tương thích dữ liệu cũ cho SRS
     vocabList.forEach(item => {
         if (item.interval === undefined) item.interval = 0;
         if (item.ease === undefined) item.ease = 2.5;
@@ -476,22 +476,13 @@
     function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updateObstacles(); }
     window.addEventListener('resize', resizeCanvas);
 
-    function updateObstacles() {
-        obstacles = Array.from(document.querySelectorAll('.physical-obstacle')).map(el => { if(el.offsetParent === null) return null; const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }).filter(o => o !== null);
-    }
+    function updateObstacles() { obstacles = Array.from(document.querySelectorAll('.physical-obstacle')).map(el => { if(el.offsetParent === null) return null; const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }).filter(o => o !== null); }
 
     class Particle {
-        constructor(emoji) {
-            this.emoji = emoji; this.x = Math.random() * canvas.width; this.y = -50 - Math.random() * 200;
-            this.size = Math.random() * 12 + 16; this.vx = (Math.random() - 0.5) * 1.5; this.vy = Math.random() * 1.5 + 0.5; this.rotation = Math.random() * 360; this.vRot = (Math.random() - 0.5) * 3; this.elasticity = 0.4 + Math.random() * 0.3; 
-        }
+        constructor(emoji) { this.emoji = emoji; this.x = Math.random() * canvas.width; this.y = -50 - Math.random() * 200; this.size = Math.random() * 12 + 16; this.vx = (Math.random() - 0.5) * 1.5; this.vy = Math.random() * 1.5 + 0.5; this.rotation = Math.random() * 360; this.vRot = (Math.random() - 0.5) * 3; this.elasticity = 0.4 + Math.random() * 0.3; }
         update(dtM) {
             this.vy += 0.05 * dtM; this.x += this.vx * dtM; this.y += this.vy * dtM; this.rotation += this.vRot * dtM;
-            for (let obs of obstacles) {
-                if (this.x > obs.x && this.x < obs.x + obs.w && this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) {
-                    if (this.vy > 0 && this.y < obs.y + 15) { this.y = obs.y - this.size/2; this.vy *= -this.elasticity; this.vx *= 0.8; this.vRot *= 0.8; }
-                }
-            }
+            for (let obs of obstacles) { if (this.x > obs.x && this.x < obs.x + obs.w && this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) { if (this.vy > 0 && this.y < obs.y + 15) { this.y = obs.y - this.size/2; this.vy *= -this.elasticity; this.vx *= 0.8; this.vRot *= 0.8; } } }
             if (this.y > canvas.height + 50) { this.y = -50; this.x = Math.random() * canvas.width; this.vy = Math.random() * 1.5 + 0.5; this.vx = (Math.random() - 0.5) * 1.5; }
         }
         draw() { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation * Math.PI / 180); ctx.font = `${this.size}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(this.emoji, 0, 0); ctx.restore(); }
@@ -499,22 +490,16 @@
 
     function animatePhysics(time) {
         if (!lastTime) lastTime = time; let dt = time - lastTime; lastTime = time; if(dt > 100) dt = 16.66; 
-        const dtM = dt / 16.66; 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const dtM = dt / 16.66; ctx.clearRect(0, 0, canvas.width, canvas.height);
         if(Math.random() < 0.1) updateObstacles(); 
         particles.forEach(p => { p.update(dtM); p.draw(); }); requestAnimationFrame(animatePhysics);
     }
-
-    function startParticles() {
-        resizeCanvas(); particles = []; if (activeEmojis.length === 0) return;
-        const count = Math.min(window.innerWidth / 12, 35); for(let i=0; i<count; i++) particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)]));
-    }
+    function startParticles() { resizeCanvas(); particles = []; if (activeEmojis.length === 0) return; const count = Math.min(window.innerWidth / 12, 35); for(let i=0; i<count; i++) particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)])); }
 
     async function applyWeatherThemeAndGetEmojis() {
         const root = document.documentElement;
         try {
-            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`);
-            const data = await res.json(); const code = data.current_weather.weathercode; const temp = data.current_weather.temperature;
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`); const data = await res.json(); const code = data.current_weather.weathercode; const temp = data.current_weather.temperature;
             let descVi = "", descZh = "", emojis = [];
             if(code === 0 || code === 1) { descVi = `Nắng, trong xanh (${temp}°C)`; descZh = `晴天 (${temp}°C)`; emojis = ['☀️', '✨', '🌻']; root.style.setProperty('--bg-system', '#f0f8ff'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#ff9500'); root.style.setProperty('--input-bg', '#fcfcfc'); root.style.setProperty('--item-bg', '#f4f9fd'); } 
             else if(code >= 51 && code <= 67) { descVi = `Trời mưa (${temp}°C)`; descZh = `下雨 (${temp}°C)`; emojis = ['💧', '🌧️', '💦']; root.style.setProperty('--bg-system', '#e1e5ea'); root.style.setProperty('--card-bg', '#f4f6f8'); root.style.setProperty('--text-main', '#2c3e50'); root.style.setProperty('--primary', '#007aff'); root.style.setProperty('--input-bg', '#ffffff'); root.style.setProperty('--item-bg', '#ebf0f5'); } 
@@ -564,10 +549,10 @@
     function testSpeech() { speakText('你好'); }
     function updateSpeechRate(val) { globalSpeechRate = parseFloat(val); localStorage.setItem('my_speech_rate', globalSpeechRate); }
     function toggleAutoSpeech(val) { autoSpeechEnabled = val; localStorage.setItem('my_auto_speech', autoSpeechEnabled); }
-    function showToast(msgKey, exactStr=null) { const tst = document.getElementById('toastMsg'); tst.innerText = exactStr ? exactStr : t(msgKey); tst.style.display = 'block'; setTimeout(() => { tst.style.display = 'none'; }, 2000); }
+    function showToast(msgKey, exactStr=null) { const tst = document.getElementById('toastMsg'); tst.innerText = exactStr ? exactStr : t(msgKey); tst.style.display = 'block'; setTimeout(() => { tst.style.display = 'none'; }, 2500); }
 
     function showPage(pageId) {
-        if(isMicListening) stopMic(); // Dừng mic nếu rời trang
+        if(isMicListening) stopMic(); 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); setTimeout(() => { document.getElementById(pageId).classList.add('active'); updateObstacles(); }, 10);
         if (pageId === 'page-home') { updateUI(); document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); }
         if (pageId === 'page-time-stats') renderTimeStats(currentRange); if (pageId === 'page-list') renderVocabList();
@@ -583,8 +568,8 @@
     
     function updateUI() {
         const tk = getTodayKey(); const tot = vocabList.length; 
-        const lr = vocabList.filter(v => v.interval > 0).length; // Đã học SRS (interval > 0)
-        const ulr = vocabList.filter(v => v.nextReview <= tk && v.seenCount > 0).length; // Đến hạn ôn
+        const lr = vocabList.filter(v => v.interval > 0).length;
+        const ulr = vocabList.filter(v => v.nextReview <= tk && v.seenCount > 0).length;
         const usn = vocabList.filter(v => v.seenCount === 0).length; 
         const ta = vocabList.filter(v => v.dateAdded === tk).length;
         document.getElementById('totalCount').setAttribute('data-val', tot); document.getElementById('learnedCount').setAttribute('data-val', lr); document.getElementById('unlearnedCount').setAttribute('data-val', ulr); document.getElementById('unseenCount').setAttribute('data-val', usn); document.getElementById('todayCountBadge').innerText = ta;
@@ -636,28 +621,19 @@
 
     function loadNextCard() {
         let p = vocabList; const tk = getTodayKey(); 
-        if (currentFilter === 'due') {
-            // SRS: Từ chưa xem HOẶC từ đã đến ngày Review
-            p = vocabList.filter(v => v.seenCount === 0 || v.nextReview <= tk);
-        } else if (currentFilter === 'today') {
-            p = vocabList.filter(v => v.dateAdded === tk);
-        }
+        if (currentFilter === 'due') { p = vocabList.filter(v => v.seenCount === 0 || v.nextReview <= tk); } 
+        else if (currentFilter === 'today') { p = vocabList.filter(v => v.dateAdded === tk); }
 
         if (p.length === 0) { document.getElementById('displayHanzi').innerText = t('end_card'); document.getElementById('displayPinyin').innerText = ""; document.getElementById('displayMeaning').innerText = ""; document.getElementById('seenCount').innerText = ""; document.getElementById('displayExampleBox').style.display = 'none'; currentCardIndex = -1; return; }
         
-        // Sắp xếp ưu tiên: Từ overdue (quá hạn) lên trước, sau đó ngẫu nhiên
-        p.sort((a, b) => {
-            if(a.nextReview < b.nextReview) return -1;
-            if(a.nextReview > b.nextReview) return 1;
-            return 0.5 - Math.random();
-        });
-        
+        p.sort((a, b) => { if(a.nextReview < b.nextReview) return -1; if(a.nextReview > b.nextReview) return 1; return 0.5 - Math.random(); });
         const sel = p[0]; currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
         renderCardUI(sel);
     }
 
-    // THUẬT TOÁN SRS
-    function markCard(isL) {
+    // ----- THUẬT TOÁN SRS & MIC -----
+    function markCard(isL, fromMic = false) {
+        if (!fromMic && blockManualMark) { clearTimeout(micTimeout); blockManualMark = false; document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); }
         if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; isAnimating = true; 
         const i = vocabList[currentCardIndex]; 
         previousCardState = { index: currentCardIndex, oldInterval: i.interval, oldEase: i.ease, oldNextReview: i.nextReview, oldSeen: i.seenCount }; 
@@ -665,13 +641,10 @@
         
         i.seenCount += 1;
         if (isL) {
-            if (i.interval === 0) i.interval = 1;
-            else if (i.interval === 1) i.interval = 3;
-            else i.interval = Math.round(i.interval * i.ease);
+            if (i.interval === 0) i.interval = 1; else if (i.interval === 1) i.interval = 3; else i.interval = Math.round(i.interval * i.ease);
             i.ease = Math.max(1.3, i.ease + 0.1);
         } else {
-            i.interval = 0;
-            i.ease = Math.max(1.3, i.ease - 0.2);
+            i.interval = 0; i.ease = Math.max(1.3, i.ease - 0.2);
         }
         i.nextReview = getNextReviewDate(i.interval);
 
@@ -682,61 +655,86 @@
     
     function undoPreviousCard() { if (!previousCardState) return; const i = vocabList[previousCardState.index]; if (i) { i.interval = previousCardState.oldInterval; i.ease = previousCardState.oldEase; i.nextReview = previousCardState.oldNextReview; i.seenCount = previousCardState.oldSeen; saveData(); updateUI(); currentCardIndex = previousCardState.index; renderCardUI(i); showToast('btn_undo'); } previousCardState = null; document.getElementById('btnUndoCard').style.display = 'none'; }
     document.getElementById('flashcard').addEventListener('click', function() { const d = document.getElementById('cardDetails'); const h = document.getElementById('clickHint'); if (d.classList.contains('show')) { d.classList.remove('show'); h.style.display = 'block'; } else { d.classList.add('show'); h.style.display = 'none'; } speakCurrentCard(); });
-    function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
-    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imp.vocab)); if (imp.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imp.dailyStats)); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); location.reload(); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
-
-    // ----- TÍNH NĂNG 5: LUYỆN ĐỌC QUA MIC (Auto-Next) -----
+    
+    // MIC SYSTEM (Nhấn giữ)
     let micRecog; let isMicListening = false;
     function initMicSystem() {
         const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
         if(SpeechRec) {
             micRecog = new SpeechRec(); micRecog.lang = 'zh-CN'; micRecog.continuous = false; micRecog.interimResults = false;
-            micRecog.onstart = () => { isMicListening = true; document.getElementById('btnMic').classList.add('listening'); document.getElementById('btnMic').innerText = '🎙️ Đang nghe...'; };
+            micRecog.onstart = () => { isMicListening = true; document.getElementById('btnMic').classList.add('listening'); document.getElementById('btnMic').innerText = '🎙️...'; };
             micRecog.onresult = (e) => {
+                if(blockManualMark) return;
                 const tr = e.results[0][0].transcript.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
-                if(currentCardIndex !== -1 && vocabList[currentCardIndex]) {
-                    const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
-                    if(tr === target || tr.includes(target)) { showToast('msg_mic_correct'); markCard(true); } 
-                    else { showToast('msg_mic_wrong', t('msg_mic_wrong') + `"${tr}"`); }
-                }
-                stopMic();
+                handleMicResult(tr);
             };
-            micRecog.onerror = () => stopMic(); micRecog.onend = () => stopMic();
+            micRecog.onerror = () => resetMicUI(); micRecog.onend = () => resetMicUI();
         }
     }
-    function toggleMic() {
-        if(!micRecog) return alert(currentLang==='vi'?'Trình duyệt của bạn không hỗ trợ Micro (Hãy dùng Chrome/Safari).':'您的浏览器不支持麦克风。');
-        if(isMicListening) stopMic(); else micRecog.start();
+    function startMic(e) {
+        if(e && e.type === 'touchstart') e.preventDefault(); 
+        if(blockManualMark) return;
+        if(!micRecog) return alert(currentLang==='vi'?'Trình duyệt không hỗ trợ Mic (Dùng Chrome/Safari).':'浏览器不支持麦克风。');
+        document.getElementById('btnMic').style.transform = 'scale(0.95)';
+        if(!isMicListening) { try { micRecog.start(); } catch(err) {} }
     }
-    function stopMic() { if(isMicListening && micRecog) micRecog.stop(); isMicListening = false; document.getElementById('btnMic').classList.remove('listening'); document.getElementById('btnMic').innerText = t('tool_mic'); }
+    function stopMic(e) {
+        if(e && e.type === 'touchend') e.preventDefault();
+        document.getElementById('btnMic').style.transform = 'scale(1)';
+        if(isMicListening && micRecog) { try { micRecog.stop(); } catch(err) {} }
+    }
+    function resetMicUI() { isMicListening = false; document.getElementById('btnMic').classList.remove('listening'); document.getElementById('btnMic').innerText = t('tool_mic'); }
+    
+    function handleMicResult(tr) {
+        if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
+        blockManualMark = true;
+        const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
+        const isCorrect = (tr === target || tr.includes(target));
+        
+        if(isCorrect) { showToast('msg_mic_correct', t('msg_mic_correct') + `${tr} (Chuyển sau 3s)`); document.getElementById('flashcard').classList.add('learned-bg'); } 
+        else { showToast('msg_mic_wrong', t('msg_mic_wrong') + `"${tr}" (Chuyển sau 3s)`); document.getElementById('flashcard').classList.add('unlearned-bg'); }
+        
+        document.getElementById('cardDetails').classList.add('show'); document.getElementById('clickHint').style.display = 'none';
+        
+        micTimeout = setTimeout(() => {
+            if(!blockManualMark) return; // Bị user ấn đè
+            blockManualMark = false;
+            document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
+            markCard(isCorrect, true);
+        }, 3000);
+    }
 
-    // ----- TÍNH NĂNG 4: QUIZ MINIGAME -----
-    let quizQuestions = []; let currentQuizIndex = 0; let quizScore = 0;
+    // ----- MINIGAME QUIZ VÔ TẬN -----
+    let quizScore = 0; let quizQuestionCount = 0;
     function startQuizMode() {
         if(vocabList.length < 4) return alert(currentLang==='vi'?'Cần ít nhất 4 từ vựng trong kho để chơi!':'至少需要4个词汇！');
-        // Chọn ngẫu nhiên 10 từ (hoặc ít hơn)
-        quizQuestions = [...vocabList].sort(() => 0.5 - Math.random()).slice(0, 10);
-        currentQuizIndex = 0; quizScore = 0; showPage('page-quiz'); loadQuizQuestion();
+        quizScore = 0; quizQuestionCount = 0; showPage('page-quiz'); loadQuizQuestion();
     }
     function loadQuizQuestion() {
-        if(currentQuizIndex >= quizQuestions.length) { alert(currentLang==='vi'?`Trò chơi kết thúc! Điểm của bạn: ${quizScore}/${quizQuestions.length}`:`游戏结束！您的得分：${quizScore}/${quizQuestions.length}`); return endQuiz(); }
-        const q = quizQuestions[currentQuizIndex]; document.getElementById('quizStatus').innerText = `Câu ${currentQuizIndex+1}/${quizQuestions.length} | Điểm: ${quizScore}`; document.getElementById('quizHanzi').innerText = q.hanzi;
+        quizQuestionCount++; document.getElementById('quizStatus').innerText = `Câu ${quizQuestionCount} | Điểm: ${quizScore}`;
+        
+        const q = vocabList[Math.floor(Math.random() * vocabList.length)];
+        document.getElementById('quizHanzi').innerText = q.hanzi;
         
         let opts = [q]; let others = vocabList.filter(v => v.id !== q.id).sort(() => 0.5 - Math.random());
-        opts.push(...others.slice(0, 3)); opts.sort(() => 0.5 - Math.random()); // Mix 4 options
+        opts.push(...others.slice(0, 3)); opts.sort(() => 0.5 - Math.random()); 
         
         const grid = document.getElementById('quizOptions'); grid.innerHTML = '';
         opts.forEach(opt => {
             const btn = document.createElement('button'); btn.className = 'quiz-option physical-obstacle'; btn.innerText = opt.meaning;
             btn.onclick = () => {
-                if(btn.classList.contains('correct') || btn.classList.contains('wrong')) return; // Already clicked
-                if(opt.id === q.id) { btn.classList.add('correct'); quizScore++; speakText(q.hanzi); setTimeout(() => { currentQuizIndex++; loadQuizQuestion(); }, 800); } 
-                else { btn.classList.add('wrong'); Array.from(grid.children).forEach(b => { if(b.innerText === q.meaning) b.classList.add('correct'); }); setTimeout(() => { currentQuizIndex++; loadQuizQuestion(); }, 1500); }
+                if(btn.classList.contains('correct') || btn.classList.contains('wrong')) return; 
+                if(opt.id === q.id) { btn.classList.add('correct'); quizScore++; speakText(q.hanzi); setTimeout(() => { loadQuizQuestion(); }, 800); } 
+                else { btn.classList.add('wrong'); Array.from(grid.children).forEach(b => { if(b.innerText === q.meaning) b.classList.add('correct'); }); setTimeout(() => { loadQuizQuestion(); }, 1500); }
             };
             grid.appendChild(btn);
         });
     }
     function endQuiz(manual=false) { if(manual && !confirm(currentLang==='vi'?'Bạn muốn thoát Minigame?':'您想退出游戏吗？')) return; showPage('page-home'); }
+
+    // FILE MNG
+    function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
+    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imp.vocab)); if (imp.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imp.dailyStats)); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); location.reload(); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
 
     window.onload = function() { initChart(); updateUI(); initWelcome(); initMicSystem(); };
 </script>
