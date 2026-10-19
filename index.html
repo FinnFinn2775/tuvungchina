@@ -21,7 +21,7 @@
             --item-bg: #f2f2f7;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.8s, color 0.8s; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.4s, color 0.4s; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Arial, sans-serif;
@@ -29,8 +29,6 @@
             padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden;
         }
-
-        #physicsCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9998; opacity: 0.65; }
 
         .welcome-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--card-bg); 
@@ -40,13 +38,8 @@
         .welcome-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .welcome-content { text-align: center; transform: translateY(30px) scale(0.95); opacity: 0; animation: welcomePopUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.1s; }
         @keyframes welcomePopUp { to { transform: translateY(0) scale(1); opacity: 1; } }
-        .welcome-icon { font-size: 60px; margin-bottom: 12px; animation: float 3s ease-in-out infinite; }
+        .welcome-icon { font-size: 60px; margin-bottom: 12px; }
         .welcome-text { font-size: 24px; font-weight: 800; color: var(--primary); margin-bottom: 4px; padding: 0 16px; }
-        .welcome-weather-desc { font-size: 15px; font-weight: 600; color: var(--text-sub); margin-bottom: 8px; }
-        .welcome-event { font-size: 16px; font-weight: 700; color: var(--danger); margin-top: 8px; animation: pulse 2s infinite; display: none;}
-        
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
         .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
         .stagger-item { opacity: 0; transform: translateY(20px) scale(0.98); visibility: hidden; }
@@ -58,14 +51,14 @@
         .page.active { display: flex; flex-direction: column; gap: 16px; opacity: 1; transform: translateY(0) scale(1); }
         .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; color: var(--text-main); }
 
-        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item, .quiz-option { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item, .quiz-option { cursor: pointer; user-select: none; }
         button:active, .btn-menu:active, .stat-item:active, .segment-btn:active, .btn-back:active, .vocab-item:active, .quiz-option:active { transform: scale(0.95) !important; }
 
-        .btn-back { background: var(--item-bg); color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none; }
+        .btn-back { background: var(--item-bg); color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none; transition: 0.2s;}
         .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 10000; display: none; animation: fadeInDown 0.3s ease; text-align: center;}
 
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; text-align: center; }
-        .stat-item { background: var(--item-bg); padding: 8px 2px; border-radius: 12px; border: 1px solid var(--border); }
+        .stat-item { background: var(--item-bg); padding: 8px 2px; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
         .stat-number { font-size: 17px; font-weight: 700; color: var(--text-main); }
         .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
         
@@ -81,7 +74,7 @@
         .input-group textarea { resize: vertical; min-height: 60px; }
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         
-        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; transition: transform 0.2s;}
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-warning { background: var(--warning); color: white; }
         .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid var(--border); }
@@ -92,17 +85,33 @@
         .btn-reset { background: rgba(255, 59, 48, 0.1); color: var(--danger); padding: 12px 8px; font-size: 13px; border-radius: 12px; font-weight: 600; }
 
         .segment-control { display: flex; background: var(--border); padding: 3px; border-radius: 10px; margin-bottom: 12px; }
-        .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; }
+        .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; transition: 0.2s;}
         .segment-btn.active { background: var(--card-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
 
         .swipe-container { position: relative; width: 100%; min-height: 340px; }
-        .flashcard { width: 100%; min-height: 340px; position: relative; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); padding: 48px 20px 24px 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; user-select: none; transition: all 0.3s; }
+        
+        /* Hiệu ứng Flashcard mượt mà */
+        .flashcard { 
+            width: 100%; min-height: 340px; position: relative; background: var(--card-bg); 
+            border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); 
+            padding: 48px 20px 24px 20px; text-align: center; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; cursor: pointer; user-select: none; 
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, background-color 0.4s ease; 
+        }
         .flashcard:active { transform: scale(0.96); }
         .flashcard.learned-bg { background-color: rgba(52,199,89,0.15) !important; border-color: var(--success) !important; }
         .flashcard.unlearned-bg { background-color: rgba(255,59,48,0.15) !important; border-color: var(--danger) !important; }
-        .flashcard.card-exit { opacity: 0 !important; transform: scale(0.85) translateY(-20px) !important; }
-        .flashcard.card-enter { animation: popInCard 0.4s forwards; }
-        @keyframes popInCard { from { opacity: 0; transform: scale(0.9) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        
+        /* Trượt êm ra ngoài */
+        .flashcard.card-exit-left { opacity: 0 !important; transform: scale(0.9) translateX(-40px) !important; }
+        .flashcard.card-exit-right { opacity: 0 !important; transform: scale(0.9) translateX(40px) !important; }
+        
+        /* Trượt êm vào trong */
+        .flashcard.card-enter { animation: popInCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popInCard { 
+            from { opacity: 0; transform: scale(0.9) translateY(30px); } 
+            to { opacity: 1; transform: scale(1) translateY(0); } 
+        }
 
         .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
         .card-details { display: none; width: 100%; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); animation: fadeIn 0.3s ease; }
@@ -113,31 +122,43 @@
         .example-box { margin-top: 10px; padding: 10px 12px; background: rgba(255, 149, 0, 0.1); border-radius: 12px; border-left: 3px solid var(--warning); text-align: left; font-size: 14px; color: var(--text-main); }
         .example-title { font-size: 11px; font-weight: 700; color: var(--warning); margin-bottom: 3px; }
 
-        .related-box { margin-top: 10px; padding: 10px; background: var(--item-bg); border-radius: 12px; border: 1px solid var(--border); text-align: left; max-height: 120px; overflow-y: auto; }
-        .related-title { font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
-        .related-item { font-size: 13px; padding: 4px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; align-items: center; color: var(--text-main); }
-        .related-item:last-child { border-bottom: none; }
-        .related-hanzi { font-weight: 700; font-size: 14px; }
-        .related-py { color: var(--danger); font-size: 12px; }
-        .related-meaning { color: var(--text-sub); font-size: 12px; }
-
         .highlight-char { color: var(--danger); font-size: 15px; font-weight: 800; }
         .click-hint { font-size: 12px; color: var(--text-sub); margin-top: 6px; }
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 500; }
         .card-tools { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 10; }
-        .btn-tool { width: auto; padding: 5px 8px; font-size: 11px; border-radius: 8px; font-weight: 600; border: none;}
+        .btn-tool { width: auto; padding: 5px 10px; font-size: 12px; border-radius: 8px; font-weight: 600; border: none; transition: 0.2s;}
         .btn-edit { background: var(--border); color: var(--primary); }
         .btn-delete { background: rgba(255,59,48,0.1); color: var(--danger); }
         .btn-speak { background: rgba(0,122,255,0.1); color: var(--primary); }
-        .btn-mic { background: rgba(52,199,89,0.1); color: var(--success); transition: 0.3s; user-select: none; -webkit-user-select: none; touch-action: manipulation;}
-        .btn-mic.listening { background: var(--danger) !important; color: white !important; animation: pulseMic 1s infinite; transform: scale(0.95); }
-        @keyframes pulseMic { 0% { transform: scale(0.95); } 50% { transform: scale(1.05); } 100% { transform: scale(0.95); } }
 
-        .action-btns { display: flex; gap: 12px; }
+        .action-btns { display: flex; gap: 12px; margin-top: 4px; }
         .btn-know { background: rgba(52,199,89,0.15); color: var(--success); }
         .btn-unknow { background: rgba(255,59,48,0.15); color: var(--danger); }
-        .btn-undo { background: var(--item-bg); color: var(--text-main); padding: 10px; font-size: 14px; margin-top: 8px; border-radius: 12px; border: 1px solid var(--border);}
+
+        .btn-undo { background: var(--item-bg); color: var(--text-main); padding: 10px; font-size: 14px; border-radius: 12px; border: 1px solid var(--border); width: 100%;}
         .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); }
+
+        /* Nút Mic tròn trung bình đẹp mắt */
+        .btn-mic-round {
+            width: 66px; height: 66px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #5856d6);
+            color: white; font-size: 26px;
+            display: flex; justify-content: center; align-items: center;
+            border: none; box-shadow: 0 6px 16px rgba(0,122,255,0.3);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, background 0.3s;
+            user-select: none; -webkit-user-select: none; touch-action: manipulation;
+        }
+        .btn-mic-round:active { transform: scale(0.85) !important; box-shadow: 0 3px 8px rgba(0,122,255,0.2); }
+        .btn-mic-round.listening { 
+            background: linear-gradient(135deg, var(--danger), #ff2d55);
+            animation: pulseMic 1.2s infinite cubic-bezier(0.66, 0, 0, 1); 
+        }
+        @keyframes pulseMic { 
+            0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.6); } 
+            70% { box-shadow: 0 0 0 16px rgba(255, 59, 48, 0); } 
+            100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); } 
+        }
+        .mic-label { font-size: 12px; font-weight: 600; color: var(--text-sub); margin-top: -4px; text-transform: uppercase; }
 
         .streak-card { background: linear-gradient(135deg, var(--primary), #5856d6); color: white; padding: 16px; border-radius: 18px; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
         .streak-number { font-size: 20px; font-weight: 800; }
@@ -179,14 +200,10 @@
 </head>
 <body>
 
-<canvas id="physicsCanvas"></canvas>
-
 <div class="welcome-overlay" id="welcomeOverlay">
     <div class="welcome-content">
         <div class="welcome-icon" id="welcomeIcon">🌅</div>
         <div class="welcome-text" id="welcomeText">Chào buổi sáng</div>
-        <div class="welcome-weather-desc" id="welcomeWeatherDesc">Hà Nội: Đang lấy dữ liệu...</div>
-        <div class="welcome-event" id="welcomeEvent"></div>
     </div>
 </div>
 
@@ -198,7 +215,7 @@
     <div id="page-home" class="page active">
         <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
         
-        <div class="card-box stagger-item physical-obstacle">
+        <div class="card-box stagger-item">
             <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Tiến Độ SRS</h3>
             <div class="stats-grid">
                 <div class="stat-item" onclick="openVocabListFilter('all')"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label" data-i18n="stat_total">Tổng từ</div></div>
@@ -212,26 +229,26 @@
             </div>
         </div>
 
-        <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('due')">
+        <button class="btn-menu stagger-item" onclick="startStudy('due')">
             <span data-i18n="btn_due">🎯 Ôn Tập SRS (Từ Cần Ôn Hôm Nay)</span> <span>➔</span>
         </button>
-        <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('today')">
+        <button class="btn-menu stagger-item" onclick="startStudy('today')">
             <span style="color: var(--primary); font-weight:700;"><span data-i18n="btn_today">✨ Chỉ Ôn Từ Mới Thêm HÔM NAY</span> (<span id="todayCountBadge">0</span>)</span> <span>➔</span>
         </button>
-        <button class="btn-menu stagger-item physical-obstacle" onclick="startStudy('all')"><span data-i18n="btn_all">🎴 Ôn Lại Tất Cả Từ Vựng</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item physical-obstacle" style="background: rgba(255,149,0,0.1); border-color: var(--warning);" onclick="startQuizMode()">
+        <button class="btn-menu stagger-item" onclick="startStudy('all')"><span data-i18n="btn_all">🎴 Ôn Lại Tất Cả Từ Vựng</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning);" onclick="startQuizMode()">
             <span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Trắc Nghiệm Chơi Vô Tận</span> <span>➔</span>
         </button>
         
-        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-add')"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item physical-obstacle" onclick="openVocabListFilter('all')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-time-stats')"><span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item physical-obstacle" onclick="showPage('page-settings')"><span data-i18n="btn_settings">⚙️ Cài Đặt Hệ Thống & Hiệu ứng</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item" onclick="showPage('page-add')"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item" onclick="openVocabListFilter('all')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item" onclick="showPage('page-time-stats')"><span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span></button>
+        <button class="btn-menu stagger-item" onclick="showPage('page-settings')"><span data-i18n="btn_settings">⚙️ Cài Đặt Hệ Thống</span> <span>➔</span></button>
 
-        <div class="backup-group stagger-item physical-obstacle">
+        <div class="backup-group stagger-item">
             <div class="backup-row">
-                <button class="btn-backup physical-obstacle" onclick="exportData()" data-i18n="btn_backup">📥 Tải sao lưu về máy</button>
-                <button class="btn-backup physical-obstacle" onclick="document.getElementById('importFile').click()" data-i18n="btn_restore">📤 Khôi phục dữ liệu</button>
+                <button class="btn-backup" onclick="exportData()" data-i18n="btn_backup">📥 Tải sao lưu về máy</button>
+                <button class="btn-backup" onclick="document.getElementById('importFile').click()" data-i18n="btn_restore">📤 Khôi phục dữ liệu</button>
                 <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importData(event)">
             </div>
         </div>
@@ -239,17 +256,9 @@
 
     <!-- 2. MÀN HÌNH CÀI ĐẶT -->
     <div id="page-settings" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="card-box physical-obstacle">
+        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <div class="card-box">
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" data-i18n="settings_title">Cài Đặt Hệ Thống</h3>
-            <div class="setting-item">
-                <div><div class="setting-label" data-i18n="effect_title">Chế độ Hiệu ứng</div></div>
-                <div style="width: 140px;">
-                    <select id="effectThemeSelect" onchange="changeEffectMode(this.value)">
-                        <option value="none">❌ Tắt hiệu ứng</option><option value="auto">Auto: Thời tiết HN</option><option value="random">Ngẫu nhiên (105+)</option>
-                    </select>
-                </div>
-            </div>
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="welcome_title">Màn hình Chào mừng</div></div>
                 <div><input type="checkbox" id="welcomeToggle" onchange="toggleWelcome(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);"></div>
@@ -266,24 +275,24 @@
                 <div><div class="setting-label" data-i18n="auto_speech_title">Tự động đọc khi đổi thẻ</div></div>
                 <div><input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);"></div>
             </div>
-            <button class="btn-primary physical-obstacle" style="margin-top: 16px;" onclick="testSpeech()" data-i18n="btn_test_speech">🔊 Thử giọng đọc (你好)</button>
-            <button class="btn-reset physical-obstacle" style="margin-top:10px;" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset toàn bộ tiến độ học SRS về 0</button>
+            <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()" data-i18n="btn_test_speech">🔊 Thử giọng đọc (你好)</button>
+            <button class="btn-reset" style="margin-top:10px;" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset toàn bộ tiến độ học SRS về 0</button>
         </div>
     </div>
 
     <!-- 3. MÀN HÌNH THỐNG KÊ THỜI GIAN -->
     <div id="page-time-stats" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px;">
-            <div class="streak-card physical-obstacle" style="padding: 12px;"><div style="font-size: 10px; opacity: 0.9;" data-i18n="total_days">TỔNG NGÀY HỌC</div><div class="streak-number" id="totalDaysCount">0</div></div>
-            <div class="streak-card physical-obstacle" style="padding: 12px; background: linear-gradient(135deg, #34c759, #28a745);"><div style="font-size: 10px; opacity: 0.9;" data-i18n="total_time">TỔNG THỜI GIAN HỌC</div><div class="streak-number" id="totalTimeCount">0</div></div>
+            <div class="streak-card" style="padding: 12px;"><div style="font-size: 10px; opacity: 0.9;" data-i18n="total_days">TỔNG NGÀY HỌC</div><div class="streak-number" id="totalDaysCount">0</div></div>
+            <div class="streak-card" style="padding: 12px; background: linear-gradient(135deg, #34c759, #28a745);"><div style="font-size: 10px; opacity: 0.9;" data-i18n="total_time">TỔNG THỜI GIAN HỌC</div><div class="streak-number" id="totalTimeCount">0</div></div>
         </div>
-        <div class="compare-box physical-obstacle">
+        <div class="compare-box">
             <div><div class="compare-title" data-i18n="compare_title">So với ngày hôm qua</div><div class="compare-val" id="compareDiffVal">0 phút</div></div>
             <div class="compare-tag tag-equal" id="compareTag"><span id="compareTagIcon">➖</span> <span id="compareTagPercent">0%</span></div>
         </div>
-        <div class="card-box physical-obstacle">
-            <div class="segment-control physical-obstacle">
+        <div class="card-box">
+            <div class="segment-control">
                 <button class="segment-btn active" id="btn7" onclick="renderTimeStats(7)" data-i18n="time_7">7 Ngày</button>
                 <button class="segment-btn" id="btn30" onclick="renderTimeStats(30)" data-i18n="time_30">30 Ngày</button>
                 <button class="segment-btn" id="btn90" onclick="renderTimeStats(90)" data-i18n="time_90">90 Ngày</button>
@@ -295,27 +304,27 @@
 
     <!-- 4. MÀN HÌNH THÊM TỪ -->
     <div id="page-add" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="card-box physical-obstacle">
+        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <div class="card-box">
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle" data-i18n="add_title">Thêm Từ Vựng Mới</h3>
             <div class="input-group"><label data-i18n="lbl_hanzi">Chữ Hán:</label><input type="text" id="hanziInput" data-i18n-ph="ph_hanzi" oninput="autoPinyin(); checkDuplicateHanzi();"></div>
             <div class="duplicate-alert" id="duplicateBox" style="display:none; background: rgba(255,149,0,0.1); border: 1px solid var(--warning); padding:10px; border-radius:12px; margin-bottom:12px;">
                 <div style="font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 4px;" data-i18n="dup_warn">⚠️ Từ này đã tồn tại!</div>
                 <div style="font-size: 13px; color: var(--text-main); margin-bottom: 8px;" id="duplicateText"></div>
-                <button class="btn-warning physical-obstacle" style="padding: 8px; font-size: 13px;" onclick="loadDuplicateToEdit()" data-i18n="btn_edit_old">✏️ Sửa từ cũ này</button>
+                <button class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="loadDuplicateToEdit()" data-i18n="btn_edit_old">✏️ Sửa từ cũ này</button>
             </div>
             <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" readonly data-i18n-ph="ph_pinyin"></div>
             <div class="input-group"><label data-i18n="lbl_meaning">Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput" data-i18n-ph="ph_meaning"></div>
             <div class="input-group"><label data-i18n="lbl_example">Ví dụ (Tùy chọn):</label><textarea id="exampleInput" data-i18n-ph="ph_example"></textarea></div>
-            <button class="btn-primary physical-obstacle" id="saveBtn" onclick="addOrUpdateWord()" data-i18n="btn_save_word">Lưu Từ Vựng</button>
-            <button class="btn-back physical-obstacle" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;" data-i18n="btn_cancel">Hủy Chỉnh Sửa</button>
+            <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()" data-i18n="btn_save_word">Lưu Từ Vựng</button>
+            <button class="btn-back" id="cancelEditBtn" onclick="resetForm()" style="display:none; margin-top:8px;" data-i18n="btn_cancel">Hủy Chỉnh Sửa</button>
         </div>
     </div>
 
     <!-- 5. DANH SÁCH TỪ -->
     <div id="page-list" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="card-box physical-obstacle">
+        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <div class="card-box">
             <h3 style="margin: 0 0 10px 0; font-size: 18px;" id="listTitleHeader">Tất Cả Từ Vựng (<span id="listTotalCount">0</span>)</h3>
             <div class="input-group" style="margin-bottom: 8px;"><input type="text" id="searchVocabInput" data-i18n-ph="ph_search" oninput="renderVocabList()"></div>
             <div class="vocab-list-container" id="vocabListContainer"></div>
@@ -324,17 +333,13 @@
 
     <!-- 6. FLASHCARD & Luyện Phát Âm (SRS) -->
     <div id="page-flashcard" class="page">
-        <button class="btn-back physical-obstacle" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
+        <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div class="hint-swipe" data-i18n="hint_swipe">Bấm các nút bên dưới để chọn mức độ thuộc (SRS)</div>
         <div class="swipe-container">
-            <div class="flashcard physical-obstacle" id="flashcard">
+            <div class="flashcard" id="flashcard">
                 <div class="card-tools" onclick="event.stopPropagation()">
-                    <button class="btn-tool btn-mic physical-obstacle" id="btnMic" 
-                        onmousedown="startMic(event)" onmouseup="stopMic(event)" onmouseleave="stopMic(event)"
-                        ontouchstart="startMic(event)" ontouchend="stopMic(event)" oncontextmenu="return false;"
-                        data-i18n="tool_mic">🎤 Nhấn giữ để đọc</button>
-                    <button class="btn-tool btn-speak physical-obstacle" onclick="speakCurrentCard()" data-i18n="tool_speak">🔊 Nghe</button>
-                    <button class="btn-tool btn-edit physical-obstacle" onclick="editCurrentCard()" data-i18n="tool_edit">✏️</button>
+                    <button class="btn-tool btn-speak" onclick="speakCurrentCard()" data-i18n="tool_speak">🔊 Nghe</button>
+                    <button class="btn-tool btn-edit" onclick="editCurrentCard()" data-i18n="tool_edit">✏️ Sửa</button>
                 </div>
                 <span class="seen-badge" id="seenCount">SRS LV: 0</span>
                 <div class="hanzi-display" id="displayHanzi">Vui lòng thêm từ</div>
@@ -346,17 +351,34 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Nút Trái / Phải -->
         <div class="action-btns">
-            <button class="btn-know physical-obstacle" onclick="markCard(true)" data-i18n="btn_know">👈 Đã thuộc</button>
-            <button class="btn-unknow physical-obstacle" onclick="markCard(false)" data-i18n="btn_unknow">Chưa thuộc 👉</button>
+            <button class="btn-know" onclick="markCard(true)" data-i18n="btn_know">👈 Đã thuộc</button>
+            <button class="btn-unknow" onclick="markCard(false)" data-i18n="btn_unknow">Chưa thuộc 👉</button>
         </div>
-        <button class="btn-undo physical-obstacle" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;" data-i18n="btn_undo">↩ Quay lại từ trước đó</button>
+
+        <!-- Cụm chức năng phụ trợ: Hoàn tác và Ghi âm -->
+        <div style="display: flex; flex-direction: column; align-items: center; margin-top: 8px; gap: 14px; width: 100%;">
+            <!-- Nút Hoàn tác -->
+            <button class="btn-undo" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;">↩ Quay lại (0/3)</button>
+            
+            <!-- Nút Mic tròn -->
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <button class="btn-mic-round" id="btnMic" 
+                    onmousedown="startMic(event)" onmouseup="stopMic(event)" onmouseleave="stopMic(event)"
+                    ontouchstart="startMic(event)" ontouchend="stopMic(event)" oncontextmenu="return false;">
+                    🎤
+                </button>
+                <div class="mic-label">Nhấn giữ để đọc</div>
+            </div>
+        </div>
     </div>
 
     <!-- 7. MINIGAME QUIZ CHƠI VÔ TẬN -->
     <div id="page-quiz" class="page">
-        <button class="btn-back physical-obstacle" onclick="endQuiz(true)"><span data-i18n="btn_quit_quiz">⬅ Thoát Minigame</span></button>
-        <div class="quiz-question-box physical-obstacle">
+        <button class="btn-back" onclick="endQuiz(true)"><span data-i18n="btn_quit_quiz">⬅ Thoát Minigame</span></button>
+        <div class="quiz-question-box">
             <div class="quiz-status" id="quizStatus">Câu 1 | Điểm: 0</div>
             <div class="quiz-hanzi" id="quizHanzi">字</div>
         </div>
@@ -375,7 +397,7 @@
         vi: {
             app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ SRS", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem", stat_seen: "Đã xem",
             btn_due: "🎯 Ôn Tập SRS (Từ Cần Ôn Hôm Nay)", btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_all: "🎴 Ôn Lại Tất Cả Từ Vựng", btn_add: "➕ Thêm Từ Vựng Mới", btn_quiz: "🎮 Trắc Nghiệm Chơi Vô Tận",
-            btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống & Hiệu ứng", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
+            btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
             btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset toàn bộ tiến độ học SRS về 0",
             btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị",
             speed_title: "Tốc độ đọc giọng nói", auto_speech_title: "Tự động đọc khi đổi thẻ",
@@ -383,14 +405,14 @@
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
-            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️", tool_mic: "🎤 Nhấn giữ để đọc", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước đó",
-            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", effect_title: "Chế độ Hiệu ứng", welcome_title: "Màn hình Chào mừng",
+            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại",
+            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame"
         },
         zh: {
             app_title: "中文复习", stats_title: "SRS 进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看", stat_seen: "已查看",
             btn_due: "🎯 SRS 每日复习", btn_today: "✨ 仅复习今天新增的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇", btn_quiz: "🎮 无限测验迷你游戏",
-            btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 语音、特效与系统设置", btn_time_stats: "📈 时间与进度统计",
+            btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 系统设置", btn_time_stats: "📈 时间与进度统计",
             btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有 SRS 学习进度",
             btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言",
             speed_title: "语音播放速度", auto_speech_title: "切换卡片时自动朗读",
@@ -398,8 +420,8 @@
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
             lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
-            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️", tool_mic: "🎤 长按录音", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
-            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "SRS 级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", effect_title: "特效模式", welcome_title: "欢迎屏幕",
+            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "SRS 级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
             msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏"
         }
     };
@@ -418,22 +440,17 @@
     let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
-    let currentEffectMode = localStorage.getItem('my_effect_mode') || 'auto';
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
     
-    let currentFilter = 'due', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, previousCardState = null, chartInstance = null, timeChartInstance = null, currentRange = 7;
+    let currentFilter = 'due', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, currentRange = 7;
     let blockManualMark = false; let micTimeout = null;
+    let historyStack = []; // Lưu trữ tối đa 3 lần Undo
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
     function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
     function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return d.toISOString().split('T')[0]; }
 
-    // Tương thích dữ liệu cũ cho SRS
-    vocabList.forEach(item => {
-        if (item.interval === undefined) item.interval = 0;
-        if (item.ease === undefined) item.ease = 2.5;
-        if (!item.nextReview) item.nextReview = getTodayKey();
-    });
+    vocabList.forEach(item => { if (item.interval === undefined) item.interval = 0; if (item.ease === undefined) item.ease = 2.5; if (!item.nextReview) item.nextReview = getTodayKey(); });
 
     setInterval(() => {
         const p = document.getElementById('page-flashcard');
@@ -443,98 +460,17 @@
         }
     }, 1000);
 
-    // ----- 105 HIỆU ỨNG VẬT LÝ -----
-    const ALL_EFFECTS = [
-        {id: 1, name: "Nắng Đẹp", emj: ['☀️','✨','🌻']}, {id: 2, name: "Trời Mưa", emj: ['💧','💦','🌧️']}, {id: 3, name: "Tuyết Rơi", emj: ['❄️','⛄','🌨️']}, {id: 4, name: "Nhiều Mây", emj: ['☁️','🫧']}, {id: 5, name: "Sấm Chớp", emj: ['⚡','🌩️']}, {id: 6, name: "Cầu Vồng", emj: ['🌈','✨']}, {id: 7, name: "Gió Cuốn", emj: ['🌪️','🍃']}, {id: 8, name: "Mưa Đá", emj: ['🧊','💧']}, {id: 9, name: "Sương Mù", emj: ['🌫️','☁️']}, {id: 10, name: "Trời Sao", emj: ['🌌','⭐']},
-        {id: 11, name: "Hoa Đào", emj: ['🌸','💮']}, {id: 12, name: "Lá Mùa Thu", emj: ['🍁','🍂']}, {id: 13, name: "Hoa Hồng", emj: ['🌹','🥀']}, {id: 14, name: "Hoa Cúc", emj: ['🌼','🌿']}, {id: 15, name: "Cây Tre", emj: ['🎋','🎍']}, {id: 16, name: "Nấm Rừng", emj: ['🍄','🌲']}, {id: 17, name: "Xương Rồng", emj: ['🌵','☀️']}, {id: 18, name: "Hoa Dâm Bụt", emj: ['🌺','🌴']}, {id: 19, name: "Cỏ Ba Lá", emj: ['🍀','🐞']}, {id: 20, name: "Quả Thông", emj: ['🌰','🌲']},
-        {id: 21, name: "Bướm Bay", emj: ['🦋','✨']}, {id: 22, name: "Chim Chóc", emj: ['🐦','🕊️']}, {id: 23, name: "Ong Thợ", emj: ['🐝','🍯']}, {id: 24, name: "Cá Bơi", emj: ['🐟','🐠','🫧']}, {id: 25, name: "Mèo Con", emj: ['🐱','🐾']}, {id: 26, name: "Cún Con", emj: ['🐶','🦴']}, {id: 27, name: "Thỏ Trắng", emj: ['🐰','🥕']}, {id: 28, name: "Ếch Xanh", emj: ['🐸','💧']}, {id: 29, name: "Rùa Biển", emj: ['🐢','🌊']}, {id: 30, name: "Sứa Đèn", emj: ['🪼','🫧']},
-        {id: 31, name: "Trà Sữa", emj: ['🧋','✨']}, {id: 32, name: "Cà Phê", emj: ['☕','🍩']}, {id: 33, name: "Dâu Tây", emj: ['🍓','✨']}, {id: 34, name: "Dưa Hấu", emj: ['🍉','☀️']}, {id: 35, name: "Pizza", emj: ['🍕','🧀']}, {id: 36, name: "Hamburger", emj: ['🍔','🍟']}, {id: 37, name: "Sushi", emj: ['🍣','🍙']}, {id: 38, name: "Kem Mát", emj: ['🍦','🍨']}, {id: 39, name: "Kẹo Ngọt", emj: ['🍬','🍭']}, {id: 40, name: "Bánh Kem", emj: ['🎂','🍰']},
-        {id: 41, name: "Mặt Trăng", emj: ['🌙','✨']}, {id: 42, name: "Hành Tinh", emj: ['🪐','🌍']}, {id: 43, name: "Tên Lửa", emj: ['🚀','☄️']}, {id: 44, name: "UFO", emj: ['🛸','👽']}, {id: 45, name: "Ngôi Sao Đêm", emj: ['🌟','💫']}, {id: 46, name: "Tiền Vàng", emj: ['💰','🪙']}, {id: 47, name: "Kim Cương", emj: ['💎','✨']}, {id: 48, name: "Sách Mở", emj: ['📖','📚']}, {id: 49, name: "Chìa Khóa", emj: ['🔑','🗝️']}, {id: 50, name: "Đồng Hồ", emj: ['⏰','⏳']},
-        {id: 61, name: "Valentine", emj: ['💖','💌','💘']}, {id: 62, name: "Halloween", emj: ['🎃','👻','🦇']}, {id: 63, name: "Giáng Sinh", emj: ['🎄','🎅','🎁']}, {id: 64, name: "Năm Mới", emj: ['🎇','🎆','🎊']}, {id: 65, name: "Sinh Nhật", emj: ['🎉','🎈']}, {id: 66, name: "Nhẫn Cưới", emj: ['💍','✨']}, {id: 67, name: "Phép Thuật", emj: ['🪄','✨','🔮']}, {id: 68, name: "Lửa Cháy", emj: ['🔥','💥']}, {id: 69, name: "Đầu Lâu", emj: ['💀','🦴']}, {id: 70, name: "Rồng Lửa", emj: ['🐉','🔥']},
-        {id: 81, name: "Cười Vui", emj: ['😂','😆']}, {id: 82, name: "Mắt Trái Tim", emj: ['😍','🥰']}, {id: 83, name: "Ngầu Lòi", emj: ['😎','🔥']}, {id: 84, name: "Giận Dữ", emj: ['😡','💢']}, {id: 85, name: "Buồn Khóc", emj: ['😭','💧']}, {id: 86, name: "Ngủ Gật", emj: ['😴','💤']}, {id: 87, name: "Nổ Não", emj: ['🤯','✨']}, {id: 88, name: "Bóng Đá", emj: ['⚽','🥅']}, {id: 89, name: "Bóng Rổ", emj: ['🏀','🔥']}, {id: 90, name: "Âm Nhạc", emj: ['🎵','🎧']},
-        {id: 91, name: "Chơi Game", emj: ['🎮','🕹️']}, {id: 92, name: "Nghệ Thuật", emj: ['🎨','🖌️']}, {id: 93, name: "Nhiếp Ảnh", emj: ['📸','🎞️']}, {id: 94, name: "Máy Bay", emj: ['✈️','☁️']}, {id: 95, name: "Tàu Hỏa", emj: ['🚂','🛤️']}, {id: 96, name: "Xe Đạp", emj: ['🚲','🌳']}, {id: 97, name: "Trái Tim Vỡ", emj: ['💔','🩹']}, {id: 98, name: "Thiên Thần", emj: ['👼','✨']}, {id: 99, name: "Ác Quỷ", emj: ['😈','🔥']}, {id: 100, name: "Phân Xanh", emj: ['💩','🪰']},
-        {id: 101, name: "Gấu Bông", emj: ['🧸','🎀']}, {id: 102, name: "Lốc Xoáy", emj: ['🌀','✨']}, {id: 103, name: "Cỏ Xanh", emj: ['🌿','🌱']}, {id: 104, name: "Trăng Khuyết", emj: ['🌛','✨']}, {id: 105, name: "Hoa Sen", emj: ['🪷','💧']}
-    ];
-
-    function populateEffectSelect() {
-        const sel = document.getElementById('effectThemeSelect');
-        ALL_EFFECTS.forEach(ef => { const opt = document.createElement('option'); opt.value = ef.id; opt.innerText = `Hiệu ứng ${ef.id}: ${ef.name} ${ef.emj[0]}`; sel.appendChild(opt); });
-        sel.value = currentEffectMode;
-    }
-    
-    function changeEffectMode(val) { currentEffectMode = val; localStorage.setItem('my_effect_mode', val); applyEffectLogic(); }
     function toggleWelcome(val) { showWelcomeScreen = val; localStorage.setItem('my_show_welcome', val); }
 
-    function setDefaultTheme() {
-        const r = document.documentElement; r.style.setProperty('--bg-system', '#f2f2f7'); r.style.setProperty('--card-bg', '#ffffff'); r.style.setProperty('--text-main', '#1c1c1e'); r.style.setProperty('--text-sub', '#8e8e93'); r.style.setProperty('--primary', '#007aff'); r.style.setProperty('--border', '#e5e5ea'); r.style.setProperty('--input-bg', '#fafafa'); r.style.setProperty('--item-bg', '#f2f2f7');
-    }
-
-    // ----- PHYSICS ENGINE (120 FPS) -----
-    const canvas = document.getElementById('physicsCanvas'); const ctx = canvas.getContext('2d');
-    let particles = []; let obstacles = []; let activeEmojis = []; let lastTime = 0;
-
-    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; updateObstacles(); }
-    window.addEventListener('resize', resizeCanvas);
-
-    function updateObstacles() { obstacles = Array.from(document.querySelectorAll('.physical-obstacle')).map(el => { if(el.offsetParent === null) return null; const r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }).filter(o => o !== null); }
-
-    class Particle {
-        constructor(emoji) { this.emoji = emoji; this.x = Math.random() * canvas.width; this.y = -50 - Math.random() * 200; this.size = Math.random() * 12 + 16; this.vx = (Math.random() - 0.5) * 1.5; this.vy = Math.random() * 1.5 + 0.5; this.rotation = Math.random() * 360; this.vRot = (Math.random() - 0.5) * 3; this.elasticity = 0.4 + Math.random() * 0.3; }
-        update(dtM) {
-            this.vy += 0.05 * dtM; this.x += this.vx * dtM; this.y += this.vy * dtM; this.rotation += this.vRot * dtM;
-            for (let obs of obstacles) { if (this.x > obs.x && this.x < obs.x + obs.w && this.y + this.size/2 > obs.y && this.y - this.size/2 < obs.y + obs.h) { if (this.vy > 0 && this.y < obs.y + 15) { this.y = obs.y - this.size/2; this.vy *= -this.elasticity; this.vx *= 0.8; this.vRot *= 0.8; } } }
-            if (this.y > canvas.height + 50) { this.y = -50; this.x = Math.random() * canvas.width; this.vy = Math.random() * 1.5 + 0.5; this.vx = (Math.random() - 0.5) * 1.5; }
-        }
-        draw() { ctx.save(); ctx.translate(this.x, this.y); ctx.rotate(this.rotation * Math.PI / 180); ctx.font = `${this.size}px Arial`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(this.emoji, 0, 0); ctx.restore(); }
-    }
-
-    function animatePhysics(time) {
-        if (!lastTime) lastTime = time; let dt = time - lastTime; lastTime = time; if(dt > 100) dt = 16.66; 
-        const dtM = dt / 16.66; ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if(Math.random() < 0.1) updateObstacles(); 
-        particles.forEach(p => { p.update(dtM); p.draw(); }); requestAnimationFrame(animatePhysics);
-    }
-    function startParticles() { resizeCanvas(); particles = []; if (activeEmojis.length === 0) return; const count = Math.min(window.innerWidth / 12, 35); for(let i=0; i<count; i++) particles.push(new Particle(activeEmojis[Math.floor(Math.random() * activeEmojis.length)])); }
-
-    async function applyWeatherThemeAndGetEmojis() {
-        const root = document.documentElement;
-        try {
-            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=21.0285&longitude=105.8542&current_weather=true`); const data = await res.json(); const code = data.current_weather.weathercode; const temp = data.current_weather.temperature;
-            let descVi = "", descZh = "", emojis = [];
-            if(code === 0 || code === 1) { descVi = `Nắng, trong xanh (${temp}°C)`; descZh = `晴天 (${temp}°C)`; emojis = ['☀️', '✨', '🌻']; root.style.setProperty('--bg-system', '#f0f8ff'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#ff9500'); root.style.setProperty('--input-bg', '#fcfcfc'); root.style.setProperty('--item-bg', '#f4f9fd'); } 
-            else if(code >= 51 && code <= 67) { descVi = `Trời mưa (${temp}°C)`; descZh = `下雨 (${temp}°C)`; emojis = ['💧', '🌧️', '💦']; root.style.setProperty('--bg-system', '#e1e5ea'); root.style.setProperty('--card-bg', '#f4f6f8'); root.style.setProperty('--text-main', '#2c3e50'); root.style.setProperty('--primary', '#007aff'); root.style.setProperty('--input-bg', '#ffffff'); root.style.setProperty('--item-bg', '#ebf0f5'); } 
-            else if(code >= 71 && code <= 86) { descVi = `Trời rét/Tuyết (${temp}°C)`; descZh = `下雪/寒冷 (${temp}°C)`; emojis = ['❄️', '⛄', '🌨️']; root.style.setProperty('--bg-system', '#e0f7fa'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-main', '#006064'); root.style.setProperty('--primary', '#00bcd4'); root.style.setProperty('--input-bg', '#f5fdff'); root.style.setProperty('--item-bg', '#e8fafd'); } 
-            else if(code >= 95) { descVi = `Giông bão (${temp}°C)`; descZh = `雷暴 (${temp}°C)`; emojis = ['⚡', '🌩️']; root.style.setProperty('--bg-system', '#1c1c1e'); root.style.setProperty('--card-bg', '#2c2c2e'); root.style.setProperty('--text-main', '#f2f2f7'); root.style.setProperty('--text-sub', '#aeaeb2'); root.style.setProperty('--primary', '#ffcc00'); root.style.setProperty('--border', '#3a3a3c'); root.style.setProperty('--input-bg', '#3a3a3c'); root.style.setProperty('--item-bg', '#323234'); } 
-            else { descVi = `Trời nhiều mây (${temp}°C)`; descZh = `多云 (${temp}°C)`; emojis = ['☁️', '🫧']; root.style.setProperty('--bg-system', '#f2f2f7'); root.style.setProperty('--card-bg', '#ffffff'); root.style.setProperty('--text-main', '#1c1c1e'); root.style.setProperty('--primary', '#007aff'); root.style.setProperty('--input-bg', '#fafafa'); root.style.setProperty('--item-bg', '#f2f2f7'); }
-            document.getElementById('welcomeWeatherDesc').innerText = currentLang === 'vi' ? `Hà Nội: ${descVi}` : `河内: ${descZh}`; return emojis;
-        } catch(e) { document.getElementById('welcomeWeatherDesc').innerText = "Hà Nội: Lỗi tải thời tiết"; return ['☀️', '✨', '🌻']; }
-    }
-
-    async function applyEffectLogic() {
-        const d = new Date(); const day = d.getDate(); const month = d.getMonth() + 1;
-        if (currentEffectMode === 'none') { activeEmojis = []; setDefaultTheme(); document.getElementById('welcomeWeatherDesc').style.display = 'none'; startParticles(); return; }
-        let evVi="", evZh="";
-        if (day==14 && month==2) { activeEmojis = ['💖', '🌹', '🥰']; evVi = "Valentine!"; evZh = "情人节快乐！"; }
-        else if (day==8 && month==3) { activeEmojis = ['💐', '🌸', '👩']; evVi = "Quốc tế Phụ nữ!"; evZh = "妇女节快乐！"; }
-        else if (day==31 && month==10) { activeEmojis = ['🎃', '👻', '🦇']; evVi = "Halloween!"; evZh = "万圣节快乐！"; }
-        else if ((day==24 || day==25) && month==12) { activeEmojis = ['🎄', '🎅', '❄️']; evVi = "Giáng sinh!"; evZh = "圣诞节快乐！"; }
-        else if (day==1 && month==1) { activeEmojis = ['🎆', '🎉', '✨']; evVi = "Năm mới!"; evZh = "新年快乐！"; }
-        if (evVi) { document.getElementById('welcomeEvent').innerText = currentLang === 'vi' ? evVi : evZh; document.getElementById('welcomeEvent').style.display = 'block'; setDefaultTheme(); document.getElementById('welcomeWeatherDesc').style.display = 'none'; startParticles(); return; }
-        if (currentEffectMode === 'auto') { activeEmojis = await applyWeatherThemeAndGetEmojis(); document.getElementById('welcomeWeatherDesc').style.display = 'block'; } else { document.getElementById('welcomeWeatherDesc').style.display = 'none'; setDefaultTheme(); if (currentEffectMode === 'random') { const r = ALL_EFFECTS[Math.floor(Math.random() * ALL_EFFECTS.length)]; activeEmojis = r.emj; } else { const id = parseInt(currentEffectMode); const found = ALL_EFFECTS.find(e => e.id === id); if(found) activeEmojis = found.emj; } }
-        startParticles();
-    }
-
-    async function initWelcome() {
-        populateEffectSelect(); applyLanguage(); document.getElementById('welcomeToggle').checked = showWelcomeScreen;
-        await applyEffectLogic();
+    function initWelcome() {
+        applyLanguage(); document.getElementById('welcomeToggle').checked = showWelcomeScreen;
         if (showWelcomeScreen) {
             const h = new Date().getHours(); let pVi = "", pZh = "", icon = "";
             if (h >= 5 && h < 12) { pVi = "buổi sáng"; pZh = "早上好"; icon = "🌅"; } else if (h >= 12 && h < 13) { pVi = "buổi trưa"; pZh = "中午好"; icon = "☀️"; } else if (h >= 13 && h < 18) { pVi = "buổi chiều"; pZh = "下午好"; icon = "☀️"; } else { pVi = "buổi tối"; pZh = "晚上好"; icon = "🌙"; }
             document.getElementById('welcomeText').innerText = currentLang === 'vi' ? `Chào ${pVi}` : `${pZh}`; document.getElementById('welcomeIcon').innerText = icon;
             document.getElementById('welcomeOverlay').style.display = 'flex'; document.getElementById('welcomeOverlay').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('hidden'); startHomeAnimations(); }, 2500);
+            setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('hidden'); startHomeAnimations(); }, 1500);
         } else { document.getElementById('welcomeOverlay').style.display = 'none'; startHomeAnimations(); }
-        requestAnimationFrame(animatePhysics); 
     }
 
     // ----- CÁC HÀM APP & SRS LOGIC -----
@@ -553,14 +489,19 @@
 
     function showPage(pageId) {
         if(isMicListening) stopMic(); 
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); setTimeout(() => { document.getElementById(pageId).classList.add('active'); updateObstacles(); }, 10);
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
+        setTimeout(() => { document.getElementById(pageId).classList.add('active'); }, 10);
         if (pageId === 'page-home') { updateUI(); document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); }
         if (pageId === 'page-time-stats') renderTimeStats(currentRange); if (pageId === 'page-list') renderVocabList();
-        if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('effectThemeSelect').value = currentEffectMode; document.getElementById('welcomeToggle').checked = showWelcomeScreen; }
+        if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('welcomeToggle').checked = showWelcomeScreen; }
     }
 
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
-    function startStudy(f) { currentFilter = f; previousCardState = null; document.getElementById('btnUndoCard').style.display = 'none'; showPage('page-flashcard'); loadNextCard(); }
+    function startStudy(f) { 
+        currentFilter = f; historyStack = []; updateUndoButton(); 
+        showPage('page-flashcard'); loadNextCard(); 
+    }
+    
     function autoPinyin() { const ip = document.getElementById('hanziInput').value.trim(); document.getElementById('pinyinInput').value = ip ? pinyin(ip, { toneType: 'symbol' }) : ''; }
     function checkDuplicateHanzi() { if (editingId) return; const hz = document.getElementById('hanziInput').value.trim(); const bx = document.getElementById('duplicateBox'); if (!hz) { bx.style.display = 'none'; matchedDuplicateItem = null; return; } const f = vocabList.find(v => v.hanzi === hz); if (f) { matchedDuplicateItem = f; document.getElementById('duplicateText').innerText = `Chữ: "${f.hanzi}" (${f.pinyin}) - Nghĩa: ${f.meaning}`; bx.style.display = 'block'; } else { bx.style.display = 'none'; matchedDuplicateItem = null; } }
     function loadDuplicateToEdit() { if (!matchedDuplicateItem) return; editingId = matchedDuplicateItem.id; document.getElementById('hanziInput').value = matchedDuplicateItem.hanzi; document.getElementById('pinyinInput').value = matchedDuplicateItem.pinyin; document.getElementById('meaningInput').value = matchedDuplicateItem.meaning; document.getElementById('exampleInput').value = matchedDuplicateItem.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; document.getElementById('duplicateBox').style.display = 'none'; }
@@ -595,7 +536,7 @@
         if (currentListFilter === 'learned') { tl = vocabList.filter(v => v.interval > 0); tt = t('stat_learned'); } else if (currentListFilter === 'unlearned') { tl = vocabList.filter(v => v.nextReview <= tk && v.seenCount > 0); tt = t('stat_unlearned'); } else if (currentListFilter === 'unseen') { tl = vocabList.filter(v => v.seenCount === 0); tt = t('stat_unseen'); } else if (currentListFilter === 'today') { tl = vocabList.filter(v => v.dateAdded === tk); tt = t('btn_today').replace("✨ ", ""); }
         const flt = tl.filter(v => v.hanzi.toLowerCase().includes(q) || v.meaning.toLowerCase().includes(q) || v.pinyin.toLowerCase().includes(q) || (v.example && v.example.toLowerCase().includes(q))); document.getElementById('listTitleHeader').innerHTML = `${tt} (<span id="listTotalCount">${flt.length}</span>)`;
         if (flt.length === 0) { c.innerHTML = `<div style="text-align:center; color:var(--text-sub); padding:20px;">${t('empty_list')}</div>`; return; }
-        flt.forEach(it => { const d = document.createElement('div'); d.className = 'vocab-item physical-obstacle'; let st = it.interval > 0 ? `• <span style="color:var(--success);">Tới hạn: ${it.nextReview}</span>` : ''; let eg = it.example ? `<div class="vocab-item-eg">💬 ${it.example}</div>` : ''; d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${it.pinyin}</span></div><div class="vocab-item-sub">${it.meaning} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak physical-obstacle" onclick="speakText('${it.hanzi}')">🔊</button><button class="btn-tool btn-edit physical-obstacle" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete physical-obstacle" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; c.appendChild(d); }); updateObstacles();
+        flt.forEach(it => { const d = document.createElement('div'); d.className = 'vocab-item'; let st = it.interval > 0 ? `• <span style="color:var(--success);">Tới hạn: ${it.nextReview}</span>` : ''; let eg = it.example ? `<div class="vocab-item-eg">💬 ${it.example}</div>` : ''; d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${it.pinyin}</span></div><div class="vocab-item-sub">${it.meaning} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${it.hanzi}')">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; c.appendChild(d); }); 
     }
 
     function editWordFromList(id) { const i = vocabList.find(v => v.id === id); if (!i) return; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
@@ -631,13 +572,27 @@
         renderCardUI(sel);
     }
 
-    // ----- THUẬT TOÁN SRS & MIC -----
+    // ----- THUẬT TOÁN SRS, HISTORY MAX 3 & MIC -----
+    function updateUndoButton() {
+        const btn = document.getElementById('btnUndoCard');
+        if(historyStack.length > 0) {
+            btn.style.display = 'block';
+            btn.innerText = `↩ Quay lại (${historyStack.length}/3)`;
+        } else {
+            btn.style.display = 'none';
+        }
+    }
+
     function markCard(isL, fromMic = false) {
         if (!fromMic && blockManualMark) { clearTimeout(micTimeout); blockManualMark = false; document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); }
         if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; isAnimating = true; 
+        
         const i = vocabList[currentCardIndex]; 
-        previousCardState = { index: currentCardIndex, oldInterval: i.interval, oldEase: i.ease, oldNextReview: i.nextReview, oldSeen: i.seenCount }; 
-        document.getElementById('btnUndoCard').style.display = 'block';
+        
+        // Lưu lịch sử (tối đa 3)
+        historyStack.push({ index: currentCardIndex, oldInterval: i.interval, oldEase: i.ease, oldNextReview: i.nextReview, oldSeen: i.seenCount });
+        if(historyStack.length > 3) historyStack.shift();
+        updateUndoButton();
         
         i.seenCount += 1;
         if (isL) {
@@ -649,20 +604,53 @@
         i.nextReview = getNextReviewDate(i.interval);
 
         saveData(); updateUI();
-        const c = document.getElementById('flashcard'); if (isL) c.classList.add('learned-bg'); else c.classList.add('unlearned-bg'); c.classList.add('card-exit');
-        setTimeout(() => { c.classList.remove('learned-bg', 'unlearned-bg', 'card-exit'); loadNextCard(); c.classList.add('card-enter'); setTimeout(() => { c.classList.remove('card-enter'); isAnimating = false; }, 400); }, 250);
+        
+        const c = document.getElementById('flashcard'); 
+        if (isL) {
+            c.classList.add('learned-bg', 'card-exit-left'); 
+        } else {
+            c.classList.add('unlearned-bg', 'card-exit-right');
+        }
+        
+        setTimeout(() => { 
+            c.classList.remove('learned-bg', 'unlearned-bg', 'card-exit-left', 'card-exit-right'); 
+            loadNextCard(); 
+            c.classList.add('card-enter'); 
+            setTimeout(() => { c.classList.remove('card-enter'); isAnimating = false; }, 400); 
+        }, 300);
     }
     
-    function undoPreviousCard() { if (!previousCardState) return; const i = vocabList[previousCardState.index]; if (i) { i.interval = previousCardState.oldInterval; i.ease = previousCardState.oldEase; i.nextReview = previousCardState.oldNextReview; i.seenCount = previousCardState.oldSeen; saveData(); updateUI(); currentCardIndex = previousCardState.index; renderCardUI(i); showToast('btn_undo'); } previousCardState = null; document.getElementById('btnUndoCard').style.display = 'none'; }
+    function undoPreviousCard() { 
+        if (historyStack.length === 0) return; 
+        const state = historyStack.pop();
+        const i = vocabList[state.index]; 
+        if (i) { 
+            i.interval = state.oldInterval; i.ease = state.oldEase; i.nextReview = state.oldNextReview; i.seenCount = state.oldSeen; 
+            saveData(); updateUI(); 
+            currentCardIndex = state.index; renderCardUI(i); 
+            
+            // Animation lướt lại êm ái
+            const c = document.getElementById('flashcard');
+            c.classList.add('card-enter');
+            setTimeout(() => { c.classList.remove('card-enter'); }, 400);
+            
+            showToast('btn_undo', currentLang==='vi'?'↩ Đã hoàn tác thành công!':'↩ 撤销成功！'); 
+        } 
+        updateUndoButton();
+    }
+    
     document.getElementById('flashcard').addEventListener('click', function() { const d = document.getElementById('cardDetails'); const h = document.getElementById('clickHint'); if (d.classList.contains('show')) { d.classList.remove('show'); h.style.display = 'block'; } else { d.classList.add('show'); h.style.display = 'none'; } speakCurrentCard(); });
     
-    // MIC SYSTEM (Nhấn giữ)
+    // MIC SYSTEM (Nhấn giữ - Nút Tròn Mới)
     let micRecog; let isMicListening = false;
     function initMicSystem() {
         const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
         if(SpeechRec) {
             micRecog = new SpeechRec(); micRecog.lang = 'zh-CN'; micRecog.continuous = false; micRecog.interimResults = false;
-            micRecog.onstart = () => { isMicListening = true; document.getElementById('btnMic').classList.add('listening'); document.getElementById('btnMic').innerText = '🎙️...'; };
+            micRecog.onstart = () => { 
+                isMicListening = true; 
+                document.getElementById('btnMic').classList.add('listening'); 
+            };
             micRecog.onresult = (e) => {
                 if(blockManualMark) return;
                 const tr = e.results[0][0].transcript.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
@@ -675,15 +663,16 @@
         if(e && e.type === 'touchstart') e.preventDefault(); 
         if(blockManualMark) return;
         if(!micRecog) return alert(currentLang==='vi'?'Trình duyệt không hỗ trợ Mic (Dùng Chrome/Safari).':'浏览器不支持麦克风。');
-        document.getElementById('btnMic').style.transform = 'scale(0.95)';
         if(!isMicListening) { try { micRecog.start(); } catch(err) {} }
     }
     function stopMic(e) {
         if(e && e.type === 'touchend') e.preventDefault();
-        document.getElementById('btnMic').style.transform = 'scale(1)';
         if(isMicListening && micRecog) { try { micRecog.stop(); } catch(err) {} }
     }
-    function resetMicUI() { isMicListening = false; document.getElementById('btnMic').classList.remove('listening'); document.getElementById('btnMic').innerText = t('tool_mic'); }
+    function resetMicUI() { 
+        isMicListening = false; 
+        document.getElementById('btnMic').classList.remove('listening'); 
+    }
     
     function handleMicResult(tr) {
         if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
@@ -721,7 +710,7 @@
         
         const grid = document.getElementById('quizOptions'); grid.innerHTML = '';
         opts.forEach(opt => {
-            const btn = document.createElement('button'); btn.className = 'quiz-option physical-obstacle'; btn.innerText = opt.meaning;
+            const btn = document.createElement('button'); btn.className = 'quiz-option'; btn.innerText = opt.meaning;
             btn.onclick = () => {
                 if(btn.classList.contains('correct') || btn.classList.contains('wrong')) return; 
                 if(opt.id === q.id) { btn.classList.add('correct'); quizScore++; speakText(q.hanzi); setTimeout(() => { loadQuizQuestion(); }, 800); } 
