@@ -335,6 +335,7 @@
                 <div class="card-tools" onclick="event.stopPropagation()">
                     <button class="btn-tool btn-speak" onclick="speakCurrentCard()" data-i18n="tool_speak">🔊 Nghe</button>
                     <button class="btn-tool btn-edit" onclick="editCurrentCard()" data-i18n="tool_edit">✏️ Sửa</button>
+                    <button class="btn-tool btn-delete" onclick="deleteCurrentCard()" data-i18n="tool_delete">🗑️ Xóa</button>
                 </div>
                 <span class="seen-badge" id="seenCount">SRS LV: 0</span>
                 <div class="hanzi-display" id="displayHanzi">Vui lòng thêm từ</div>
@@ -400,7 +401,7 @@
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
-            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
+            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
             msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame"
         },
@@ -415,7 +416,7 @@
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
             lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
-            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
             msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "SRS 级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
             msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏"
         }
@@ -437,8 +438,8 @@
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
     
     let currentFilter = 'due', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, currentRange = 7;
-    let blockManualMark = false; let micTimeout = null;
-    let historyStack = []; // Lưu trữ lịch sử toàn bộ các từ đã qua để Undo vô hạn
+    let historyStack = []; 
+    let blockManualMark = false; let actionTimeout = null;
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
     function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
@@ -492,6 +493,7 @@
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
     function startStudy(f) { 
         currentFilter = f; historyStack = []; updateUndoButton(); 
+        blockManualMark = false; clearTimeout(actionTimeout);
         showPage('page-flashcard'); loadNextCard(); 
     }
     
@@ -542,12 +544,24 @@
         saveData(); resetForm(); updateUI();
     }
     function resetAllSeenCounts() { if (vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn Reset toàn bộ tiến độ học SRS về 0?" : "确定重置所有 SRS 学习进度？")) { vocabList.forEach(v => { v.seenCount = 0; v.status = 'unlearned'; v.interval = 0; v.ease = 2.5; v.nextReview = getTodayKey(); }); saveData(); updateUI(); showToast('msg_update'); } }
+    
     function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; const i = vocabList[currentCardIndex]; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
-    function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Xóa từ này?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); loadNextCard(); updateUI(); } }
+    function deleteCurrentCard() { 
+        if (currentCardIndex === -1 || vocabList.length === 0) return; 
+        if (confirm(currentLang === 'vi' ? "Xóa từ này?" : "删除此词汇？")) { 
+            vocabList.splice(currentCardIndex, 1); 
+            saveData(); 
+            blockManualMark = false; clearTimeout(actionTimeout);
+            loadNextCard(); 
+            updateUI(); 
+        } 
+    }
+    
     function resetForm() { editingId = null; matchedDuplicateItem = null; document.getElementById('hanziInput').value = ''; document.getElementById('pinyinInput').value = ''; document.getElementById('meaningInput').value = ''; document.getElementById('exampleInput').value = ''; document.getElementById('duplicateBox').style.display = 'none'; document.getElementById('formTitle').innerText = t('add_title'); document.getElementById('saveBtn').innerText = t('btn_save_word'); document.getElementById('cancelEditBtn').style.display = "none"; }
     function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
     function renderCardUI(sel) {
+        document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
         document.getElementById('cardDetails').classList.remove('show'); document.getElementById('clickHint').style.display = 'block'; document.getElementById('displayHanzi').innerText = sel.hanzi; document.getElementById('displayPinyin').innerText = sel.pinyin; document.getElementById('displayMeaning').innerText = sel.meaning; document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.interval}`;
         const eb = document.getElementById('displayExampleBox'); const et = document.getElementById('displayExampleText'); if (sel.example && sel.example.trim() !== '') { et.innerText = sel.example; eb.style.display = 'block'; } else { eb.style.display = 'none'; }
         if (autoSpeechEnabled) speakText(sel.hanzi);
@@ -565,10 +579,10 @@
         renderCardUI(sel);
     }
 
-    // ----- HỆ THỐNG UNDO (QUAY LẠI VÔ HẠN RÚT LẠI TOÀN BỘ THAO TÁC) -----
+    // ----- HỆ THỐNG ĐÁNH GIÁ (CHỜ 3s - 5s) VÀ UNDO -----
     function updateUndoButton() {
         const btn = document.getElementById('btnUndoCard');
-        if(historyStack.length > 0) {
+        if(historyStack.length > 0 || blockManualMark) {
             btn.style.display = 'block';
             btn.innerText = t('btn_undo');
         } else {
@@ -576,13 +590,44 @@
         }
     }
 
-    function markCard(isL, fromMic = false) {
-        if (!fromMic && blockManualMark) { clearTimeout(micTimeout); blockManualMark = false; document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); }
-        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; isAnimating = true; 
+    function markCard(isL) {
+        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; 
         
+        // Nếu đang trong thời gian đếm lùi, bấm lần 2 sẽ chuyển thẻ NGAY LẬP TỨC
+        if (blockManualMark) {
+            clearTimeout(actionTimeout);
+            blockManualMark = false;
+            document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
+            executeCardTransition(isL);
+            return;
+        }
+
+        // Bắt đầu bật chế độ chờ (hiện mặt sau, đổi màu thẻ)
+        blockManualMark = true;
+        updateUndoButton();
+        
+        document.getElementById('cardDetails').classList.add('show'); 
+        document.getElementById('clickHint').style.display = 'none';
+        
+        const c = document.getElementById('flashcard');
+        if (isL) { c.classList.add('learned-bg'); } 
+        else { c.classList.add('unlearned-bg'); }
+
+        const delay = isL ? 3000 : 5000;
+        
+        actionTimeout = setTimeout(() => {
+            if (!blockManualMark) return;
+            blockManualMark = false;
+            c.classList.remove('learned-bg', 'unlearned-bg');
+            executeCardTransition(isL);
+        }, delay);
+    }
+
+    function executeCardTransition(isL) {
+        isAnimating = true;
         const i = vocabList[currentCardIndex]; 
         
-        // 1. Lưu lại toàn bộ trạng thái TRƯỚC KHI TÁC ĐỘNG vào lịch sử Undo vô hạn
+        // 1. Lưu lịch sử
         historyStack.push({
             cardIndex: currentCardIndex,
             cardId: i.id,
@@ -593,7 +638,7 @@
         });
         updateUndoButton();
         
-        // 2. Tiến hành tính toán SRS
+        // 2. Tính toán SRS
         i.seenCount += 1;
         if (isL) {
             if (i.interval === 0) i.interval = 1; else if (i.interval === 1) i.interval = 3; else i.interval = Math.round(i.interval * i.ease);
@@ -605,13 +650,13 @@
 
         saveData(); updateUI();
         
-        // 3. Hiệu ứng chuyển thẻ mượt mà
+        // 3. Hiệu ứng lướt thẻ
         const c = document.getElementById('flashcard'); 
-        if (isL) { c.classList.add('learned-bg', 'card-exit-left'); } 
-        else { c.classList.add('unlearned-bg', 'card-exit-right'); }
+        if (isL) { c.classList.add('card-exit-left'); } 
+        else { c.classList.add('card-exit-right'); }
         
         setTimeout(() => { 
-            c.classList.remove('learned-bg', 'unlearned-bg', 'card-exit-left', 'card-exit-right'); 
+            c.classList.remove('card-exit-left', 'card-exit-right'); 
             loadNextCard(); 
             c.classList.add('card-enter'); 
             setTimeout(() => { c.classList.remove('card-enter'); isAnimating = false; }, 400); 
@@ -619,15 +664,25 @@
     }
     
     function undoPreviousCard() { 
+        // 1. Nếu thẻ ĐANG CHỜ CHUYỂN, nút Undo sẽ HỦY ĐẾM LÙI và TRẢ VỀ TRẠNG THÁI GỐC
+        if (blockManualMark) {
+            clearTimeout(actionTimeout);
+            blockManualMark = false;
+            document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
+            renderCardUI(vocabList[currentCardIndex]);
+            updateUndoButton();
+            showToast('btn_undo', currentLang==='vi'?'Đã hủy chấm điểm!':'已取消评分！');
+            return;
+        }
+
+        // 2. Nếu không có thẻ nào đang chờ, Undo sẽ rút lại kết quả của từ ĐÃ ĐƯỢC CHUYỂN đi trước đó
         if (historyStack.length === 0) return; 
         
-        // Lấy lại thao tác gần nhất từ ngăn xếp lịch sử
         const lastAction = historyStack.pop();
         updateUndoButton();
         
         const i = vocabList.find(v => v.id === lastAction.cardId);
         if (i) {
-            // Rút lại hoàn toàn trạng thái SRS (trả về hệt như lúc chưa hề bấm)
             i.interval = lastAction.oldInterval;
             i.ease = lastAction.oldEase;
             i.nextReview = lastAction.oldNextReview;
@@ -636,11 +691,9 @@
             saveData(); 
             updateUI(); 
             
-            // Đưa từ đó trở lại màn hình hiển thị để chọn lại từ đầu
             currentCardIndex = vocabList.findIndex(v => v.id === i.id);
             renderCardUI(i);
             
-            // Hiệu ứng hiện thẻ mượt mà
             const c = document.getElementById('flashcard');
             c.classList.add('card-enter');
             setTimeout(() => { c.classList.remove('card-enter'); }, 400);
@@ -649,7 +702,17 @@
         }
     }
     
-    document.getElementById('flashcard').addEventListener('click', function() { const d = document.getElementById('cardDetails'); const h = document.getElementById('clickHint'); if (d.classList.contains('show')) { d.classList.remove('show'); h.style.display = 'block'; } else { d.classList.add('show'); h.style.display = 'none'; } speakCurrentCard(); });
+    // Tính năng ấn vào thẻ lật mặt sau (chạm thủ công)
+    document.getElementById('flashcard').addEventListener('click', function() { 
+        const d = document.getElementById('cardDetails'); 
+        const h = document.getElementById('clickHint'); 
+        if (d.classList.contains('show')) { 
+            d.classList.remove('show'); h.style.display = 'block'; 
+        } else { 
+            d.classList.add('show'); h.style.display = 'none'; 
+        } 
+        speakCurrentCard(); 
+    });
     
     // MIC SYSTEM (Nhấn giữ)
     let micRecog; let isMicListening = false;
@@ -662,7 +725,6 @@
                 document.getElementById('btnMic').classList.add('listening'); 
             };
             micRecog.onresult = (e) => {
-                if(blockManualMark) return;
                 const tr = e.results[0][0].transcript.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
                 handleMicResult(tr);
             };
@@ -671,7 +733,7 @@
     }
     function startMic(e) {
         if(e && e.type === 'touchstart') e.preventDefault(); 
-        if(blockManualMark) return;
+        if(blockManualMark) return; // Khóa mic nếu đang chờ chuyển thẻ
         if(!micRecog) return alert(currentLang==='vi'?'Trình duyệt không hỗ trợ Mic (Dùng Chrome/Safari).':'浏览器不支持麦克风。');
         if(!isMicListening) { try { micRecog.start(); } catch(err) {} }
     }
@@ -686,21 +748,15 @@
     
     function handleMicResult(tr) {
         if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
-        blockManualMark = true;
+        if(blockManualMark) return; // Nếu thẻ đang chờ chuyển thì bỏ qua kết quả
+        
         const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
         const isCorrect = (tr === target || tr.includes(target));
         
-        if(isCorrect) { showToast('msg_mic_correct', t('msg_mic_correct') + `${tr} (Chuyển sau 3s)`); document.getElementById('flashcard').classList.add('learned-bg'); } 
-        else { showToast('msg_mic_wrong', t('msg_mic_wrong') + `"${tr}" (Chuyển sau 3s)`); document.getElementById('flashcard').classList.add('unlearned-bg'); }
+        if(isCorrect) { showToast('msg_mic_correct', t('msg_mic_correct') + `${tr} (Chuyển sau 3s)`); } 
+        else { showToast('msg_mic_wrong', t('msg_mic_wrong') + `"${tr}" (Chuyển sau 5s)`); }
         
-        document.getElementById('cardDetails').classList.add('show'); document.getElementById('clickHint').style.display = 'none';
-        
-        micTimeout = setTimeout(() => {
-            if(!blockManualMark) return; 
-            blockManualMark = false;
-            document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
-            markCard(isCorrect, true);
-        }, 3000);
+        markCard(isCorrect);
     }
 
     // ----- MINIGAME QUIZ VÔ TẬN -----
