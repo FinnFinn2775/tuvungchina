@@ -66,8 +66,7 @@
         .chart-wrapper { position: relative; width: 160px; height: 160px; margin: 0 auto; cursor: pointer; transition: transform 0.2s; }
         .chart-wrapper:active { transform: scale(0.95); }
         .chart-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-        .chart-center-val { font-size: 24px; font-weight: 800; color: var(--primary); }
-        .chart-center-lbl { font-size: 10px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; margin-top: 2px;}
+        .chart-center-val { font-size: 28px; font-weight: 800; color: var(--primary); }
         .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
 
         .input-group { margin-bottom: 12px; }
@@ -80,10 +79,8 @@
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-warning { background: var(--warning); color: white; }
         
-        /* Chỉnh lại style cho nút chức năng */
         .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid var(--border); }
         
-        /* Nút Học SRS Gộp Duy Nhất - Cực kỳ nổi bật */
         .btn-srs-primary {
             background: linear-gradient(135deg, var(--primary), #5856d6);
             color: white; padding: 20px 18px; font-size: 17px; font-weight: 800;
@@ -99,6 +96,18 @@
         .segment-control { display: flex; background: var(--border); padding: 3px; border-radius: 10px; margin-bottom: 12px; }
         .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; transition: 0.2s;}
         .segment-btn.active { background: var(--card-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
+
+        /* Calendar Styles */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .calendar-header button { background: var(--item-bg); border: none; border-radius: 10px; width: 36px; height: 36px; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--primary); transition: 0.2s; padding: 0;}
+        .calendar-header button:active { transform: scale(0.85); background: var(--border); }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+        .cal-day-name { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; }
+        .cal-day { position: relative; font-size: 15px; font-weight: 600; padding: 10px 0; border-radius: 12px; color: var(--text-main); background: var(--item-bg); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; justify-content: center;}
+        .cal-day.empty { background: transparent; pointer-events: none; }
+        .cal-day.highlight { background: linear-gradient(135deg, #ff9500, #ff3b30); color: white; box-shadow: 0 4px 12px rgba(255,59,48,0.3); transform: scale(1.05); z-index: 2; font-weight: 800;}
+        .cal-day.today { border: 2px solid var(--primary); color: var(--primary); }
+        .cal-day.highlight.today { border: 2px solid #fff; }
 
         .swipe-container { position: relative; width: 100%; min-height: 350px; }
         
@@ -242,26 +251,25 @@
         <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
         
         <div class="card-box stagger-item">
-            <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Tiến Độ SRS</h3>
+            <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Tiến Độ Học Tập</h3>
             <div class="stats-grid">
                 <div class="stat-item" onclick="openVocabListFilter('all')"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label" data-i18n="stat_total">Tổng từ</div></div>
                 <div class="stat-item" onclick="openVocabListFilter('learned')"><div class="stat-number" id="learnedCount" data-val="0" style="color: var(--success);">0</div><div class="stat-label" data-i18n="stat_learned">Đã thuộc</div></div>
                 <div class="stat-item" onclick="openVocabListFilter('unlearned')"><div class="stat-number" id="unlearnedCount" data-val="0" style="color: var(--danger);">0</div><div class="stat-label" data-i18n="stat_unlearned">Cần ôn</div></div>
                 <div class="stat-item" onclick="openVocabListFilter('unseen')"><div class="stat-number" id="unseenCount" data-val="0" style="color: #8e8e93;">0</div><div class="stat-label" data-i18n="stat_unseen">Chưa xem</div></div>
             </div>
-            <!-- Bấm vào vòng tròn sẽ mở Modal -->
+            <!-- Biểu đồ: Bỏ nhãn chữ, chỉ còn % -->
             <div class="chart-wrapper" onclick="openMemoryModal()">
                 <canvas id="vocabChart"></canvas>
                 <div class="chart-center-text">
                     <div class="chart-center-val" id="chartPercent" data-val="0">0%</div>
-                    <div class="chart-center-lbl" data-i18n="stat_learned_label">ĐÃ THUỘC</div>
                 </div>
             </div>
         </div>
 
         <!-- Nút Gộp Duy Nhất -->
         <button class="btn-srs-primary stagger-item" onclick="startStudy('srs')">
-            🚀 Bắt Đầu Ôn Tập (SRS)
+            <span data-i18n="btn_srs">🚀 Bắt Đầu Ôn Tập</span>
         </button>
 
         <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning); margin-top: 4px;" onclick="startQuizMode()">
@@ -304,11 +312,11 @@
                 <div><input type="checkbox" id="autoSpeechToggle" checked onchange="toggleAutoSpeech(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);"></div>
             </div>
             <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()" data-i18n="btn_test_speech">🔊 Thử giọng đọc (你好)</button>
-            <button class="btn-reset" style="margin-top:10px;" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset toàn bộ tiến độ học SRS về 0</button>
+            <button class="btn-reset" style="margin-top:10px;" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset toàn bộ tiến độ học về 0</button>
         </div>
     </div>
 
-    <!-- 3. MÀN HÌNH THỐNG KÊ THỜI GIAN -->
+    <!-- 3. MÀN HÌNH THỐNG KÊ THỜI GIAN VÀ LỊCH -->
     <div id="page-time-stats" class="page">
         <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px;">
@@ -319,6 +327,7 @@
             <div><div class="compare-title" data-i18n="compare_title">So với ngày hôm qua</div><div class="compare-val" id="compareDiffVal">0 phút</div></div>
             <div class="compare-tag tag-equal" id="compareTag"><span id="compareTagIcon">➖</span> <span id="compareTagPercent">0%</span></div>
         </div>
+        
         <div class="card-box">
             <div class="segment-control">
                 <button class="segment-btn active" id="btn7" onclick="renderTimeStats(7)" data-i18n="time_7">7 Ngày</button>
@@ -326,7 +335,30 @@
                 <button class="segment-btn" id="btn90" onclick="renderTimeStats(90)" data-i18n="time_90">90 Ngày</button>
             </div>
             <div class="bar-chart-wrapper"><canvas id="timeBarChart"></canvas></div>
-            <div class="detail-list" id="detailStatsList"></div>
+        </div>
+
+        <!-- BẢNG LỊCH THÁNG (HEATMAP) -->
+        <div class="card-box" style="margin-top: 4px; padding-bottom: 20px;">
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)">&#8249;</button>
+                <div id="calendarMonthYear" style="font-size: 16px; font-weight: 800; color: var(--text-main);">Tháng 10 - 2026</div>
+                <button onclick="changeMonth(1)">&#8250;</button>
+            </div>
+            <div class="calendar-grid">
+                <div class="cal-day-name" data-i18n="day_mon">T2</div>
+                <div class="cal-day-name" data-i18n="day_tue">T3</div>
+                <div class="cal-day-name" data-i18n="day_wed">T4</div>
+                <div class="cal-day-name" data-i18n="day_thu">T5</div>
+                <div class="cal-day-name" data-i18n="day_fri">T6</div>
+                <div class="cal-day-name" data-i18n="day_sat">T7</div>
+                <div class="cal-day-name" data-i18n="day_sun">CN</div>
+            </div>
+            <div class="calendar-grid" id="calendarGridDays" style="margin-top: 10px;">
+                <!-- Dữ liệu render từ JS -->
+            </div>
+            <div style="font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 16px; font-weight: 600;" data-i18n="cal_hint">
+                🔥 = Đã học trên 30 phút
+            </div>
         </div>
     </div>
 
@@ -359,10 +391,10 @@
         </div>
     </div>
 
-    <!-- 6. FLASHCARD & Luyện Phát Âm (SRS) -->
+    <!-- 6. FLASHCARD & Luyện Phát Âm (Thuật toán) -->
     <div id="page-flashcard" class="page">
         <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
-        <div class="hint-swipe" data-i18n="hint_swipe">Bấm các nút bên dưới để chọn mức độ thuộc (SRS)</div>
+        <div class="hint-swipe" data-i18n="hint_swipe">Bấm nút dưới để chọn mức độ nhớ</div>
         <div class="swipe-container">
             <div class="flashcard" id="flashcard">
                 <div class="card-tools" onclick="event.stopPropagation()">
@@ -370,7 +402,7 @@
                     <button class="btn-tool btn-edit" onclick="editCurrentCard()" data-i18n="tool_edit">✏️ Sửa</button>
                     <button class="btn-tool btn-delete" onclick="deleteCurrentCard()" data-i18n="tool_delete">🗑️ Xóa</button>
                 </div>
-                <span class="seen-badge" id="seenCount">SRS LV: 0</span>
+                <span class="seen-badge" id="seenCount">Cấp độ: 0</span>
                 <div class="hanzi-display" id="displayHanzi">Vui lòng thêm từ</div>
                 <div class="click-hint" id="clickHint" data-i18n="click_hint">Bấm vào thẻ để hiện Pinyin & Nghĩa</div>
                 <div class="card-details" id="cardDetails">
@@ -381,18 +413,13 @@
             </div>
         </div>
         
-        <!-- Nút Trái / Phải -->
         <div class="action-btns">
             <button class="btn-know" onclick="markCard(true)" data-i18n="btn_know">👈 Đã thuộc</button>
             <button class="btn-unknow" onclick="markCard(false)" data-i18n="btn_unknow">Chưa thuộc 👉</button>
         </div>
 
-        <!-- Cụm chức năng phụ trợ: Hoàn tác và Ghi âm -->
         <div style="display: flex; flex-direction: column; align-items: center; margin-top: 8px; gap: 14px; width: 100%;">
-            <!-- Nút Hoàn tác -->
             <button class="btn-undo" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;" data-i18n="btn_undo">↩ Quay lại từ trước</button>
-            
-            <!-- Nút Mic tròn -->
             <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                 <button class="btn-mic-round" id="btnMic" 
                     onmousedown="startMic(event)" onmouseup="stopMic(event)" onmouseleave="stopMic(event)"
@@ -421,42 +448,43 @@
 <script>
     const { pinyin } = pinyinPro;
 
-    // ----- BỘ TỪ ĐIỂN I18N -----
     const dict = {
         vi: {
-            app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ SRS", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem", stat_learned_label: "ĐÃ THUỘC",
-            btn_quiz: "🎮 Trắc Nghiệm Chơi Vô Tận", memory_levels_title: "📊 Phân Tích 5 Cấp Độ Trí Nhớ", btn_close: "Đóng",
-            btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
-            btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset toàn bộ tiến độ học SRS về 0",
+            app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ Học Tập", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem",
+            btn_srs: "🚀 Bắt Đầu Ôn Tập", btn_quiz: "🎮 Trắc Nghiệm Chơi Vô Tận", memory_levels_title: "📊 Phân Tích 5 Cấp Độ Trí Nhớ", btn_close: "Đóng",
+            btn_list: "📋 Danh Sách Tất Cả Từ Vựng", list_all: "Tổng số từ", btn_settings: "⚙️ Cài Đặt Hệ Thống", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
+            btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset toàn bộ tiến độ học về 0",
             btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị",
             speed_title: "Tốc độ đọc giọng nói", auto_speech_title: "Tự động đọc khi đổi thẻ",
             btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
-            hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
-            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
-            msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame"
+            hint_swipe: "Bấm nút dưới để chọn mức độ nhớ", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
+            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "Cấp độ:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
+            msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame",
+            day_mon: "T2", day_tue: "T3", day_wed: "T4", day_thu: "T5", day_fri: "T6", day_sat: "T7", day_sun: "CN", cal_hint: "🔥 = Đã học trên 30 phút", cal_month: "Tháng"
         },
         zh: {
-            app_title: "中文复习", stats_title: "SRS 进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看", stat_learned_label: "已掌握",
-            btn_quiz: "🎮 无限测验迷你游戏", memory_levels_title: "📊 记忆级别分析", btn_close: "关闭",
-            btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 系统设置", btn_time_stats: "📈 时间与进度统计",
-            btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有 SRS 学习进度",
+            app_title: "中文复习", stats_title: "学习进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看",
+            btn_srs: "🚀 开始复习", btn_quiz: "🎮 无限测验迷你游戏", memory_levels_title: "📊 记忆级别分析", btn_close: "关闭",
+            btn_list: "📋 所有词汇列表", list_all: "总词数", btn_settings: "⚙️ 系统设置", btn_time_stats: "📈 时间与进度统计",
+            btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有学习进度",
             btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言",
             speed_title: "语音播放速度", auto_speech_title: "切换卡片时自动朗读",
             btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
             lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
-            hint_swipe: "点击下方按钮选择掌握程度 (SRS 算法)", tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
-            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "SRS 级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
-            msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏"
+            hint_swipe: "点击下方按钮选择掌握程度", tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
+            msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏",
+            day_mon: "一", day_tue: "二", day_wed: "三", day_thu: "四", day_fri: "五", day_sat: "六", day_sun: "日", cal_hint: "🔥 = 学习超过30分钟", cal_month: "月"
         }
     };
 
     let currentLang = localStorage.getItem('my_app_lang') || 'vi';
-    function changeLanguage(lang) { currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage(); if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); if (document.getElementById('page-list').classList.contains('active')) renderVocabList(); }
+    function changeLanguage(lang) { currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage(); if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); renderCalendar(); if (document.getElementById('page-list').classList.contains('active')) renderVocabList(); }
     function applyLanguage() {
         document.getElementById('languageSelect').value = currentLang; const d = dict[currentLang];
         document.querySelectorAll('[data-i18n]').forEach(el => { if (d[el.getAttribute('data-i18n')]) el.innerHTML = d[el.getAttribute('data-i18n')]; });
@@ -471,6 +499,7 @@
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
     
     let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
+    let currentCalDate = new Date();
     let historyStack = []; 
     let blockManualMark = false; let actionTimeout = null;
 
@@ -528,7 +557,8 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         setTimeout(() => { document.getElementById(pageId).classList.add('active'); }, 10);
         if (pageId === 'page-home') { updateUI(); document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); }
-        if (pageId === 'page-time-stats') renderTimeStats(currentRange); if (pageId === 'page-list') renderVocabList();
+        if (pageId === 'page-time-stats') { renderTimeStats(currentRange); renderCalendar(); }
+        if (pageId === 'page-list') renderVocabList();
         if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('welcomeToggle').checked = showWelcomeScreen; }
     }
 
@@ -542,12 +572,22 @@
     function autoPinyin() { const ip = document.getElementById('hanziInput').value.trim(); document.getElementById('pinyinInput').value = ip ? pinyin(ip, { toneType: 'symbol' }) : ''; }
     function checkDuplicateHanzi() { if (editingId) return; const hz = document.getElementById('hanziInput').value.trim(); const bx = document.getElementById('duplicateBox'); if (!hz) { bx.style.display = 'none'; matchedDuplicateItem = null; return; } const f = vocabList.find(v => v.hanzi === hz); if (f) { matchedDuplicateItem = f; document.getElementById('duplicateText').innerText = `Chữ: "${f.hanzi}" (${f.pinyin}) - Nghĩa: ${f.meaning}`; bx.style.display = 'block'; } else { bx.style.display = 'none'; matchedDuplicateItem = null; } }
     function loadDuplicateToEdit() { if (!matchedDuplicateItem) return; editingId = matchedDuplicateItem.id; document.getElementById('hanziInput').value = matchedDuplicateItem.hanzi; document.getElementById('pinyinInput').value = matchedDuplicateItem.pinyin; document.getElementById('meaningInput').value = matchedDuplicateItem.meaning; document.getElementById('exampleInput').value = matchedDuplicateItem.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; document.getElementById('duplicateBox').style.display = 'none'; }
-    function initChart() { const ctx = document.getElementById('vocabChart').getContext('2d'); chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')], datasets: [{ data: [0, 0, 0], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '74%', plugins: { legend: { display: false } } } }); }
+    
+    function initChart() { 
+        const ctx = document.getElementById('vocabChart').getContext('2d'); 
+        chartInstance = new Chart(ctx, { 
+            type: 'doughnut', 
+            data: { 
+                labels: [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')], 
+                datasets: [{ data: [0, 0, 0], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, cutout: '74%', plugins: { legend: { display: false } } } 
+        }); 
+    }
     
     function updateUI() {
         const tk = getTodayKey(); const tot = vocabList.length; 
         
-        // CÔNG THỨC 
         const usn = vocabList.filter(v => v.seenCount === 0).length; 
         const lr = vocabList.filter(v => v.seenCount > 0 && v.interval > 0 && v.nextReview > tk).length;
         const ulr = vocabList.filter(v => v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)).length;
@@ -557,68 +597,41 @@
         document.getElementById('unlearnedCount').setAttribute('data-val', ulr); 
         document.getElementById('unseenCount').setAttribute('data-val', usn); 
         
-        // Sửa Logic phần trăm hiển thị: % ĐÃ THUỘC[cite: 1]
         const pct = tot > 0 ? Math.round((lr / tot) * 100) : 0; 
         document.getElementById('chartPercent').setAttribute('data-val', pct);
         
         if (chartInstance) { chartInstance.data.datasets[0].data = [lr, ulr, usn]; }
     }
 
-    // ----- LOGIC BIỂU ĐỒ 5 CẤP ĐỘ NHỚ -----
-    function openMemoryModal() {
-        document.getElementById('memoryModal').classList.add('show');
-        renderMemoryChart();
-    }
-    
-    function closeMemoryModal() {
-        document.getElementById('memoryModal').classList.remove('show');
-    }
+    function openMemoryModal() { document.getElementById('memoryModal').classList.add('show'); renderMemoryChart(); }
+    function closeMemoryModal() { document.getElementById('memoryModal').classList.remove('show'); }
 
     function renderMemoryChart() {
         let l1 = 0, l2 = 0, l3 = 0, l4 = 0, l5 = 0;
-        
-        // Thuật toán chia rổ 5 cấp độ trí nhớ
         vocabList.forEach(v => {
-            if (v.seenCount === 0 || v.interval === 0) { l1++; } // Chưa nhớ / Từ mới
-            else if (v.interval === 1) { l2++; }                 // Mới học
-            else if (v.interval > 1 && v.interval <= 3) { l3++; }// Tạm nhớ
-            else if (v.interval > 3 && v.interval <= 15) { l4++;}// Nhớ khá
-            else { l5++; }                                       // Nhớ sâu (interval > 15)
+            if (v.seenCount === 0 || v.interval === 0) { l1++; } 
+            else if (v.interval === 1) { l2++; }                 
+            else if (v.interval > 1 && v.interval <= 3) { l3++; }
+            else if (v.interval > 3 && v.interval <= 15) { l4++;}
+            else { l5++; }                                       
         });
-
         const ctx = document.getElementById('memoryChart').getContext('2d');
         if (memoryChartInstance) memoryChartInstance.destroy();
         memoryChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: ['Chưa nhớ', 'Mới học', 'Tạm nhớ', 'Nhớ khá', 'Nhớ sâu'],
-                datasets: [{
-                    data: [l1, l2, l3, l4, l5],
-                    backgroundColor: ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#007aff'],
-                    borderRadius: 6,
-                    borderSkipped: false
-                }]
+                datasets: [{ data: [l1, l2, l3, l4, l5], backgroundColor: ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#007aff'], borderRadius: 6, borderSkipped: false }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) { return context.raw + ' từ'; }
-                        }
-                    }
-                },
-                scales: {
-                    y: { beginAtZero: true, grid: { color: '#e5e5ea' }, ticks: { stepSize: 1, color: '#8e8e93', font: {size: 11} } },
-                    x: { grid: { display: false }, ticks: { color: '#1c1c1e', font: {weight: 'bold', size: 11} } }
-                }
+                responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return context.raw + ' từ'; } } } },
+                scales: { y: { beginAtZero: true, grid: { color: '#e5e5ea' }, ticks: { stepSize: 1, color: '#8e8e93', font: {size: 11} } }, x: { grid: { display: false }, ticks: { color: '#1c1c1e', font: {weight: 'bold', size: 11} } } }
             }
         });
     }
 
     function formatSecs(sec) { if (sec < 60) return `${sec} ${t('time_sec')}`; const m = Math.floor(sec / 60); const s = sec % 60; if (sec < 3600) return s > 0 ? `${m} ${t('time_min')} ${s}s` : `${m} ${t('time_min')}`; const h = Math.floor(sec / 3600); const rm = Math.floor((sec % 3600) / 60); return `${h} ${t('time_hr')} ${rm} ${t('time_min')}`; }
+    
     function renderTimeStats(rd) {
         currentRange = rd; document.getElementById('btn7').classList.toggle('active', rd === 7); document.getElementById('btn30').classList.toggle('active', rd === 30); document.getElementById('btn90').classList.toggle('active', rd === 90);
         const ad = Object.keys(dailyStats).filter(k => (dailyStats[k].seconds || 0) > 0).length; document.getElementById('totalDaysCount').innerText = `${ad} ${t('day_lbl')}`; let tsa = 0; Object.values(dailyStats).forEach(s => { tsa += (s.seconds || 0); }); document.getElementById('totalTimeCount').innerText = formatSecs(tsa);
@@ -626,13 +639,53 @@
         document.getElementById('compareDiffVal').innerText = (dSec >= 0 ? "+ " : "- ") + formatSecs(Math.abs(dSec));
         const tg = document.getElementById('compareTag'); const ic = document.getElementById('compareTagIcon'); const pt = document.getElementById('compareTagPercent');
         if (ySec === 0) { if (tSec > 0) { tg.className = "compare-tag tag-up"; ic.innerText = "▲"; pt.innerText = "+100%"; } else { tg.className = "compare-tag tag-equal"; ic.innerText = "➖"; pt.innerText = "0%"; } } else { const pct = Math.round(((tSec - ySec) / ySec) * 100); if (pct > 0) { tg.className = "compare-tag tag-up"; ic.innerText = "▲"; pt.innerText = `+${pct}%`; } else if (pct < 0) { tg.className = "compare-tag tag-down"; ic.innerText = "▼"; pt.innerText = `${pct}%`; } else { tg.className = "compare-tag tag-equal"; ic.innerText = "➖"; pt.innerText = "0%"; } }
-        const lbls = [], mDts = []; const dl = document.getElementById('detailStatsList'); dl.innerHTML = '';
-        for (let i = rd - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; const ds = `${d.getDate()}/${d.getMonth() + 1}`; const st = dailyStats[key] || { seconds: 0 }; lbls.push(ds); mDts.push((st.seconds / 60).toFixed(1)); if (st.seconds > 0) { const r = document.createElement('div'); r.className = 'detail-item'; r.innerHTML = `<span><strong>${ds}</strong></span><span>⏱️ ${formatSecs(st.seconds)}</span>`; dl.appendChild(r); } }
+        const lbls = [], mDts = []; 
+        for (let i = rd - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; const ds = `${d.getDate()}/${d.getMonth() + 1}`; const st = dailyStats[key] || { seconds: 0 }; lbls.push(ds); mDts.push((st.seconds / 60).toFixed(1)); }
         const ctx = document.getElementById('timeBarChart').getContext('2d'); if (timeChartInstance) timeChartInstance.destroy(); timeChartInstance = new Chart(ctx, { type: 'bar', data: { labels: lbls, datasets: [ { label: t('time_min'), data: mDts, backgroundColor: '#007aff', borderRadius: 6 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5ea' } } }, animation: { duration: 800 } } });
     }
 
+    // Render Bảng Lịch
+    function renderCalendar() {
+        const year = currentCalDate.getFullYear();
+        const month = currentCalDate.getMonth();
+        
+        const monthStr = currentLang === 'vi' ? `${t('cal_month')} ${month + 1} - ${year}` : `${year}年 ${month + 1}月`;
+        document.getElementById('calendarMonthYear').innerText = monthStr;
+        
+        const firstDay = new Date(year, month, 1).getDay(); // Chủ nhật là 0
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        let offset = firstDay === 0 ? 6 : firstDay - 1; // Bắt đầu bằng Thứ 2
+        
+        const grid = document.getElementById('calendarGridDays');
+        grid.innerHTML = '';
+        
+        for (let i = 0; i < offset; i++) {
+            grid.innerHTML += `<div class="cal-day empty"></div>`;
+        }
+        
+        const todayStr = getTodayKey();
+        
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const stat = dailyStats[dateKey];
+            const isHighlight = stat && stat.seconds >= 1800; // Đã học >= 30 phút
+            const isToday = dateKey === todayStr;
+            
+            let cls = 'cal-day';
+            if (isHighlight) cls += ' highlight';
+            if (isToday) cls += ' today';
+            
+            grid.innerHTML += `<div class="${cls}">${d}</div>`;
+        }
+    }
+    
+    function changeMonth(dir) {
+        currentCalDate.setMonth(currentCalDate.getMonth() + dir);
+        renderCalendar();
+    }
+
     function renderVocabList() {
-        const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); c.innerHTML = ''; let tl = vocabList; let tt = t('btn_all').replace("🎴 ", ""); const tk = getTodayKey();
+        const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); c.innerHTML = ''; let tl = vocabList; let tt = t('list_all'); const tk = getTodayKey();
         
         if (currentListFilter === 'learned') { 
             tl = vocabList.filter(v => v.seenCount > 0 && v.interval > 0 && v.nextReview > tk); tt = t('stat_learned'); 
@@ -656,7 +709,7 @@
         if (editingId) { const idx = vocabList.findIndex(v => v.id === editingId); if (idx !== -1) { vocabList[idx].hanzi = hz; vocabList[idx].pinyin = py; vocabList[idx].meaning = mn; vocabList[idx].example = eg; } showToast('msg_update'); } else { vocabList.push({ id: Date.now(), hanzi: hz, pinyin: py, meaning: mn, example: eg, status: 'unlearned', seenCount: 0, dateAdded: getTodayKey(), interval: 0, ease: 2.5, nextReview: getTodayKey() }); showToast('msg_save'); }
         saveData(); resetForm(); updateUI();
     }
-    function resetAllSeenCounts() { if (vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn Reset toàn bộ tiến độ học SRS về 0?" : "确定重置所有 SRS 学习进度？")) { vocabList.forEach(v => { v.seenCount = 0; v.status = 'unlearned'; v.interval = 0; v.ease = 2.5; v.nextReview = getTodayKey(); }); saveData(); updateUI(); showToast('msg_update'); } }
+    function resetAllSeenCounts() { if (vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn Reset toàn bộ tiến độ học về 0?" : "确定重置所有学习进度？")) { vocabList.forEach(v => { v.seenCount = 0; v.status = 'unlearned'; v.interval = 0; v.ease = 2.5; v.nextReview = getTodayKey(); }); saveData(); updateUI(); showToast('msg_update'); } }
     
     function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; const i = vocabList[currentCardIndex]; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
     
@@ -685,9 +738,7 @@
         let p = vocabList; 
         const tk = getTodayKey(); 
         
-        // TẤT CẢ CHỈ GỘP VÀO 1 LOGIC SRS DUY NHẤT:
         if (currentFilter === 'srs') { 
-            // Ưu tiên load từ: CHƯA XEM hoặc CHƯA THUỘC (đã học nhưng sai hoặc tới hạn)
             p = vocabList.filter(v => v.seenCount === 0 || (v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)));
         }
 
@@ -700,17 +751,13 @@
             currentCardIndex = -1; return; 
         }
         
-        // THUẬT TOÁN SẮP XẾP MỚI ƯU TIÊN CHƯA XEM LÊN ĐẦU
         p.sort((a, b) => {
             if (a.seenCount === 0 && b.seenCount > 0) return -1;
             if (b.seenCount === 0 && a.seenCount > 0) return 1;
-            
             if (a.interval === 0 && b.interval > 0) return -1;
             if (b.interval === 0 && a.interval > 0) return 1;
-            
             if (a.nextReview < b.nextReview) return -1;
             if (a.nextReview > b.nextReview) return 1;
-            
             return 0.5 - Math.random();
         });
 
@@ -718,7 +765,6 @@
         renderCardUI(sel);
     }
 
-    // ----- HỆ THỐNG ĐÁNH GIÁ (CHỜ 3s - 5s) VÀ UNDO -----
     function updateUndoButton() {
         const btn = document.getElementById('btnUndoCard');
         if(historyStack.length > 0 || blockManualMark) {
@@ -731,8 +777,6 @@
 
     function markCard(isL) {
         if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; 
-        
-        // Bấm lần 2 chuyển nhanh
         if (blockManualMark) {
             clearTimeout(actionTimeout);
             blockManualMark = false;
@@ -741,10 +785,8 @@
             return;
         }
 
-        // Bật chờ (Lật thẻ)
         blockManualMark = true;
         updateUndoButton();
-        
         document.getElementById('cardDetails').classList.add('show'); 
         document.getElementById('clickHint').style.display = 'none';
         
@@ -766,14 +808,7 @@
         isAnimating = true;
         const i = vocabList[currentCardIndex]; 
         
-        historyStack.push({
-            cardIndex: currentCardIndex,
-            cardId: i.id,
-            oldInterval: i.interval,
-            oldEase: i.ease,
-            oldNextReview: i.nextReview,
-            oldSeenCount: i.seenCount
-        });
+        historyStack.push({ cardIndex: currentCardIndex, cardId: i.id, oldInterval: i.interval, oldEase: i.ease, oldNextReview: i.nextReview, oldSeenCount: i.seenCount });
         updateUndoButton();
         
         i.seenCount += 1;
@@ -837,7 +872,6 @@
         }
     }
     
-    // Tính năng ấn lật mặt sau 
     document.getElementById('flashcard').addEventListener('click', function() { 
         const d = document.getElementById('cardDetails'); 
         const h = document.getElementById('clickHint'); 
@@ -849,20 +883,13 @@
         speakCurrentCard(); 
     });
     
-    // MIC SYSTEM 
     let micRecog; let isMicListening = false;
     function initMicSystem() {
         const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
         if(SpeechRec) {
             micRecog = new SpeechRec(); micRecog.lang = 'zh-CN'; micRecog.continuous = false; micRecog.interimResults = false;
-            micRecog.onstart = () => { 
-                isMicListening = true; 
-                document.getElementById('btnMic').classList.add('listening'); 
-            };
-            micRecog.onresult = (e) => {
-                const tr = e.results[0][0].transcript.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
-                handleMicResult(tr);
-            };
+            micRecog.onstart = () => { isMicListening = true; document.getElementById('btnMic').classList.add('listening'); };
+            micRecog.onresult = (e) => { const tr = e.results[0][0].transcript.replace(/[.,!?。，！？]/g, '').trim().toLowerCase(); handleMicResult(tr); };
             micRecog.onerror = () => resetMicUI(); micRecog.onend = () => resetMicUI();
         }
     }
@@ -876,25 +903,18 @@
         if(e && e.type === 'touchend') e.preventDefault();
         if(isMicListening && micRecog) { try { micRecog.stop(); } catch(err) {} }
     }
-    function resetMicUI() { 
-        isMicListening = false; 
-        document.getElementById('btnMic').classList.remove('listening'); 
-    }
+    function resetMicUI() { isMicListening = false; document.getElementById('btnMic').classList.remove('listening'); }
     
     function handleMicResult(tr) {
         if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
         if(blockManualMark) return; 
-        
         const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
         const isCorrect = (tr === target || tr.includes(target));
-        
         if(isCorrect) { showToast('msg_mic_correct', t('msg_mic_correct') + `${tr} (Chuyển sau 3s)`); } 
         else { showToast('msg_mic_wrong', t('msg_mic_wrong') + `"${tr}" (Chuyển sau 5s)`); }
-        
         markCard(isCorrect);
     }
 
-    // ----- MINIGAME QUIZ VÔ TẬN -----
     let quizScore = 0; let quizQuestionCount = 0;
     function startQuizMode() {
         if(vocabList.length < 4) return alert(currentLang==='vi'?'Cần ít nhất 4 từ vựng trong kho để chơi!':'至少需要4个词汇！');
@@ -902,13 +922,10 @@
     }
     function loadQuizQuestion() {
         quizQuestionCount++; document.getElementById('quizStatus').innerText = `Câu ${quizQuestionCount} | Điểm: ${quizScore}`;
-        
         const q = vocabList[Math.floor(Math.random() * vocabList.length)];
         document.getElementById('quizHanzi').innerText = q.hanzi;
-        
         let opts = [q]; let others = vocabList.filter(v => v.id !== q.id).sort(() => 0.5 - Math.random());
         opts.push(...others.slice(0, 3)); opts.sort(() => 0.5 - Math.random()); 
-        
         const grid = document.getElementById('quizOptions'); grid.innerHTML = '';
         opts.forEach(opt => {
             const btn = document.createElement('button'); btn.className = 'quiz-option'; btn.innerText = opt.meaning;
@@ -922,7 +939,6 @@
     }
     function endQuiz(manual=false) { if(manual && !confirm(currentLang==='vi'?'Bạn muốn thoát Minigame?':'您想退出游戏吗？')) return; showPage('page-home'); }
 
-    // FILE MNG
     function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
     function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imp.vocab)); if (imp.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imp.dailyStats)); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); location.reload(); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
 
