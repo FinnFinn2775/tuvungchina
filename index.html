@@ -63,10 +63,11 @@
         .stat-number { font-size: 17px; font-weight: 700; color: var(--text-main); }
         .stat-label { font-size: 10px; color: var(--text-sub); margin-top: 2px; font-weight: 500; }
         
-        .chart-wrapper { position: relative; width: 160px; height: 160px; margin: 0 auto; }
+        .chart-wrapper { position: relative; width: 160px; height: 160px; margin: 0 auto; cursor: pointer; transition: transform 0.2s; }
+        .chart-wrapper:active { transform: scale(0.95); }
         .chart-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; }
-        .chart-center-val { font-size: 22px; font-weight: 800; color: var(--primary); }
-        .chart-center-lbl { font-size: 10px; color: var(--text-sub); font-weight: 600; text-transform: uppercase; }
+        .chart-center-val { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .chart-center-lbl { font-size: 10px; color: var(--text-sub); font-weight: 700; text-transform: uppercase; margin-top: 2px;}
         .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
 
         .input-group { margin-bottom: 12px; }
@@ -78,8 +79,18 @@
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; transition: transform 0.2s;}
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-warning { background: var(--warning); color: white; }
+        
+        /* Chỉnh lại style cho nút chức năng */
         .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid var(--border); }
         
+        /* Nút Học SRS Gộp Duy Nhất - Cực kỳ nổi bật */
+        .btn-srs-primary {
+            background: linear-gradient(135deg, var(--primary), #5856d6);
+            color: white; padding: 20px 18px; font-size: 17px; font-weight: 800;
+            border-radius: 18px; box-shadow: 0 8px 24px rgba(0,122,255,0.25);
+            display: flex; justify-content: center; align-items: center; gap: 8px; border: none;
+        }
+
         .backup-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
         .backup-row { display: flex; gap: 8px; }
         .btn-backup { background: var(--item-bg); color: var(--primary); padding: 12px 8px; font-size: 13px; border-radius: 12px; flex: 1; font-weight: 600; border: 1px solid var(--border);}
@@ -117,7 +128,6 @@
         .pinyin-text { font-size: 26px; color: var(--danger); font-weight: 700; margin-bottom: 8px; }
         .meaning-text { font-size: 20px; color: var(--text-main); font-weight: 600; margin-bottom: 12px;}
         
-        /* Chỉnh lại phần Ví dụ theo yêu cầu: Chữ to, dễ đọc, màu đẹp */
         .example-box { margin-top: 12px; padding: 14px 16px; background: #fff8e5; border-radius: 14px; border-left: 5px solid var(--warning); text-align: left; }
         .example-title { font-size: 13px; font-weight: 800; color: #d97706; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
         #displayExampleText { font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.5; font-family: "SF Pro Display", sans-serif; }
@@ -191,6 +201,13 @@
         .quiz-option.correct { background: rgba(52,199,89,0.15) !important; border-color: var(--success) !important; color: var(--success) !important; }
         .quiz-option.wrong { background: rgba(255,59,48,0.15) !important; border-color: var(--danger) !important; color: var(--danger) !important; }
 
+        /* Modal Biểu Đồ Cấp Độ Nhớ */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-box { background: var(--card-bg); width: 90%; max-width: 360px; padding: 24px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(30px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; }
+        .modal-overlay.show .modal-box { transform: translateY(0); }
+        .modal-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0 0 16px 0; text-align: center; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
@@ -207,6 +224,17 @@
 
 <div class="toast-notification" id="toastMsg">✓ Thành công!</div>
 
+<!-- Popup Cấp Độ Trí Nhớ -->
+<div class="modal-overlay" id="memoryModal" onclick="closeMemoryModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <h3 class="modal-title" data-i18n="memory_levels_title">📊 Phân Tích 5 Cấp Độ Trí Nhớ</h3>
+        <div style="width: 100%; height: 220px; position: relative;">
+            <canvas id="memoryChart"></canvas>
+        </div>
+        <button class="btn-undo" onclick="closeMemoryModal()" style="margin-top: 20px; font-weight: 700;" data-i18n="btn_close">Đóng</button>
+    </div>
+</div>
+
 <div class="iphone-container">
 
     <!-- 1. MÀN HÌNH CHÍNH -->
@@ -221,24 +249,22 @@
                 <div class="stat-item" onclick="openVocabListFilter('unlearned')"><div class="stat-number" id="unlearnedCount" data-val="0" style="color: var(--danger);">0</div><div class="stat-label" data-i18n="stat_unlearned">Cần ôn</div></div>
                 <div class="stat-item" onclick="openVocabListFilter('unseen')"><div class="stat-number" id="unseenCount" data-val="0" style="color: #8e8e93;">0</div><div class="stat-label" data-i18n="stat_unseen">Chưa xem</div></div>
             </div>
-            <div class="chart-wrapper">
+            <!-- Bấm vào vòng tròn sẽ mở Modal -->
+            <div class="chart-wrapper" onclick="openMemoryModal()">
                 <canvas id="vocabChart"></canvas>
-                <div class="chart-center-text"><div class="chart-center-val" id="chartPercent" data-val="0">0%</div><div class="chart-center-lbl" data-i18n="stat_seen">Đã xem</div></div>
+                <div class="chart-center-text">
+                    <div class="chart-center-val" id="chartPercent" data-val="0">0%</div>
+                    <div class="chart-center-lbl" data-i18n="stat_learned_label">ĐÃ THUỘC</div>
+                </div>
             </div>
         </div>
 
-        <button class="btn-menu stagger-item" style="background: rgba(255, 59, 48, 0.08); border-color: rgba(255, 59, 48, 0.3);" onclick="startStudy('unlearned_unseen')">
-            <span style="color: var(--danger); font-weight:700;" data-i18n="btn_unlearned_unseen">🔥 Ôn Từ Cần Ôn & Chưa Xem</span> <span>➔</span>
+        <!-- Nút Gộp Duy Nhất -->
+        <button class="btn-srs-primary stagger-item" onclick="startStudy('srs')">
+            🚀 Bắt Đầu Ôn Tập (SRS)
         </button>
 
-        <button class="btn-menu stagger-item" onclick="startStudy('due')">
-            <span data-i18n="btn_due">🎯 Ôn Tập SRS Tiêu Chuẩn</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="startStudy('today')">
-            <span style="color: var(--primary); font-weight:700;"><span data-i18n="btn_today">✨ Chỉ Ôn Từ Mới Thêm HÔM NAY</span> (<span id="todayCountBadge">0</span>)</span> <span>➔</span>
-        </button>
-        <button class="btn-menu stagger-item" onclick="startStudy('all')"><span data-i18n="btn_all">🎴 Ôn Lại Tất Cả Từ Vựng</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning);" onclick="startQuizMode()">
+        <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning); margin-top: 4px;" onclick="startQuizMode()">
             <span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Trắc Nghiệm Chơi Vô Tận</span> <span>➔</span>
         </button>
         
@@ -398,9 +424,8 @@
     // ----- BỘ TỪ ĐIỂN I18N -----
     const dict = {
         vi: {
-            app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ SRS", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem", stat_seen: "Đã xem",
-            btn_due: "🎯 Ôn Tập SRS Tiêu Chuẩn", btn_today: "✨ Chỉ Ôn Từ Mới Thêm HÔM NAY", btn_all: "🎴 Ôn Lại Tất Cả Từ Vựng", btn_add: "➕ Thêm Từ Vựng Mới", btn_quiz: "🎮 Trắc Nghiệm Chơi Vô Tận",
-            btn_unlearned_unseen: "🔥 Ôn Từ Cần Ôn & Chưa Xem",
+            app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ SRS", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem", stat_learned_label: "ĐÃ THUỘC",
+            btn_quiz: "🎮 Trắc Nghiệm Chơi Vô Tận", memory_levels_title: "📊 Phân Tích 5 Cấp Độ Trí Nhớ", btn_close: "Đóng",
             btn_list: "📋 Danh Sách Tất Cả Từ Vựng", btn_settings: "⚙️ Cài Đặt Hệ Thống", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
             btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset toàn bộ tiến độ học SRS về 0",
             btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị",
@@ -410,13 +435,12 @@
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
             hint_swipe: "Bấm nút dưới để chọn mức độ thuộc (Thuật toán SRS)", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
-            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho mục này.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
+            msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "SRS LV:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame"
         },
         zh: {
-            app_title: "中文复习", stats_title: "SRS 进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看", stat_seen: "已查看",
-            btn_due: "🎯 SRS 每日复习", btn_today: "✨ 仅复习今天新增的词汇", btn_all: "🎴 复习所有词汇", btn_add: "➕ 添加新词汇", btn_quiz: "🎮 无限测验迷你游戏",
-            btn_unlearned_unseen: "🔥 复习未掌握和未查看的词汇",
+            app_title: "中文复习", stats_title: "SRS 进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看", stat_learned_label: "已掌握",
+            btn_quiz: "🎮 无限测验迷你游戏", memory_levels_title: "📊 记忆级别分析", btn_close: "关闭",
             btn_list: "📋 所有词汇列表", btn_settings: "⚙️ 系统设置", btn_time_stats: "📈 时间与进度统计",
             btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有 SRS 学习进度",
             btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言",
@@ -446,7 +470,7 @@
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
     
-    let currentFilter = 'due', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, currentRange = 7;
+    let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let historyStack = []; 
     let blockManualMark = false; let actionTimeout = null;
 
@@ -518,33 +542,80 @@
     function autoPinyin() { const ip = document.getElementById('hanziInput').value.trim(); document.getElementById('pinyinInput').value = ip ? pinyin(ip, { toneType: 'symbol' }) : ''; }
     function checkDuplicateHanzi() { if (editingId) return; const hz = document.getElementById('hanziInput').value.trim(); const bx = document.getElementById('duplicateBox'); if (!hz) { bx.style.display = 'none'; matchedDuplicateItem = null; return; } const f = vocabList.find(v => v.hanzi === hz); if (f) { matchedDuplicateItem = f; document.getElementById('duplicateText').innerText = `Chữ: "${f.hanzi}" (${f.pinyin}) - Nghĩa: ${f.meaning}`; bx.style.display = 'block'; } else { bx.style.display = 'none'; matchedDuplicateItem = null; } }
     function loadDuplicateToEdit() { if (!matchedDuplicateItem) return; editingId = matchedDuplicateItem.id; document.getElementById('hanziInput').value = matchedDuplicateItem.hanzi; document.getElementById('pinyinInput').value = matchedDuplicateItem.pinyin; document.getElementById('meaningInput').value = matchedDuplicateItem.meaning; document.getElementById('exampleInput').value = matchedDuplicateItem.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; document.getElementById('duplicateBox').style.display = 'none'; }
-    function initChart() { const ctx = document.getElementById('vocabChart').getContext('2d'); chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')], datasets: [{ data: [0, 0, 0], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: { legend: { display: false } } } }); }
+    function initChart() { const ctx = document.getElementById('vocabChart').getContext('2d'); chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')], datasets: [{ data: [0, 0, 0], backgroundColor: ['#34c759', '#ff3b30', '#e5e5ea'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '74%', plugins: { legend: { display: false } } } }); }
     
     function updateUI() {
         const tk = getTodayKey(); const tot = vocabList.length; 
         
-        // CÔNG THỨC MỚI KHÔNG BỊ LỆCH SỐ[cite: 1]
-        // 1. Chưa xem: Những từ có seenCount == 0 (Mới thêm)
+        // CÔNG THỨC 
         const usn = vocabList.filter(v => v.seenCount === 0).length; 
-        
-        // 2. Đã thuộc: Những từ đã học (seenCount > 0) + không bị sai (interval > 0) + CHƯA tới hạn ôn hôm nay (nextReview > tk)
         const lr = vocabList.filter(v => v.seenCount > 0 && v.interval > 0 && v.nextReview > tk).length;
-        
-        // 3. Cần ôn / Chưa thuộc: Đã học (seenCount > 0) NHƯNG bị đánh dấu sai (interval == 0) HOẶC Đã tới hạn phải ôn (nextReview <= tk)
         const ulr = vocabList.filter(v => v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)).length;
         
-        const ta = vocabList.filter(v => v.dateAdded === tk).length;
-
         document.getElementById('totalCount').setAttribute('data-val', tot); 
         document.getElementById('learnedCount').setAttribute('data-val', lr); 
         document.getElementById('unlearnedCount').setAttribute('data-val', ulr); 
         document.getElementById('unseenCount').setAttribute('data-val', usn); 
-        document.getElementById('todayCountBadge').innerText = ta;
         
-        const pct = tot > 0 ? Math.round(((tot - usn) / tot) * 100) : 0; 
+        // Sửa Logic phần trăm hiển thị: % ĐÃ THUỘC[cite: 1]
+        const pct = tot > 0 ? Math.round((lr / tot) * 100) : 0; 
         document.getElementById('chartPercent').setAttribute('data-val', pct);
         
         if (chartInstance) { chartInstance.data.datasets[0].data = [lr, ulr, usn]; }
+    }
+
+    // ----- LOGIC BIỂU ĐỒ 5 CẤP ĐỘ NHỚ -----
+    function openMemoryModal() {
+        document.getElementById('memoryModal').classList.add('show');
+        renderMemoryChart();
+    }
+    
+    function closeMemoryModal() {
+        document.getElementById('memoryModal').classList.remove('show');
+    }
+
+    function renderMemoryChart() {
+        let l1 = 0, l2 = 0, l3 = 0, l4 = 0, l5 = 0;
+        
+        // Thuật toán chia rổ 5 cấp độ trí nhớ
+        vocabList.forEach(v => {
+            if (v.seenCount === 0 || v.interval === 0) { l1++; } // Chưa nhớ / Từ mới
+            else if (v.interval === 1) { l2++; }                 // Mới học
+            else if (v.interval > 1 && v.interval <= 3) { l3++; }// Tạm nhớ
+            else if (v.interval > 3 && v.interval <= 15) { l4++;}// Nhớ khá
+            else { l5++; }                                       // Nhớ sâu (interval > 15)
+        });
+
+        const ctx = document.getElementById('memoryChart').getContext('2d');
+        if (memoryChartInstance) memoryChartInstance.destroy();
+        memoryChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Chưa nhớ', 'Mới học', 'Tạm nhớ', 'Nhớ khá', 'Nhớ sâu'],
+                datasets: [{
+                    data: [l1, l2, l3, l4, l5],
+                    backgroundColor: ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#007aff'],
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return context.raw + ' từ'; }
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#e5e5ea' }, ticks: { stepSize: 1, color: '#8e8e93', font: {size: 11} } },
+                    x: { grid: { display: false }, ticks: { color: '#1c1c1e', font: {weight: 'bold', size: 11} } }
+                }
+            }
+        });
     }
 
     function formatSecs(sec) { if (sec < 60) return `${sec} ${t('time_sec')}`; const m = Math.floor(sec / 60); const s = sec % 60; if (sec < 3600) return s > 0 ? `${m} ${t('time_min')} ${s}s` : `${m} ${t('time_min')}`; const h = Math.floor(sec / 3600); const rm = Math.floor((sec % 3600) / 60); return `${h} ${t('time_hr')} ${rm} ${t('time_min')}`; }
@@ -563,16 +634,13 @@
     function renderVocabList() {
         const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); c.innerHTML = ''; let tl = vocabList; let tt = t('btn_all').replace("🎴 ", ""); const tk = getTodayKey();
         
-        // Đồng bộ list filter với logic đếm
         if (currentListFilter === 'learned') { 
             tl = vocabList.filter(v => v.seenCount > 0 && v.interval > 0 && v.nextReview > tk); tt = t('stat_learned'); 
         } else if (currentListFilter === 'unlearned') { 
             tl = vocabList.filter(v => v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)); tt = t('stat_unlearned'); 
         } else if (currentListFilter === 'unseen') { 
             tl = vocabList.filter(v => v.seenCount === 0); tt = t('stat_unseen'); 
-        } else if (currentListFilter === 'today') { 
-            tl = vocabList.filter(v => v.dateAdded === tk); tt = t('btn_today').replace("✨ ", ""); 
-        }
+        } 
 
         const flt = tl.filter(v => v.hanzi.toLowerCase().includes(q) || v.meaning.toLowerCase().includes(q) || v.pinyin.toLowerCase().includes(q) || (v.example && v.example.toLowerCase().includes(q))); document.getElementById('listTitleHeader').innerHTML = `${tt} (<span id="listTotalCount">${flt.length}</span>)`;
         if (flt.length === 0) { c.innerHTML = `<div style="text-align:center; color:var(--text-sub); padding:20px;">${t('empty_list')}</div>`; return; }
@@ -592,7 +660,6 @@
     
     function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; const i = vocabList[currentCardIndex]; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
     
-    // Tính năng XÓA TỪ NGAY TRONG FLASHCARD
     function deleteCurrentCard() { 
         if (currentCardIndex === -1 || vocabList.length === 0) return; 
         if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) { 
@@ -615,16 +682,12 @@
     }
 
     function loadNextCard() {
-        let p = vocabList; const tk = getTodayKey(); 
+        let p = vocabList; 
+        const tk = getTodayKey(); 
         
-        if (currentFilter === 'due') { 
-            p = vocabList.filter(v => v.seenCount === 0 || v.nextReview <= tk); 
-        } 
-        else if (currentFilter === 'today') { 
-            p = vocabList.filter(v => v.dateAdded === tk); 
-        } 
-        else if (currentFilter === 'unlearned_unseen') {
-            // Chỉ lấy từ CHƯA XEM hoặc CHƯA THUỘC (đã học nhưng sai hoặc tới hạn)
+        // TẤT CẢ CHỈ GỘP VÀO 1 LOGIC SRS DUY NHẤT:
+        if (currentFilter === 'srs') { 
+            // Ưu tiên load từ: CHƯA XEM hoặc CHƯA THUỘC (đã học nhưng sai hoặc tới hạn)
             p = vocabList.filter(v => v.seenCount === 0 || (v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)));
         }
 
@@ -639,19 +702,16 @@
         
         // THUẬT TOÁN SẮP XẾP MỚI ƯU TIÊN CHƯA XEM LÊN ĐẦU
         p.sort((a, b) => {
-            // Ưu tiên 1: Chưa xem hiện trước
             if (a.seenCount === 0 && b.seenCount > 0) return -1;
             if (b.seenCount === 0 && a.seenCount > 0) return 1;
             
-            // Ưu tiên 2: Từ đang bị sai (chưa thuộc)
             if (a.interval === 0 && b.interval > 0) return -1;
             if (b.interval === 0 && a.interval > 0) return 1;
             
-            // Ưu tiên 3: Theo ngày tới hạn
             if (a.nextReview < b.nextReview) return -1;
             if (a.nextReview > b.nextReview) return 1;
             
-            return 0.5 - Math.random(); // Random cho đỡ chán
+            return 0.5 - Math.random();
         });
 
         const sel = p[0]; currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
@@ -672,7 +732,7 @@
     function markCard(isL) {
         if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; 
         
-        // Nếu đang trong thời gian đếm lùi, bấm lần 2 sẽ chuyển thẻ NGAY LẬP TỨC
+        // Bấm lần 2 chuyển nhanh
         if (blockManualMark) {
             clearTimeout(actionTimeout);
             blockManualMark = false;
@@ -681,7 +741,7 @@
             return;
         }
 
-        // Bắt đầu bật chế độ chờ (LẬT MẶT SAU, đổi màu thẻ)
+        // Bật chờ (Lật thẻ)
         blockManualMark = true;
         updateUndoButton();
         
@@ -706,7 +766,6 @@
         isAnimating = true;
         const i = vocabList[currentCardIndex]; 
         
-        // 1. Lưu lịch sử cho mục đích Undo toàn vẹn
         historyStack.push({
             cardIndex: currentCardIndex,
             cardId: i.id,
@@ -717,22 +776,18 @@
         });
         updateUndoButton();
         
-        // 2. Tính toán phân bổ SRS[cite: 1]
         i.seenCount += 1;
         if (isL) {
             if (i.interval === 0) i.interval = 1; else if (i.interval === 1) i.interval = 3; else i.interval = Math.round(i.interval * i.ease);
             i.ease = Math.max(1.3, i.ease + 0.1);
         } else {
-            // Đánh dấu sai: interval về 0 (Sẽ vào mục Chưa thuộc/Cần ôn)
             i.interval = 0; 
             i.ease = Math.max(1.3, i.ease - 0.2);
         }
-        // Gắn mốc thời gian ôn tiếp theo dựa trên interval
         i.nextReview = getNextReviewDate(i.interval);
 
         saveData(); updateUI();
         
-        // 3. Hiệu ứng lướt thẻ
         const c = document.getElementById('flashcard'); 
         if (isL) { c.classList.add('card-exit-left'); } 
         else { c.classList.add('card-exit-right'); }
@@ -746,7 +801,6 @@
     }
     
     function undoPreviousCard() { 
-        // 1. Nếu thẻ ĐANG CHỜ CHUYỂN, nút Undo sẽ HỦY ĐẾM LÙI và TRẢ VỀ TRẠNG THÁI GỐC
         if (blockManualMark) {
             clearTimeout(actionTimeout);
             blockManualMark = false;
@@ -757,7 +811,6 @@
             return;
         }
 
-        // 2. Nếu không có thẻ nào đang chờ, Undo sẽ rút lại kết quả của từ ĐÃ ĐƯỢC CHUYỂN đi trước đó
         if (historyStack.length === 0) return; 
         
         const lastAction = historyStack.pop();
@@ -784,7 +837,7 @@
         }
     }
     
-    // Tính năng ấn vào thẻ lật mặt sau (chạm thủ công)
+    // Tính năng ấn lật mặt sau 
     document.getElementById('flashcard').addEventListener('click', function() { 
         const d = document.getElementById('cardDetails'); 
         const h = document.getElementById('clickHint'); 
@@ -796,7 +849,7 @@
         speakCurrentCard(); 
     });
     
-    // MIC SYSTEM (Nhấn giữ)
+    // MIC SYSTEM 
     let micRecog; let isMicListening = false;
     function initMicSystem() {
         const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -815,7 +868,7 @@
     }
     function startMic(e) {
         if(e && e.type === 'touchstart') e.preventDefault(); 
-        if(blockManualMark) return; // Khóa mic nếu đang chờ chuyển thẻ
+        if(blockManualMark) return; 
         if(!micRecog) return alert(currentLang==='vi'?'Trình duyệt không hỗ trợ Mic (Dùng Chrome/Safari).':'浏览器不支持麦克风。');
         if(!isMicListening) { try { micRecog.start(); } catch(err) {} }
     }
@@ -830,7 +883,7 @@
     
     function handleMicResult(tr) {
         if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
-        if(blockManualMark) return; // Nếu thẻ đang chờ chuyển thì bỏ qua kết quả
+        if(blockManualMark) return; 
         
         const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
         const isCorrect = (tr === target || tr.includes(target));
