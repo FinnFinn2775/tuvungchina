@@ -2,7 +2,6 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <!-- Thẻ meta khóa zoom cơ bản -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title data-i18n="app_title">Ôn Tập Tiếng Trung</title>
     <script src="https://unpkg.com/pinyin-pro"></script>
@@ -22,7 +21,6 @@
             --item-bg: #f2f2f7;
         }
 
-        /* Khóa Double-Tap Zoom và Pinch Zoom trên toàn bộ phần tử */
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
@@ -35,7 +33,6 @@
             background-color: var(--bg-system); color: var(--text-main); margin: 0;
             padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px;
             display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden;
-            /* Khóa thao tác zoom bằng 2 ngón tay, chỉ cho phép cuộn */
             touch-action: pan-x pan-y;
         }
 
@@ -80,8 +77,6 @@
 
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
-        
-        /* Thay đổi font-size thành 16px (Bắt buộc để iOS không tự zoom khi bấm vào ô nhập liệu) */
         .input-group input, .input-group textarea, .input-group select { 
             width: 100%; padding: 12px 14px; border: 1px solid var(--border); 
             border-radius: 12px; font-size: 16px; background: var(--input-bg); 
@@ -112,7 +107,6 @@
         .segment-btn { padding: 8px; font-size: 13px; font-weight: 600; border-radius: 8px; border: none; background: transparent; color: var(--text-main); flex: 1; text-align: center; transition: 0.2s;}
         .segment-btn.active { background: var(--card-bg); box-shadow: 0 2px 6px rgba(0,0,0,0.1); color: var(--primary); }
 
-        /* Calendar Styles */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .calendar-header button { background: var(--item-bg); border: none; border-radius: 10px; width: 36px; height: 36px; font-size: 20px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--primary); transition: 0.2s; padding: 0;}
         .calendar-header button:active { transform: scale(0.85); background: var(--border); }
@@ -155,6 +149,13 @@
         .example-box { margin-top: 12px; padding: 14px 16px; background: #fff8e5; border-radius: 14px; border-left: 5px solid var(--warning); text-align: left; }
         .example-title { font-size: 13px; font-weight: 800; color: #d97706; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
         #displayExampleText { font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.5; font-family: "SF Pro Display", sans-serif; }
+        
+        /* Chữ Hán nổi bật trong câu ví dụ */
+        .highlight-hanzi { 
+            font-size: 24px; 
+            font-weight: 800; 
+            color: var(--primary); 
+        }
 
         .click-hint { font-size: 13px; color: var(--text-sub); margin-top: 10px; font-weight: 500;}
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 600; }
@@ -225,7 +226,6 @@
         .quiz-option.correct { background: rgba(52,199,89,0.15) !important; border-color: var(--success) !important; color: var(--success) !important; }
         .quiz-option.wrong { background: rgba(255,59,48,0.15) !important; border-color: var(--danger) !important; color: var(--danger) !important; }
 
-        /* Modal Biểu Đồ Cấp Độ Nhớ */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-box { background: var(--card-bg); width: 90%; max-width: 360px; padding: 24px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(30px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; }
@@ -248,7 +248,6 @@
 
 <div class="toast-notification" id="toastMsg">✓ Thành công!</div>
 
-<!-- Popup Cấp Độ Trí Nhớ -->
 <div class="modal-overlay" id="memoryModal" onclick="closeMemoryModal()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <h3 class="modal-title" data-i18n="memory_levels_title">📊 Phân Tích 5 Cấp Độ Trí Nhớ</h3>
@@ -351,7 +350,6 @@
             <div class="bar-chart-wrapper"><canvas id="timeBarChart"></canvas></div>
         </div>
 
-        <!-- BẢNG LỊCH THÁNG (HEATMAP) -->
         <div class="card-box" style="margin-top: 4px; padding-bottom: 20px;">
             <div class="calendar-header">
                 <button onclick="changeMonth(-1)">&#8249;</button>
@@ -368,7 +366,6 @@
                 <div class="cal-day-name" data-i18n="day_sun">CN</div>
             </div>
             <div class="calendar-grid" id="calendarGridDays" style="margin-top: 10px;">
-                <!-- Dữ liệu render từ JS -->
             </div>
             <div style="font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 16px; font-weight: 600;" data-i18n="cal_hint">
                 🔥 = Đã học trên 30 phút
@@ -405,7 +402,7 @@
         </div>
     </div>
 
-    <!-- 6. FLASHCARD & Luyện Phát Âm (Thuật toán) -->
+    <!-- 6. FLASHCARD & Luyện Phát Âm -->
     <div id="page-flashcard" class="page">
         <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div class="hint-swipe" data-i18n="hint_swipe">Bấm nút dưới để chọn mức độ nhớ</div>
@@ -557,7 +554,19 @@
         const items = document.querySelectorAll('#page-home .stagger-item'); items.forEach((item, index) => { item.style.animationDelay = `${index * 0.12}s`; item.classList.add('show'); });
         setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); if(chartInstance) chartInstance.update(); }, 300);
     }
-    function animateNumber(id, pct=false) { const o = document.getElementById(id); const e = parseInt(o.getAttribute('data-val')||0); let s = null; const step = (ts) => { if(!s) s=ts; const p = Math.min((ts-s)/1000, 1); o.innerText = Math.floor((1-Math.pow(1-p,4))*e) + (pct?"%":""); if(p<1) requestAnimationFrame(step); else o.innerText = e+(pct?"%":""); }; requestAnimationFrame(step); }
+    
+    function animateNumber(id, pct=false) { 
+        const o = document.getElementById(id); 
+        const e = parseInt(o.getAttribute('data-val')||0); 
+        let s = null; 
+        const step = (ts) => { 
+            if(!s) s=ts; 
+            const p = Math.min((ts-s)/1000, 1); 
+            o.innerText = Math.floor((1-Math.pow(1-p,4))*e) + (pct?"%":""); 
+            if(p<1) requestAnimationFrame(step); else o.innerText = e+(pct?"%":""); 
+        }; 
+        requestAnimationFrame(step); 
+    }
     
     function speakText(txt) { if (!txt || !('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'zh-CN'; u.rate = globalSpeechRate; window.speechSynthesis.speak(u); }
     function speakCurrentCard() { if (currentCardIndex !== -1 && vocabList[currentCardIndex]) speakText(vocabList[currentCardIndex].hanzi); }
@@ -570,7 +579,13 @@
         if(isMicListening) stopMic(); 
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         setTimeout(() => { document.getElementById(pageId).classList.add('active'); }, 10);
-        if (pageId === 'page-home') { updateUI(); document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); }
+        
+        if (pageId === 'page-home') { 
+            updateUI(); 
+            // Hiển thị lại animation
+            document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); 
+            setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); 
+        }
         if (pageId === 'page-time-stats') { renderTimeStats(currentRange); renderCalendar(); }
         if (pageId === 'page-list') renderVocabList();
         if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('welcomeToggle').checked = showWelcomeScreen; }
@@ -614,7 +629,18 @@
         const pct = tot > 0 ? Math.round((lr / tot) * 100) : 0; 
         document.getElementById('chartPercent').setAttribute('data-val', pct);
         
-        if (chartInstance) { chartInstance.data.datasets[0].data = [lr, ulr, usn]; }
+        // Force update UI strings immediately without waiting for animation to finish
+        document.getElementById('chartPercent').innerText = pct + "%";
+        document.getElementById('totalCount').innerText = tot;
+        document.getElementById('learnedCount').innerText = lr;
+        document.getElementById('unlearnedCount').innerText = ulr;
+        document.getElementById('unseenCount').innerText = usn;
+        
+        if (chartInstance) { 
+            chartInstance.data.datasets[0].data = [lr, ulr, usn]; 
+            // FIX: Cập nhật lại đồ thị ngay lập tức
+            chartInstance.update(); 
+        }
     }
 
     function openMemoryModal() { document.getElementById('memoryModal').classList.add('show'); renderMemoryChart(); }
@@ -743,8 +769,25 @@
 
     function renderCardUI(sel) {
         document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
-        document.getElementById('cardDetails').classList.remove('show'); document.getElementById('clickHint').style.display = 'block'; document.getElementById('displayHanzi').innerText = sel.hanzi; document.getElementById('displayPinyin').innerText = sel.pinyin; document.getElementById('displayMeaning').innerText = sel.meaning; document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.interval}`;
-        const eb = document.getElementById('displayExampleBox'); const et = document.getElementById('displayExampleText'); if (sel.example && sel.example.trim() !== '') { et.innerText = sel.example; eb.style.display = 'block'; } else { eb.style.display = 'none'; }
+        document.getElementById('cardDetails').classList.remove('show'); 
+        document.getElementById('clickHint').style.display = 'block'; 
+        document.getElementById('displayHanzi').innerText = sel.hanzi; 
+        document.getElementById('displayPinyin').innerText = sel.pinyin; 
+        document.getElementById('displayMeaning').innerText = sel.meaning; 
+        document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.interval}`;
+        
+        const eb = document.getElementById('displayExampleBox'); 
+        const et = document.getElementById('displayExampleText'); 
+        if (sel.example && sel.example.trim() !== '') { 
+            // Làm nổi bật chữ Hán trong câu ví dụ
+            const regex = new RegExp(sel.hanzi, 'g');
+            const highlightedExample = sel.example.replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
+            et.innerHTML = highlightedExample; 
+            eb.style.display = 'block'; 
+        } else { 
+            eb.style.display = 'none'; 
+        }
+        
         if (autoSpeechEnabled) speakText(sel.hanzi);
     }
 
