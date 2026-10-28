@@ -6,6 +6,11 @@
     <title data-i18n="app_title">Ôn Tập Tiếng Trung</title>
     <script src="https://unpkg.com/pinyin-pro"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Thư viện Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --primary: #007aff; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
@@ -21,15 +26,16 @@
         .welcome-icon { font-size: 60px; margin-bottom: 8px; }
         .welcome-text { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px; padding: 0 16px; }
         .welcome-time { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-top: 4px; }
-        
-        /* Box cảnh báo học thêm */
         .welcome-goal-box { margin-top: 16px; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.3s; }
         
+        .sync-status { position: absolute; top: 12px; right: 16px; font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 10px; background: rgba(52,199,89,0.15); color: var(--success); }
+        .sync-status.off { background: rgba(255,59,48,0.15); color: var(--danger); }
+
         .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
         .stagger-item { opacity: 0; transform: translateY(20px) scale(0.98); visibility: hidden; }
         .stagger-item.show { visibility: visible; animation: popInStagger 0.6s forwards; }
         @keyframes popInStagger { to { opacity: 1; transform: translateY(0) scale(1); } }
-        .card-box { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+        .card-box { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid var(--border); position: relative; }
         .page { display: none; opacity: 0; transform: translateY(16px) scale(0.98); transition: opacity 0.4s, transform 0.4s; width: 100%; }
         .page.active { display: flex; flex-direction: column; gap: 16px; opacity: 1; transform: translateY(0) scale(1); }
         .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; color: var(--text-main); }
@@ -152,7 +158,6 @@
         <div class="welcome-icon" id="welcomeIcon">🌅</div>
         <div class="welcome-text" id="welcomeText">Chào buổi sáng</div>
         <div class="welcome-time" id="welcomeTime">08:00</div>
-        <!-- Vị trí thông báo dưới đồng hồ -->
         <div class="welcome-goal-box" id="welcomeGoalBox" style="display:none;"></div>
     </div>
 </div>
@@ -170,7 +175,9 @@
 <div class="iphone-container">
     <div id="page-home" class="page active">
         <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
+        
         <div class="card-box stagger-item">
+            <div class="sync-status" id="syncBadge">☁️ Đang kết nối Cloud...</div>
             <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Tiến Độ Học Tập</h3>
             <div class="stats-grid">
                 <div class="stat-item" onclick="openVocabListFilter('all')"><div class="stat-number" id="totalCount" data-val="0">0</div><div class="stat-label" data-i18n="stat_total">Tổng từ</div></div>
@@ -183,12 +190,14 @@
                 <div class="chart-center-text"><div class="chart-center-val" id="chartPercent" data-val="0">0%</div></div>
             </div>
         </div>
+
         <button class="btn-srs-primary stagger-item" onclick="startStudy('srs')"><span data-i18n="btn_srs">🚀 Bắt Đầu Ôn Tập</span></button>
         <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning); margin-top: 4px;" onclick="startQuizMode()"><span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Trắc Nghiệm Chơi Vô Tận</span> <span>➔</span></button>
         <button class="btn-menu stagger-item" onclick="showPage('page-add')"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
         <button class="btn-menu stagger-item" onclick="openVocabListFilter('all')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
         <button class="btn-menu stagger-item" onclick="showPage('page-time-stats')"><span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span></button>
         <button class="btn-menu stagger-item" onclick="showPage('page-settings')"><span data-i18n="btn_settings">⚙️ Cài Đặt Hệ Thống</span> <span>➔</span></button>
+        
         <div class="backup-group stagger-item">
             <div class="backup-row">
                 <button class="btn-backup" onclick="exportData()" data-i18n="btn_backup">📥 Tải sao lưu về máy</button>
@@ -205,7 +214,6 @@
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="goal_title">Mục tiêu học mỗi ngày</div></div>
                 <div style="width: 100px;">
-                    <!-- Đã giới hạn đúng 2 tuỳ chọn 30 và 60 theo yêu cầu -->
                     <select id="dailyGoalSelect" onchange="updateDailyGoal(this.value)">
                         <option value="30">30 Phút</option>
                         <option value="60">60 Phút</option>
@@ -336,6 +344,50 @@
 <script>
     const { pinyin } = pinyinPro;
 
+    // --- CẤU HÌNH FIREBASE ĐÃ ĐƯỢC CHÈN CHÍNH XÁC TỪ ẢNH CỦA BẠN ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBEvxSII35LuSpWZkqZ5zspeLPaFWB-sfQ",
+        authDomain: "tuvungtiengtrung-c03b1.firebaseapp.com",
+        databaseURL: "https://tuvungtiengtrung-c03b1-default-rtdb.firebaseio.com",
+        projectId: "tuvungtiengtrung-c03b1",
+        storageBucket: "tuvungtiengtrung-c03b1.firebasestorage.app",
+        messagingSenderId: "1035757019013",
+        appId: "1:1035757019013:web:cbc94f7c167529a7d5aeec"
+    };
+
+    let db = null;
+    let isCloudSyncing = false;
+
+    function initFirebase() {
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            
+            // Lắng nghe dữ liệu thay đổi trên Cloud theo thời gian thực
+            db.ref('app_vocab_data').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data && !isCloudSyncing) {
+                    if (data.vocab) {
+                        vocabList = data.vocab;
+                        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+                    }
+                    if (data.dailyStats) {
+                        dailyStats = data.dailyStats;
+                        localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+                    }
+                    updateUI();
+                    if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
+                }
+            });
+            document.getElementById('syncBadge').innerText = "☁️ Đã kết nối Cloud";
+            document.getElementById('syncBadge').classList.remove('off');
+        } catch (e) {
+            console.warn("Lỗi kết nối Firebase:", e);
+            document.getElementById('syncBadge').innerText = "💾 Bộ nhớ máy (Offline)";
+            document.getElementById('syncBadge').classList.add('off');
+        }
+    }
+
     const dict = {
         vi: {
             app_title: "Ôn Tập Tiếng Trung", stats_title: "Thống Kê Tiến Độ Học Tập", stat_total: "Tổng từ", stat_learned: "Đã thuộc", stat_unlearned: "Cần ôn", stat_unseen: "Chưa xem",
@@ -387,7 +439,6 @@
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
-    // Mặc định là 30 phút
     let dailyGoalMins = parseInt(localStorage.getItem('my_daily_goal')) || 30;
     
     let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
@@ -405,7 +456,8 @@
         const p = document.getElementById('page-flashcard');
         if (p && p.classList.contains('active') && !document.hidden) {
             const today = getTodayKey(); if (!dailyStats[today]) dailyStats[today] = { seconds: 0 };
-            dailyStats[today].seconds += 1; localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+            dailyStats[today].seconds += 1; 
+            saveData();
         }
     }, 1000);
 
@@ -436,15 +488,12 @@
 
             const remainingMins = dailyGoalMins - studiedMins;
             
-            // XỬ LÝ ẨN/HIỆN THÔNG BÁO VÀ CHỮ ĐỎ
             if (remainingMins > 0) {
-                // Nếu chưa đủ: Hiện chữ đỏ
                 goalEl.innerText = currentLang === 'vi' ? `Hôm nay cần học thêm ${remainingMins} phút` : `今天还需要学习 ${remainingMins} 分钟`;
                 goalEl.style.color = 'var(--danger)'; 
                 goalEl.style.backgroundColor = 'rgba(255,59,48,0.15)'; 
                 goalEl.style.display = 'block';
             } else {
-                // Nếu đủ: Không hiện
                 goalEl.style.display = 'none';
             }
             
@@ -609,7 +658,22 @@
     function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; const i = vocabList[currentCardIndex]; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
     function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); blockManualMark = false; clearTimeout(actionTimeout); loadNextCard(); updateUI(); } }
     function resetForm() { editingId = null; matchedDuplicateItem = null; document.getElementById('hanziInput').value = ''; document.getElementById('pinyinInput').value = ''; document.getElementById('meaningInput').value = ''; document.getElementById('exampleInput').value = ''; document.getElementById('duplicateBox').style.display = 'none'; document.getElementById('formTitle').innerText = t('add_title'); document.getElementById('saveBtn').innerText = t('btn_save_word'); document.getElementById('cancelEditBtn').style.display = "none"; }
-    function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
+    
+    function saveData() { 
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); 
+        localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats)); 
+        
+        if (db) {
+            isCloudSyncing = true;
+            db.ref('app_vocab_data').set({
+                vocab: vocabList,
+                dailyStats: dailyStats,
+                updatedAt: Date.now()
+            }, () => {
+                isCloudSyncing = false;
+            });
+        }
+    }
 
     function renderCardUI(sel) {
         document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); document.getElementById('cardDetails').classList.remove('show'); document.getElementById('clickHint').style.display = 'block'; document.getElementById('displayHanzi').innerText = sel.hanzi; document.getElementById('displayPinyin').innerText = sel.pinyin; document.getElementById('displayMeaning').innerText = sel.meaning; document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.interval}`;
@@ -733,9 +797,36 @@
     function startQuizMode() { if(vocabList.length < 4) return alert(currentLang==='vi'?'Cần ít nhất 4 từ vựng trong kho để chơi!':'至少需要4个词汇！'); quizScore = 0; quizQuestionCount = 0; showPage('page-quiz'); loadQuizQuestion(); }
     function loadQuizQuestion() { quizQuestionCount++; document.getElementById('quizStatus').innerText = `Câu ${quizQuestionCount} | Điểm: ${quizScore}`; const q = vocabList[Math.floor(Math.random() * vocabList.length)]; document.getElementById('quizHanzi').innerText = q.hanzi; let opts = [q]; let others = vocabList.filter(v => v.id !== q.id).sort(() => 0.5 - Math.random()); opts.push(...others.slice(0, 3)); opts.sort(() => 0.5 - Math.random()); const grid = document.getElementById('quizOptions'); grid.innerHTML = ''; opts.forEach(opt => { const btn = document.createElement('button'); btn.className = 'quiz-option'; btn.innerText = opt.meaning; btn.onclick = () => { if(btn.classList.contains('correct') || btn.classList.contains('wrong')) return; if(opt.id === q.id) { btn.classList.add('correct'); quizScore++; speakText(q.hanzi); setTimeout(() => { loadQuizQuestion(); }, 800); } else { btn.classList.add('wrong'); Array.from(grid.children).forEach(b => { if(b.innerText === q.meaning) b.classList.add('correct'); }); setTimeout(() => { loadQuizQuestion(); }, 1500); } }; grid.appendChild(btn); }); }
     function endQuiz(manual=false) { if(manual && !confirm(currentLang==='vi'?'Bạn muốn thoát Minigame?':'您想退出游戏吗？')) return; showPage('page-home'); }
-    function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
-    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imp.vocab)); if (imp.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imp.dailyStats)); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); location.reload(); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
-    window.onload = function() { initChart(); updateUI(); initWelcome(); initMicSystem(); };
+
+    function exportData() { 
+        const b = { vocab: vocabList, dailyStats: dailyStats }; 
+        const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); 
+        const a = document.createElement('a'); 
+        a.setAttribute("href", s); 
+        a.setAttribute("download", `TuVung_${getTodayKey()}.json`); 
+        document.body.appendChild(a); 
+        a.click(); 
+        a.remove(); 
+    }
+    
+    function importData(e) { 
+        const r = new FileReader(); 
+        r.onload = function(ev) { 
+            try { 
+                const imp = JSON.parse(ev.target.result); 
+                if (imp.vocab) vocabList = imp.vocab; 
+                if (imp.dailyStats) dailyStats = imp.dailyStats; 
+                saveData(); 
+                alert(currentLang === 'vi' ? "Đã khôi phục và đồng bộ Cloud thành công!" : "成功恢复并同步！"); 
+                location.reload(); 
+            } catch (err) { 
+                alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); 
+            } 
+        }; 
+        r.readAsText(e.target.files[0]); 
+    }
+
+    window.onload = function() { initChart(); updateUI(); initWelcome(); initMicSystem(); initFirebase(); };
 </script>
 </body>
 </html>
