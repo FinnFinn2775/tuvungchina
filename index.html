@@ -47,6 +47,12 @@
         .welcome-icon { font-size: 60px; margin-bottom: 8px; }
         .welcome-text { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px; padding: 0 16px; }
         .welcome-time { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-top: 4px; }
+        
+        /* Box hiển thị mục tiêu ở màn hình chào mừng */
+        .welcome-goal-box {
+            margin-top: 16px; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
 
         .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
         .stagger-item { opacity: 0; transform: translateY(20px) scale(0.98); visibility: hidden; }
@@ -150,12 +156,7 @@
         .example-title { font-size: 13px; font-weight: 800; color: #d97706; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
         #displayExampleText { font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.5; font-family: "SF Pro Display", sans-serif; }
         
-        /* Chữ Hán nổi bật trong câu ví dụ */
-        .highlight-hanzi { 
-            font-size: 24px; 
-            font-weight: 800; 
-            color: var(--primary); 
-        }
+        .highlight-hanzi { font-size: 24px; font-weight: 800; color: var(--primary); }
 
         .click-hint { font-size: 13px; color: var(--text-sub); margin-top: 10px; font-weight: 500;}
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 600; }
@@ -243,6 +244,8 @@
         <div class="welcome-icon" id="welcomeIcon">🌅</div>
         <div class="welcome-text" id="welcomeText">Chào buổi sáng</div>
         <div class="welcome-time" id="welcomeTime">08:00</div>
+        <!-- Thêm Goal box -->
+        <div class="welcome-goal-box" id="welcomeGoalBox"></div>
     </div>
 </div>
 
@@ -308,6 +311,18 @@
         <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div class="card-box">
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" data-i18n="settings_title">Cài Đặt Hệ Thống</h3>
+            
+            <div class="setting-item">
+                <div><div class="setting-label" data-i18n="goal_title">Mục tiêu học mỗi ngày</div></div>
+                <div style="width: 100px;">
+                    <select id="dailyGoalSelect" onchange="updateDailyGoal(this.value)">
+                        <option value="20">20 Phút</option>
+                        <option value="30">30 Phút</option>
+                        <option value="60">60 Phút</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="welcome_title">Màn hình Chào mừng</div></div>
                 <div><input type="checkbox" id="welcomeToggle" onchange="toggleWelcome(this.checked)" style="width:20px; height:20px; accent-color: var(--primary);"></div>
@@ -466,7 +481,7 @@
             btn_list: "📋 Danh Sách Tất Cả Từ Vựng", list_all: "Tổng số từ", btn_settings: "⚙️ Cài Đặt Hệ Thống", btn_time_stats: "📈 Thống Kê Thời Gian & Tiến Độ",
             btn_backup: "📥 Tải sao lưu về máy", btn_restore: "📤 Khôi phục dữ liệu", btn_reset: "🔄 Reset toàn bộ tiến độ học về 0",
             btn_back: "⬅ Quay về ban đầu", settings_title: "Cài Đặt Hệ Thống", lang_title: "Ngôn ngữ hiển thị",
-            speed_title: "Tốc độ đọc giọng nói", auto_speech_title: "Tự động đọc khi đổi thẻ",
+            speed_title: "Tốc độ đọc giọng nói", auto_speech_title: "Tự động đọc khi đổi thẻ", goal_title: "Mục tiêu học mỗi ngày",
             btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
@@ -474,7 +489,8 @@
             hint_swipe: "Bấm nút dưới để chọn mức độ nhớ", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
             msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "Cấp độ:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame",
-            day_mon: "T2", day_tue: "T3", day_wed: "T4", day_thu: "T5", day_fri: "T6", day_sat: "T7", day_sun: "CN", cal_hint: "🔥 = Đã học trên 30 phút", cal_month: "Tháng"
+            day_mon: "T2", day_tue: "T3", day_wed: "T4", day_thu: "T5", day_fri: "T6", day_sat: "T7", day_sun: "CN", cal_hint: "🔥 = Đã học trên 30 phút", cal_month: "Tháng",
+            goal_not_reach: "Chưa đủ mục tiêu", goal_reach: "Đã đạt mục tiêu"
         },
         zh: {
             app_title: "中文复习", stats_title: "学习进度统计", stat_total: "总词数", stat_learned: "已掌握", stat_unlearned: "需复习", stat_unseen: "未查看",
@@ -482,7 +498,7 @@
             btn_list: "📋 所有词汇列表", list_all: "总词数", btn_settings: "⚙️ 系统设置", btn_time_stats: "📈 时间与进度统计",
             btn_backup: "📥 下载备份", btn_restore: "📤 恢复数据", btn_reset: "🔄 重置所有学习进度",
             btn_back: "⬅ 返回主页", settings_title: "系统设置", lang_title: "显示语言",
-            speed_title: "语音播放速度", auto_speech_title: "切换卡片时自动朗读",
+            speed_title: "语音播放速度", auto_speech_title: "切换卡片时自动朗读", goal_title: "每日学习目标",
             btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
@@ -490,7 +506,8 @@
             hint_swipe: "点击下方按钮选择掌握程度", tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
             msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
             msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏",
-            day_mon: "一", day_tue: "二", day_wed: "三", day_thu: "四", day_fri: "五", day_sat: "六", day_sun: "日", cal_hint: "🔥 = 学习超过30分钟", cal_month: "月"
+            day_mon: "一", day_tue: "二", day_wed: "三", day_thu: "四", day_fri: "五", day_sat: "六", day_sun: "日", cal_hint: "🔥 = 学习超过30分钟", cal_month: "月",
+            goal_not_reach: "未达目标", goal_reach: "已达目标"
         }
     };
 
@@ -508,6 +525,7 @@
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
+    let dailyGoalMins = parseInt(localStorage.getItem('my_daily_goal')) || 30; // Mặc định 30 phút
     
     let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let currentCalDate = new Date();
@@ -529,9 +547,13 @@
     }, 1000);
 
     function toggleWelcome(val) { showWelcomeScreen = val; localStorage.setItem('my_show_welcome', val); }
+    function updateDailyGoal(val) { dailyGoalMins = parseInt(val); localStorage.setItem('my_daily_goal', dailyGoalMins); }
 
     function initWelcome() {
-        applyLanguage(); document.getElementById('welcomeToggle').checked = showWelcomeScreen;
+        applyLanguage(); 
+        document.getElementById('welcomeToggle').checked = showWelcomeScreen;
+        document.getElementById('dailyGoalSelect').value = dailyGoalMins;
+
         if (showWelcomeScreen) {
             const now = new Date();
             const h = now.getHours(); 
@@ -544,9 +566,25 @@
             document.getElementById('welcomeText').innerText = currentLang === 'vi' ? `Chào ${pVi}` : `${pZh}`; 
             document.getElementById('welcomeIcon').innerText = icon;
             document.getElementById('welcomeTime').innerText = `🕒 ${timeStr}`;
+
+            // Xử lý mục tiêu hàng ngày (Welcome Goal Box)
+            const todayStats = dailyStats[getTodayKey()] || { seconds: 0 };
+            const studiedMins = Math.floor(todayStats.seconds / 60);
+            const goalEl = document.getElementById('welcomeGoalBox');
+
+            if (studiedMins < dailyGoalMins) {
+                goalEl.innerText = `${t('goal_not_reach')}: ${studiedMins}/${dailyGoalMins} ${t('time_min')}`;
+                goalEl.style.color = '#ffffff'; // Chữ trắng
+                goalEl.style.backgroundColor = 'rgba(0,0,0,0.4)'; // Nền tối
+            } else {
+                goalEl.innerText = `🎉 ${t('goal_reach')}: ${studiedMins}/${dailyGoalMins} ${t('time_min')}`;
+                goalEl.style.color = 'var(--danger)'; // Chữ đỏ
+                goalEl.style.backgroundColor = 'rgba(255,59,48,0.15)'; // Nền đỏ nhạt
+            }
             
             document.getElementById('welcomeOverlay').style.display = 'flex'; document.getElementById('welcomeOverlay').classList.remove('hidden');
-            setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('hidden'); startHomeAnimations(); }, 1800);
+            // Kéo dài thời gian chào mừng lên 2.5s để người dùng kịp đọc text mục tiêu
+            setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('hidden'); startHomeAnimations(); }, 2500);
         } else { document.getElementById('welcomeOverlay').style.display = 'none'; startHomeAnimations(); }
     }
 
@@ -582,13 +620,18 @@
         
         if (pageId === 'page-home') { 
             updateUI(); 
-            // Hiển thị lại animation
             document.querySelectorAll('#page-home .stagger-item').forEach(el => { el.style.animationDelay = '0s'; el.classList.add('show'); }); 
             setTimeout(() => { animateNumber('totalCount'); animateNumber('learnedCount'); animateNumber('unlearnedCount'); animateNumber('unseenCount'); animateNumber('chartPercent', true); }, 50); 
         }
         if (pageId === 'page-time-stats') { renderTimeStats(currentRange); renderCalendar(); }
         if (pageId === 'page-list') renderVocabList();
-        if (pageId === 'page-settings') { document.getElementById('speechRateSelect').value = globalSpeechRate; document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; document.getElementById('languageSelect').value = currentLang; document.getElementById('welcomeToggle').checked = showWelcomeScreen; }
+        if (pageId === 'page-settings') { 
+            document.getElementById('speechRateSelect').value = globalSpeechRate; 
+            document.getElementById('autoSpeechToggle').checked = autoSpeechEnabled; 
+            document.getElementById('languageSelect').value = currentLang; 
+            document.getElementById('welcomeToggle').checked = showWelcomeScreen;
+            document.getElementById('dailyGoalSelect').value = dailyGoalMins;
+        }
     }
 
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
@@ -629,7 +672,6 @@
         const pct = tot > 0 ? Math.round((lr / tot) * 100) : 0; 
         document.getElementById('chartPercent').setAttribute('data-val', pct);
         
-        // Force update UI strings immediately without waiting for animation to finish
         document.getElementById('chartPercent').innerText = pct + "%";
         document.getElementById('totalCount').innerText = tot;
         document.getElementById('learnedCount').innerText = lr;
@@ -638,7 +680,6 @@
         
         if (chartInstance) { 
             chartInstance.data.datasets[0].data = [lr, ulr, usn]; 
-            // FIX: Cập nhật lại đồ thị ngay lập tức
             chartInstance.update(); 
         }
     }
@@ -684,31 +725,27 @@
         const ctx = document.getElementById('timeBarChart').getContext('2d'); if (timeChartInstance) timeChartInstance.destroy(); timeChartInstance = new Chart(ctx, { type: 'bar', data: { labels: lbls, datasets: [ { label: t('time_min'), data: mDts, backgroundColor: '#007aff', borderRadius: 6 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5ea' } } }, animation: { duration: 800 } } });
     }
 
-    // Render Bảng Lịch
     function renderCalendar() {
         const year = currentCalDate.getFullYear();
         const month = currentCalDate.getMonth();
-        
         const monthStr = currentLang === 'vi' ? `${t('cal_month')} ${month + 1} - ${year}` : `${year}年 ${month + 1}月`;
         document.getElementById('calendarMonthYear').innerText = monthStr;
         
-        const firstDay = new Date(year, month, 1).getDay(); // Chủ nhật là 0
+        const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-        let offset = firstDay === 0 ? 6 : firstDay - 1; // Bắt đầu bằng Thứ 2
+        let offset = firstDay === 0 ? 6 : firstDay - 1;
         
         const grid = document.getElementById('calendarGridDays');
         grid.innerHTML = '';
         
-        for (let i = 0; i < offset; i++) {
-            grid.innerHTML += `<div class="cal-day empty"></div>`;
-        }
+        for (let i = 0; i < offset; i++) { grid.innerHTML += `<div class="cal-day empty"></div>`; }
         
         const todayStr = getTodayKey();
         
         for (let d = 1; d <= daysInMonth; d++) {
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const stat = dailyStats[dateKey];
-            const isHighlight = stat && stat.seconds >= 1800; // Đã học >= 30 phút
+            const isHighlight = stat && stat.seconds >= (dailyGoalMins * 60); // Đổi thành theo Mục tiêu cài đặt
             const isToday = dateKey === todayStr;
             
             let cls = 'cal-day';
@@ -718,11 +755,7 @@
             grid.innerHTML += `<div class="${cls}">${d}</div>`;
         }
     }
-    
-    function changeMonth(dir) {
-        currentCalDate.setMonth(currentCalDate.getMonth() + dir);
-        renderCalendar();
-    }
+    function changeMonth(dir) { currentCalDate.setMonth(currentCalDate.getMonth() + dir); renderCalendar(); }
 
     function renderVocabList() {
         const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); c.innerHTML = ''; let tl = vocabList; let tt = t('list_all'); const tk = getTodayKey();
@@ -779,7 +812,6 @@
         const eb = document.getElementById('displayExampleBox'); 
         const et = document.getElementById('displayExampleText'); 
         if (sel.example && sel.example.trim() !== '') { 
-            // Làm nổi bật chữ Hán trong câu ví dụ
             const regex = new RegExp(sel.hanzi, 'g');
             const highlightedExample = sel.example.replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
             et.innerHTML = highlightedExample; 
@@ -791,15 +823,31 @@
         if (autoSpeechEnabled) speakText(sel.hanzi);
     }
 
+    // THUẬT TOÁN SRS MỚI BẰNG TRỌNG SỐ TỶ LỆ % (WEIGHTED RANDOM SELECTION)
     function loadNextCard() {
-        let p = vocabList; 
+        if (currentFilter !== 'srs') return;
+        
         const tk = getTodayKey(); 
         
-        if (currentFilter === 'srs') { 
-            p = vocabList.filter(v => v.seenCount === 0 || (v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)));
-        }
+        let pChuaThuoc = [];
+        let pMoiHoc = [];
+        let pTamNho = [];
+        let pKhaSau = [];
 
-        if (p.length === 0) { 
+        // Lọc các thẻ TỚI HẠN và chia vào 4 giỏ
+        vocabList.forEach(v => {
+            if (v.seenCount === 0 || v.interval === 0) {
+                pChuaThuoc.push(v);
+            } else if (v.nextReview <= tk) {
+                if (v.interval === 1) pMoiHoc.push(v);
+                else if (v.interval > 1 && v.interval <= 3) pTamNho.push(v);
+                else pKhaSau.push(v);
+            }
+        });
+
+        const totalDue = pChuaThuoc.length + pMoiHoc.length + pTamNho.length + pKhaSau.length;
+
+        if (totalDue === 0) { 
             document.getElementById('displayHanzi').innerText = t('end_card'); 
             document.getElementById('displayPinyin').innerText = ""; 
             document.getElementById('displayMeaning').innerText = ""; 
@@ -808,17 +856,36 @@
             currentCardIndex = -1; return; 
         }
         
-        p.sort((a, b) => {
-            if (a.seenCount === 0 && b.seenCount > 0) return -1;
-            if (b.seenCount === 0 && a.seenCount > 0) return 1;
-            if (a.interval === 0 && b.interval > 0) return -1;
-            if (b.interval === 0 && a.interval > 0) return 1;
-            if (a.nextReview < b.nextReview) return -1;
-            if (a.nextReview > b.nextReview) return 1;
-            return 0.5 - Math.random();
-        });
+        let selectedPool = [];
+        const rand = Math.random() * 100;
 
-        const sel = p[0]; currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
+        // Cơ chế đổ dồn tỷ lệ nếu 1 mốc bị hết thẻ
+        if (pChuaThuoc.length > 0) {
+            // Có Chưa thuộc: Chưa thuộc 50%, Mới 30%, Tạm 10%, Khá+Sâu 10%
+            if (rand < 50) selectedPool = pChuaThuoc;
+            else if (rand < 80) selectedPool = pMoiHoc.length > 0 ? pMoiHoc : pChuaThuoc;
+            else if (rand < 90) selectedPool = pTamNho.length > 0 ? pTamNho : pChuaThuoc;
+            else selectedPool = pKhaSau.length > 0 ? pKhaSau : pChuaThuoc;
+        } 
+        else if (pMoiHoc.length > 0) {
+            // Hết Chưa thuộc, Có Mới học: Mới học 50%, Tạm 20%, Khá+Sâu 30%
+            if (rand < 50) selectedPool = pMoiHoc;
+            else if (rand < 70) selectedPool = pTamNho.length > 0 ? pTamNho : pMoiHoc;
+            else selectedPool = pKhaSau.length > 0 ? pKhaSau : pMoiHoc;
+        } 
+        else if (pTamNho.length > 0) {
+            // Hết Chưa thuộc, Hết Mới học, Có Tạm nhớ: Tạm 50%, Khá+Sâu 50%
+            if (rand < 50) selectedPool = pTamNho;
+            else selectedPool = pKhaSau.length > 0 ? pKhaSau : pTamNho;
+        } 
+        else {
+            // Chỉ còn mốc Nhớ Khá và Sâu
+            selectedPool = pKhaSau;
+        }
+
+        // Chọn ngẫu nhiên 1 thẻ trong mốc phần trăm đã bốc trúng
+        const sel = selectedPool[Math.floor(Math.random() * selectedPool.length)];
+        currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
         renderCardUI(sel);
     }
 
@@ -873,6 +940,7 @@
             if (i.interval === 0) i.interval = 1; else if (i.interval === 1) i.interval = 3; else i.interval = Math.round(i.interval * i.ease);
             i.ease = Math.max(1.3, i.ease + 0.1);
         } else {
+            // Khi chọn CHƯA THUỘC -> Lập tức ép cấp độ thẻ về 0 (Đưa về nhóm Chưa Thuộc)
             i.interval = 0; 
             i.ease = Math.max(1.3, i.ease - 0.2);
         }
