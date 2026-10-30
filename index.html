@@ -6,6 +6,7 @@
     <title data-i18n="app_title">Ôn Tập Tiếng Trung</title>
     <script src="https://unpkg.com/pinyin-pro"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --primary: #007aff; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
@@ -22,7 +23,6 @@
         .welcome-text { font-size: 26px; font-weight: 800; color: var(--primary); margin-bottom: 4px; padding: 0 16px; }
         .welcome-time { font-size: 16px; font-weight: 600; color: var(--text-sub); margin-top: 4px; }
         
-        /* Box cảnh báo học thêm */
         .welcome-goal-box { margin-top: 16px; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.3s; }
         
         .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
@@ -152,7 +152,6 @@
         <div class="welcome-icon" id="welcomeIcon">🌅</div>
         <div class="welcome-text" id="welcomeText">Chào buổi sáng</div>
         <div class="welcome-time" id="welcomeTime">08:00</div>
-        <!-- Vị trí thông báo dưới đồng hồ -->
         <div class="welcome-goal-box" id="welcomeGoalBox" style="display:none;"></div>
     </div>
 </div>
@@ -205,7 +204,6 @@
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="goal_title">Mục tiêu học mỗi ngày</div></div>
                 <div style="width: 100px;">
-                    <!-- Đã giới hạn đúng 2 tuỳ chọn 30 và 60 theo yêu cầu -->
                     <select id="dailyGoalSelect" onchange="updateDailyGoal(this.value)">
                         <option value="30">30 Phút</option>
                         <option value="60">60 Phút</option>
@@ -273,7 +271,8 @@
                 <div style="font-size: 13px; color: var(--text-main); margin-bottom: 8px;" id="duplicateText"></div>
                 <button class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="loadDuplicateToEdit()" data-i18n="btn_edit_old">✏️ Sửa từ cũ này</button>
             </div>
-            <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" readonly data-i18n-ph="ph_pinyin"></div>
+            <!-- BỎ THUỘC TÍNH READONLY CHO PHÉP TỰ GÕ/SỬA LẠI PINYIN TÙY Ý -->
+            <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" data-i18n-ph="ph_pinyin"></div>
             <div class="input-group"><label data-i18n="lbl_meaning">Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput" data-i18n-ph="ph_meaning"></div>
             <div class="input-group"><label data-i18n="lbl_example">Ví dụ (Tùy chọn):</label><textarea id="exampleInput" data-i18n-ph="ph_example"></textarea></div>
             <button class="btn-primary" id="saveBtn" onclick="addOrUpdateWord()" data-i18n="btn_save_word">Lưu Từ Vựng</button>
@@ -333,7 +332,26 @@
     </div>
 </div>
 
-<script>
+<!-- SỬ DỤNG FIREBASE MODULAR SDK MỚI NHẤT & CHẠY SCRIPT NHƯ MỘT MODULE -->
+<script type="module">
+    // Khởi tạo Firebase từ thư viện Modular v10.10.0
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, increment } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCtvpUboIrjw2Sd2X1e9N85ZtGbJzwEbx4",
+        authDomain: "severtiengtrung-1c955.firebaseapp.com",
+        databaseURL: "https://severtiengtrung-1c955-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "severtiengtrung-1c955",
+        storageBucket: "severtiengtrung-1c955.firebasestorage.app",
+        messagingSenderId: "136099930414",
+        appId: "1:136099930414:web:4e325e9d113e517ae3dabf",
+        measurementId: "G-T1737MTCRL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
     const { pinyin } = pinyinPro;
 
     const dict = {
@@ -382,32 +400,85 @@
     }
     function t(key) { return dict[currentLang][key] || key; }
 
+    // Tính năng OFFLINE CACHE - Đọc ngay từ máy để load tức thì
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
     let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
-    // Mặc định là 30 phút
     let dailyGoalMins = parseInt(localStorage.getItem('my_daily_goal')) || 30;
     
     let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let currentCalDate = new Date();
     let historyStack = []; 
     let blockManualMark = false; let actionTimeout = null;
+    let localSecondsAccumulated = 0; // Đếm thời gian ảo trên máy
 
     function getTodayKey() { return new Date().toISOString().split('T')[0]; }
     function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
     function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return d.toISOString().split('T')[0]; }
 
-    vocabList.forEach(item => { if (item.interval === undefined) item.interval = 0; if (item.ease === undefined) item.ease = 2.5; if (!item.nextReview) item.nextReview = getTodayKey(); });
+    // --- LẮNG NGHE ĐỒNG BỘ REALTIME ---
+    onValue(ref(db, 'vocabList'), (snapshot) => {
+        const data = snapshot.val();
+        // Mảng Firebase có thể trả về Object nếu có lỗ hổng ID, dùng Object.values để gom mảng chuẩn xác
+        vocabList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+        vocabList.forEach(item => { if (item.interval === undefined) item.interval = 0; if (item.ease === undefined) item.ease = 2.5; if (!item.nextReview) item.nextReview = getTodayKey(); });
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); // Lưu vào máy dự phòng offline
+        updateUI();
+        if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
+    });
 
+    onValue(ref(db, 'dailyStats'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            dailyStats = data;
+            const today = getTodayKey();
+            if (dailyStats[today] && localSecondsAccumulated > 0) {
+                dailyStats[today].seconds += localSecondsAccumulated; // Khớp lại dữ liệu nếu chưa kịp gửi đi
+            }
+            localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+            if (document.getElementById('page-time-stats').classList.contains('active')) {
+                renderTimeStats(currentRange); renderCalendar();
+            }
+        }
+    });
+
+    function saveData() {
+        set(ref(db, 'vocabList'), vocabList);
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+    }
+
+    // Cơ chế ĐẾM THỜI GIAN NGẦM - Chống nghẽn mạng Firebase
     setInterval(() => {
         const p = document.getElementById('page-flashcard');
         if (p && p.classList.contains('active') && !document.hidden) {
             const today = getTodayKey(); if (!dailyStats[today]) dailyStats[today] = { seconds: 0 };
-            dailyStats[today].seconds += 1; localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+            dailyStats[today].seconds += 1; 
+            localSecondsAccumulated += 1; // Chỉ đếm trong bộ nhớ RAM
+            localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
         }
     }, 1000);
+
+    // CHỈ ĐẨY SỐ GIÂY ĐÃ HỌC LÊN FIREBASE MỖI 10 GIÂY
+    setInterval(() => {
+        if (localSecondsAccumulated > 0) {
+            const today = getTodayKey();
+            const secsToPush = localSecondsAccumulated;
+            localSecondsAccumulated = 0; 
+            update(ref(db), { [`dailyStats/${today}/seconds`]: increment(secsToPush) });
+        }
+    }, 10000);
+
+    // Đẩy nốt số giây học lên Firebase nếu người dùng lỡ thoát trang hoặc thu nhỏ web
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === 'hidden' && localSecondsAccumulated > 0) {
+            const today = getTodayKey();
+            const secsToPush = localSecondsAccumulated;
+            localSecondsAccumulated = 0; 
+            update(ref(db), { [`dailyStats/${today}/seconds`]: increment(secsToPush) });
+        }
+    });
 
     function toggleWelcome(val) { showWelcomeScreen = val; localStorage.setItem('my_show_welcome', val); }
     function updateDailyGoal(val) { dailyGoalMins = parseInt(val); localStorage.setItem('my_daily_goal', dailyGoalMins); }
@@ -433,20 +504,14 @@
             const todayStats = dailyStats[getTodayKey()] || { seconds: 0 };
             const studiedMins = Math.floor(todayStats.seconds / 60);
             const goalEl = document.getElementById('welcomeGoalBox');
-
             const remainingMins = dailyGoalMins - studiedMins;
             
-            // XỬ LÝ ẨN/HIỆN THÔNG BÁO VÀ CHỮ ĐỎ
             if (remainingMins > 0) {
-                // Nếu chưa đủ: Hiện chữ đỏ
                 goalEl.innerText = currentLang === 'vi' ? `Hôm nay cần học thêm ${remainingMins} phút` : `今天还需要学习 ${remainingMins} 分钟`;
                 goalEl.style.color = 'var(--danger)'; 
                 goalEl.style.backgroundColor = 'rgba(255,59,48,0.15)'; 
                 goalEl.style.display = 'block';
-            } else {
-                // Nếu đủ: Không hiện
-                goalEl.style.display = 'none';
-            }
+            } else { goalEl.style.display = 'none'; }
             
             document.getElementById('welcomeOverlay').style.display = 'flex'; document.getElementById('welcomeOverlay').classList.remove('hidden');
             setTimeout(() => { document.getElementById('welcomeOverlay').classList.add('hidden'); startHomeAnimations(); }, 2500);
@@ -588,15 +653,30 @@
     }
     function changeMonth(dir) { currentCalDate.setMonth(currentCalDate.getMonth() + dir); renderCalendar(); }
 
+    // TỐI ƯU CỰC MẠNH: Dùng DocumentFragment để không bị giật lag khi cuộn danh sách hàng ngàn từ vựng
     function renderVocabList() {
-        const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); c.innerHTML = ''; let tl = vocabList; let tt = t('list_all'); const tk = getTodayKey();
+        const c = document.getElementById('vocabListContainer'); const q = document.getElementById('searchVocabInput').value.trim().toLowerCase(); 
+        let tl = vocabList; let tt = t('list_all'); const tk = getTodayKey();
         if (currentListFilter === 'learned') { tl = vocabList.filter(v => v.seenCount > 0 && v.interval > 0 && v.nextReview > tk); tt = t('stat_learned'); } 
         else if (currentListFilter === 'unlearned') { tl = vocabList.filter(v => v.seenCount > 0 && (v.interval === 0 || v.nextReview <= tk)); tt = t('stat_unlearned'); } 
         else if (currentListFilter === 'unseen') { tl = vocabList.filter(v => v.seenCount === 0); tt = t('stat_unseen'); } 
-        const flt = tl.filter(v => v.hanzi.toLowerCase().includes(q) || v.meaning.toLowerCase().includes(q) || v.pinyin.toLowerCase().includes(q) || (v.example && v.example.toLowerCase().includes(q))); document.getElementById('listTitleHeader').innerHTML = `${tt} (<span id="listTotalCount">${flt.length}</span>)`;
+        const flt = tl.filter(v => v.hanzi.toLowerCase().includes(q) || v.meaning.toLowerCase().includes(q) || v.pinyin.toLowerCase().includes(q) || (v.example && v.example.toLowerCase().includes(q))); 
+        document.getElementById('listTitleHeader').innerHTML = `${tt} (<span id="listTotalCount">${flt.length}</span>)`;
+        
+        c.innerHTML = '';
         if (flt.length === 0) { c.innerHTML = `<div style="text-align:center; color:var(--text-sub); padding:20px;">${t('empty_list')}</div>`; return; }
-        flt.forEach(it => { const d = document.createElement('div'); d.className = 'vocab-item'; let st = it.interval > 0 ? `• <span style="color:var(--success);">Tới hạn: ${it.nextReview}</span>` : ''; let eg = it.example ? `<div class="vocab-item-eg">💬 ${it.example}</div>` : ''; d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${it.pinyin}</span></div><div class="vocab-item-sub">${it.meaning} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${it.hanzi}')">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; c.appendChild(d); }); 
+        
+        const frag = document.createDocumentFragment();
+        flt.forEach(it => { 
+            const d = document.createElement('div'); d.className = 'vocab-item'; 
+            let st = it.interval > 0 ? `• <span style="color:var(--success);">Tới hạn: ${it.nextReview}</span>` : ''; 
+            let eg = it.example ? `<div class="vocab-item-eg">💬 ${it.example}</div>` : ''; 
+            d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${it.pinyin}</span></div><div class="vocab-item-sub">${it.meaning} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${it.hanzi}')">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; 
+            frag.appendChild(d); 
+        }); 
+        c.appendChild(frag);
     }
+    
     function editWordFromList(id) { const i = vocabList.find(v => v.id === id); if (!i) return; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
     function deleteWordFromList(id) { if (confirm(currentLang === 'vi' ? "Bạn có chắc chắn muốn xóa từ này khỏi danh sách?" : "您确定要从列表中删除此词汇吗？")) { vocabList = vocabList.filter(v => v.id !== id); saveData(); renderVocabList(); updateUI(); } }
     function addOrUpdateWord() {
@@ -609,7 +689,6 @@
     function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; const i = vocabList[currentCardIndex]; editingId = i.id; document.getElementById('hanziInput').value = i.hanzi; document.getElementById('pinyinInput').value = i.pinyin; document.getElementById('meaningInput').value = i.meaning; document.getElementById('exampleInput').value = i.example || ''; document.getElementById('formTitle').innerText = t('edit_title'); document.getElementById('saveBtn').innerText = t('btn_update_word'); document.getElementById('cancelEditBtn').style.display = "block"; showPage('page-add'); }
     function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); blockManualMark = false; clearTimeout(actionTimeout); loadNextCard(); updateUI(); } }
     function resetForm() { editingId = null; matchedDuplicateItem = null; document.getElementById('hanziInput').value = ''; document.getElementById('pinyinInput').value = ''; document.getElementById('meaningInput').value = ''; document.getElementById('exampleInput').value = ''; document.getElementById('duplicateBox').style.display = 'none'; document.getElementById('formTitle').innerText = t('add_title'); document.getElementById('saveBtn').innerText = t('btn_save_word'); document.getElementById('cancelEditBtn').style.display = "none"; }
-    function saveData() { localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList)); }
 
     function renderCardUI(sel) {
         document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); document.getElementById('cardDetails').classList.remove('show'); document.getElementById('clickHint').style.display = 'block'; document.getElementById('displayHanzi').innerText = sel.hanzi; document.getElementById('displayPinyin').innerText = sel.pinyin; document.getElementById('displayMeaning').innerText = sel.meaning; document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.interval}`;
@@ -734,7 +813,20 @@
     function loadQuizQuestion() { quizQuestionCount++; document.getElementById('quizStatus').innerText = `Câu ${quizQuestionCount} | Điểm: ${quizScore}`; const q = vocabList[Math.floor(Math.random() * vocabList.length)]; document.getElementById('quizHanzi').innerText = q.hanzi; let opts = [q]; let others = vocabList.filter(v => v.id !== q.id).sort(() => 0.5 - Math.random()); opts.push(...others.slice(0, 3)); opts.sort(() => 0.5 - Math.random()); const grid = document.getElementById('quizOptions'); grid.innerHTML = ''; opts.forEach(opt => { const btn = document.createElement('button'); btn.className = 'quiz-option'; btn.innerText = opt.meaning; btn.onclick = () => { if(btn.classList.contains('correct') || btn.classList.contains('wrong')) return; if(opt.id === q.id) { btn.classList.add('correct'); quizScore++; speakText(q.hanzi); setTimeout(() => { loadQuizQuestion(); }, 800); } else { btn.classList.add('wrong'); Array.from(grid.children).forEach(b => { if(b.innerText === q.meaning) b.classList.add('correct'); }); setTimeout(() => { loadQuizQuestion(); }, 1500); } }; grid.appendChild(btn); }); }
     function endQuiz(manual=false) { if(manual && !confirm(currentLang==='vi'?'Bạn muốn thoát Minigame?':'您想退出游戏吗？')) return; showPage('page-home'); }
     function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
-    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) localStorage.setItem('my_infinite_vocab', JSON.stringify(imp.vocab)); if (imp.dailyStats) localStorage.setItem('my_daily_stats', JSON.stringify(imp.dailyStats)); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); location.reload(); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
+    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) vocabList = imp.vocab; if (imp.dailyStats) dailyStats = imp.dailyStats; saveData(); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
+    
+    // ĐƯA CÁC HÀM RA TOÀN CỤC ĐỂ GIAO DIỆN HTML (INLINE ONCLICK) CÓ THỂ GỌI ĐƯỢC KHI CHẠY DẠỚI DẠNG MODULE
+    Object.assign(window, {
+        closeMemoryModal, openVocabListFilter, openMemoryModal, startStudy,
+        startQuizMode, showPage, exportData, importData, updateDailyGoal,
+        toggleWelcome, changeLanguage, updateSpeechRate, toggleAutoSpeech,
+        testSpeech, resetAllSeenCounts, renderTimeStats, changeMonth,
+        autoPinyin, checkDuplicateHanzi, loadDuplicateToEdit, addOrUpdateWord,
+        resetForm, renderVocabList, speakCurrentCard, editCurrentCard,
+        deleteCurrentCard, markCard, undoPreviousCard, startMic, stopMic, endQuiz,
+        speakText, editWordFromList, deleteWordFromList
+    });
+
     window.onload = function() { initChart(); updateUI(); initWelcome(); initMicSystem(); };
 </script>
 </body>
