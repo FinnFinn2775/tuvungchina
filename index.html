@@ -170,6 +170,19 @@
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
         .setting-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+        
+        /* Khu vực chỉnh tỉ lệ phần trăm các mức độ thuộc trong Cài Đặt */
+        .ratio-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+        .ratio-row:last-of-type { border-bottom: none; }
+        .ratio-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .ratio-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .ratio-input-wrap { display: flex; align-items: center; gap: 4px; background: var(--item-bg); border: 1px solid var(--border); border-radius: 10px; padding: 4px 10px; }
+        .ratio-input { width: 52px; border: none; background: transparent; font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; outline: none; font-family: inherit; }
+        .ratio-unit { font-size: 14px; font-weight: 700; color: var(--text-sub); }
+        .ratio-total-badge { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
+        .ratio-total-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
+        .ratio-total-err { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
+
         .quiz-question-box { background: var(--card-bg); border-radius: 20px; padding: 30px 20px; text-align: center; border: 1px solid var(--border); margin-bottom: 16px;}
         .quiz-hanzi { font-size: 64px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
         .quiz-status { font-size: 14px; color: var(--text-sub); font-weight: 600;}
@@ -269,6 +282,90 @@
             </div>
             <button class="btn-primary" style="margin-top: 16px;" onclick="testSpeech()" data-i18n="btn_test_speech">🔊 Thử giọng đọc (你好)</button>
             <button class="btn-reset" style="margin-top:10px;" onclick="resetAllSeenCounts()" data-i18n="btn_reset">🔄 Reset toàn bộ tiến độ học về 0</button>
+        </div>
+
+        <!-- Mục chỉnh tỉ lệ phần trăm hiển thị các mức độ thuộc -->
+        <div class="card-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;">
+                <h3 style="margin: 0; font-size: 16px;" data-i18n="level_ratio_title">🎯 Tỉ Lệ Hiển Thị Mức Độ Thuộc</h3>
+                <span id="levelRatioTotalBadge" class="ratio-total-badge ratio-total-ok">100%</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-sub); margin-bottom:10px;" data-i18n="level_ratio_sub">Điều chỉnh tần suất xuất hiện của 5 cấp độ khi ôn tập (Tổng = 100%)</div>
+
+            <div class="ratio-row">
+                <div class="ratio-left">
+                    <span class="ratio-dot" style="background:#ff3b30;"></span>
+                    <div>
+                        <div class="setting-label" data-i18n="lvl_1_name">Chưa nhớ</div>
+                        <div class="setting-sub" data-i18n="lvl_1_desc">Từ mới hoặc vừa bấm chưa thuộc</div>
+                    </div>
+                </div>
+                <div class="ratio-input-wrap">
+                    <input type="number" id="rateL1" class="ratio-input" min="0" max="100" step="1" oninput="updateLevelRatioPreview()">
+                    <span class="ratio-unit">%</span>
+                </div>
+            </div>
+
+            <div class="ratio-row">
+                <div class="ratio-left">
+                    <span class="ratio-dot" style="background:#ff9500;"></span>
+                    <div>
+                        <div class="setting-label" data-i18n="lvl_2_name">Mới học</div>
+                        <div class="setting-sub" data-i18n="lvl_2_desc">Khoảng cách ôn 1 ngày</div>
+                    </div>
+                </div>
+                <div class="ratio-input-wrap">
+                    <input type="number" id="rateL2" class="ratio-input" min="0" max="100" step="1" oninput="updateLevelRatioPreview()">
+                    <span class="ratio-unit">%</span>
+                </div>
+            </div>
+
+            <div class="ratio-row">
+                <div class="ratio-left">
+                    <span class="ratio-dot" style="background:#ffcc00;"></span>
+                    <div>
+                        <div class="setting-label" data-i18n="lvl_3_name">Tạm nhớ</div>
+                        <div class="setting-sub" data-i18n="lvl_3_desc">Khoảng cách ôn 2 – 3 ngày</div>
+                    </div>
+                </div>
+                <div class="ratio-input-wrap">
+                    <input type="number" id="rateL3" class="ratio-input" min="0" max="100" step="1" oninput="updateLevelRatioPreview()">
+                    <span class="ratio-unit">%</span>
+                </div>
+            </div>
+
+            <div class="ratio-row">
+                <div class="ratio-left">
+                    <span class="ratio-dot" style="background:#34c759;"></span>
+                    <div>
+                        <div class="setting-label" data-i18n="lvl_4_name">Nhớ khá</div>
+                        <div class="setting-sub" data-i18n="lvl_4_desc">Khoảng cách ôn 4 – 15 ngày</div>
+                    </div>
+                </div>
+                <div class="ratio-input-wrap">
+                    <input type="number" id="rateL4" class="ratio-input" min="0" max="100" step="1" oninput="updateLevelRatioPreview()">
+                    <span class="ratio-unit">%</span>
+                </div>
+            </div>
+
+            <div class="ratio-row">
+                <div class="ratio-left">
+                    <span class="ratio-dot" style="background:#007aff;"></span>
+                    <div>
+                        <div class="setting-label" data-i18n="lvl_5_name">Nhớ sâu</div>
+                        <div class="setting-sub" data-i18n="lvl_5_desc">Khoảng cách ôn trên 15 ngày</div>
+                    </div>
+                </div>
+                <div class="ratio-input-wrap">
+                    <input type="number" id="rateL5" class="ratio-input" min="0" max="100" step="1" oninput="updateLevelRatioPreview()">
+                    <span class="ratio-unit">%</span>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:12px;">
+                <button class="btn-primary" style="flex:2; padding:12px; font-size:14px;" onclick="saveLevelRatios()" data-i18n="btn_save_ratio">💾 Lưu tỉ lệ</button>
+                <button class="btn-backup" style="flex:1; padding:12px; font-size:13px;" onclick="resetLevelRatios()" data-i18n="btn_default_ratio">↺ Mặc định</button>
+            </div>
         </div>
     </div>
 
@@ -417,6 +514,13 @@
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
             lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
             btn_add_variant: "➕ Thêm Pinyin / cách đọc khác", variant_lbl: "Cách đọc khác",
+            level_ratio_title: "🎯 Tỉ Lệ Hiển Thị Mức Độ Thuộc", level_ratio_sub: "Điều chỉnh tần suất xuất hiện của 5 cấp độ khi ôn tập (Tổng = 100%)",
+            lvl_1_name: "Chưa nhớ", lvl_1_desc: "Từ mới hoặc vừa bấm chưa thuộc",
+            lvl_2_name: "Mới học", lvl_2_desc: "Khoảng cách ôn 1 ngày",
+            lvl_3_name: "Tạm nhớ", lvl_3_desc: "Khoảng cách ôn 2 – 3 ngày",
+            lvl_4_name: "Nhớ khá", lvl_4_desc: "Khoảng cách ôn 4 – 15 ngày",
+            lvl_5_name: "Nhớ sâu", lvl_5_desc: "Khoảng cách ôn trên 15 ngày",
+            btn_save_ratio: "💾 Lưu tỉ lệ", btn_default_ratio: "↺ Mặc định",
             hint_swipe: "Bấm nút dưới để chọn mức độ nhớ", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
             msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "Cấp độ:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame",
@@ -435,6 +539,13 @@
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
             lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
             btn_add_variant: "➕ 添加其他拼音 / 读音", variant_lbl: "其他读音",
+            level_ratio_title: "🎯 掌握程度显示比例", level_ratio_sub: "调整复习时5个记忆级别的出现概率（总计 = 100%）",
+            lvl_1_name: "未掌握", lvl_1_desc: "新词或刚标记未掌握",
+            lvl_2_name: "初学", lvl_2_desc: "复习间隔 1 天",
+            lvl_3_name: "初步记忆", lvl_3_desc: "复习间隔 2 – 3 天",
+            lvl_4_name: "较熟", lvl_4_desc: "复习间隔 4 – 15 天",
+            lvl_5_name: "牢记", lvl_5_desc: "复习间隔超过 15 天",
+            btn_save_ratio: "💾 保存比例", btn_default_ratio: "↺ 恢复默认",
             hint_swipe: "点击下方按钮选择掌握程度", tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
             msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
             msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏",
@@ -444,7 +555,7 @@
     };
 
     let currentLang = localStorage.getItem('my_app_lang') || 'vi';
-    function changeLanguage(lang) { currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage(); if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); renderCalendar(); if (document.getElementById('page-list').classList.contains('active')) renderVocabList(); }
+    function changeLanguage(lang) { currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage(); if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); renderCalendar(); if (document.getElementById('page-list').classList.contains('active')) renderVocabList(); updateLevelRatioPreview(); }
     function applyLanguage() {
         document.getElementById('languageSelect').value = currentLang; const d = dict[currentLang];
         document.querySelectorAll('[data-i18n]').forEach(el => { if (d[el.getAttribute('data-i18n')]) el.innerHTML = d[el.getAttribute('data-i18n')]; });
@@ -493,12 +604,10 @@
 
     function pinyinToSpeakableHanzi(pyStr) {
         if (!pyStr) return '';
-        // Tách theo khoảng trắng, dấu nháy đơn hoặc dấu câu
         const chunks = pyStr.toLowerCase().trim().split(/[\s'’.,!?，。！？/\\-]+/).filter(Boolean);
         let resultHanzi = [];
 
         for (const chunk of chunks) {
-            // Tách chuỗi liền nhau (ví dụ: yīnyuè -> ["yin1", "yue4"])
             let chars = [];
             let tones = [];
             for (const ch of chunk) {
@@ -516,7 +625,6 @@
             let idx = 0;
             while (idx < plain.length) {
                 let matched = false;
-                // Khớp tham lam âm tiết dài nhất (tối đa 6 ký tự như zhuang, shuang)
                 for (let len = Math.min(6, plain.length - idx); len >= 1; len--) {
                     const sub = plain.slice(idx, idx + len);
                     if (VALID_BASE_SYLLABLES.has(sub)) {
@@ -560,6 +668,18 @@
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
     let showWelcomeScreen = localStorage.getItem('my_show_welcome') !== 'false';
     let dailyGoalMins = parseInt(localStorage.getItem('my_daily_goal')) || 30;
+    
+    // Tỉ lệ phần trăm hiển thị của 5 mức độ thuộc: [Chưa nhớ, Mới học, Tạm nhớ, Nhớ khá, Nhớ sâu]
+    const DEFAULT_LEVEL_WEIGHTS = [50, 30, 10, 5, 5];
+    let levelWeights = (() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem('my_level_weights'));
+            if (Array.isArray(saved) && saved.length === 5 && saved.reduce((a, b) => a + Number(b), 0) === 100) {
+                return saved.map(n => Number(n));
+            }
+        } catch (e) {}
+        return [...DEFAULT_LEVEL_WEIGHTS];
+    })();
     
     let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, currentVariantIndex = 0, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let currentCalDate = new Date();
@@ -634,10 +754,63 @@
     function toggleWelcome(val) { showWelcomeScreen = val; localStorage.setItem('my_show_welcome', val); }
     function updateDailyGoal(val) { dailyGoalMins = parseInt(val); localStorage.setItem('my_daily_goal', dailyGoalMins); }
 
+    // --- QUẢN LÝ TỈ LỆ PHẦN TRĂM MỨC ĐỘ THUỘC ---
+    function populateLevelRatioInputs() {
+        for (let i = 0; i < 5; i++) {
+            const el = document.getElementById(`rateL${i + 1}`);
+            if (el) el.value = levelWeights[i];
+        }
+        updateLevelRatioPreview();
+    }
+
+    function getLevelRatioInputs() {
+        return [1, 2, 3, 4, 5].map(idx => {
+            const val = parseInt(document.getElementById(`rateL${idx}`).value, 10);
+            return isNaN(val) || val < 0 ? 0 : val;
+        });
+    }
+
+    function updateLevelRatioPreview() {
+        const vals = getLevelRatioInputs();
+        const sum = vals.reduce((a, b) => a + b, 0);
+        const badge = document.getElementById('levelRatioTotalBadge');
+        if (!badge) return;
+        if (sum === 100) {
+            badge.className = 'ratio-total-badge ratio-total-ok';
+            badge.innerText = currentLang === 'vi' ? 'Tổng: 100% ✓' : '总计: 100% ✓';
+        } else {
+            badge.className = 'ratio-total-badge ratio-total-err';
+            badge.innerText = currentLang === 'vi' ? `Tổng: ${sum}% (Cần = 100%)` : `总计: ${sum}% (需为 100%)`;
+        }
+    }
+
+    function saveLevelRatios() {
+        const vals = getLevelRatioInputs();
+        const sum = vals.reduce((a, b) => a + b, 0);
+        if (sum !== 100) {
+            alert(currentLang === 'vi'
+                ? `Tổng tỉ lệ 5 mức độ phải bằng 100% (Hiện tại đang là ${sum}%).`
+                : `5个级别的比例总和必须等于 100%（当前为 ${sum}%）。`);
+            return;
+        }
+        levelWeights = vals;
+        localStorage.setItem('my_level_weights', JSON.stringify(levelWeights));
+        updateLevelRatioPreview();
+        showToast('msg_update', currentLang === 'vi' ? '✓ Đã lưu tỉ lệ hiển thị!' : '✓ 比例已保存！');
+    }
+
+    function resetLevelRatios() {
+        levelWeights = [...DEFAULT_LEVEL_WEIGHTS];
+        localStorage.setItem('my_level_weights', JSON.stringify(levelWeights));
+        populateLevelRatioInputs();
+        showToast('msg_update', currentLang === 'vi' ? '✓ Đã khôi phục tỉ lệ mặc định!' : '✓ 已恢复默认比例！');
+    }
+
     function initWelcome() {
         applyLanguage(); 
         document.getElementById('welcomeToggle').checked = showWelcomeScreen;
         document.getElementById('dailyGoalSelect').value = dailyGoalMins;
+        populateLevelRatioInputs();
 
         if (showWelcomeScreen) {
             const now = new Date();
@@ -734,6 +907,7 @@
             document.getElementById('languageSelect').value = currentLang; 
             document.getElementById('welcomeToggle').checked = showWelcomeScreen;
             document.getElementById('dailyGoalSelect').value = dailyGoalMins;
+            populateLevelRatioInputs();
         }
     }
 
@@ -1109,34 +1283,31 @@
             return; 
         }
         
-        let selectedPool = [];
-        const rand = Math.random() * 100;
+        // Chọn nhóm thẻ dựa theo tỉ lệ phần trăm đã cài đặt trong Cài đặt
+        const allPools = [
+            { items: pChuaThuoc, weight: levelWeights[0] },
+            { items: pMoiHoc, weight: levelWeights[1] },
+            { items: pTamNho, weight: levelWeights[2] },
+            { items: pKha, weight: levelWeights[3] },
+            { items: pSau, weight: levelWeights[4] }
+        ];
+        const activePools = allPools.filter(p => p.items.length > 0);
+        const totalActiveWeight = activePools.reduce((sum, p) => sum + p.weight, 0);
 
-        if (pChuaThuoc.length > 0) {
-            if (rand < 50) selectedPool = pChuaThuoc;
-            else if (rand < 80) selectedPool = pMoiHoc.length > 0 ? pMoiHoc : pChuaThuoc;
-            else if (rand < 90) selectedPool = pTamNho.length > 0 ? pTamNho : pChuaThuoc;
-            else if (rand < 95) selectedPool = pKha.length > 0 ? pKha : pChuaThuoc;
-            else selectedPool = pSau.length > 0 ? pSau : pChuaThuoc;
-        } 
-        else if (pMoiHoc.length > 0) {
-            if (rand < 50) selectedPool = pMoiHoc;
-            else if (rand < 70) selectedPool = pTamNho.length > 0 ? pTamNho : pMoiHoc;
-            else if (rand < 85) selectedPool = pKha.length > 0 ? pKha : pMoiHoc;
-            else selectedPool = pSau.length > 0 ? pSau : pMoiHoc;
-        } 
-        else if (pTamNho.length > 0) {
-            if (rand < 50) selectedPool = pTamNho;
-            else if (rand < 75) selectedPool = pKha.length > 0 ? pKha : pTamNho;
-            else selectedPool = pSau.length > 0 ? pSau : pTamNho;
-        } 
-        else {
-            if (pKha.length === 0) selectedPool = pSau;
-            else if (pSau.length === 0) selectedPool = pKha;
-            else {
-                if (rand < 50) selectedPool = pKha;
-                else selectedPool = pSau;
+        let selectedPool = activePools[0].items;
+        if (totalActiveWeight > 0) {
+            let r = Math.random() * totalActiveWeight;
+            for (const p of activePools) {
+                if (p.weight <= 0) continue;
+                if (r < p.weight) {
+                    selectedPool = p.items;
+                    break;
+                }
+                r -= p.weight;
             }
+        } else {
+            // Dự phòng nếu các nhóm có từ đều đang để tỉ lệ 0%
+            selectedPool = activePools[Math.floor(Math.random() * activePools.length)].items;
         }
 
         const sel = selectedPool[Math.floor(Math.random() * selectedPool.length)];
@@ -1250,7 +1421,8 @@
         resetForm, renderVocabList, speakCurrentCard, editCurrentCard,
         deleteCurrentCard, markCard, undoPreviousCard, startMic, stopMic, endQuiz,
         speakText, editWordFromList, deleteWordFromList,
-        addVariantBlock, removeVariantBlock, selectCardVariant
+        addVariantBlock, removeVariantBlock, selectCardVariant,
+        updateLevelRatioPreview, saveLevelRatios, resetLevelRatios
     });
 
     window.onload = function() { initChart(); updateUI(); initWelcome(); initMicSystem(); };
