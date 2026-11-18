@@ -12,9 +12,33 @@
             --primary: #007aff; --success: #34c759; --danger: #ff3b30; --warning: #ff9500;
             --bg-system: #f2f2f7; --card-bg: #ffffff; --text-main: #1c1c1e; --text-sub: #8e8e93;
             --border: #e5e5ea; --input-bg: #fafafa; --item-bg: #f2f2f7;
+            --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+            --font-zh: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Heiti SC", var(--font-ui);
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; transition: background-color 0.4s, color 0.4s; touch-action: manipulation; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif; background-color: var(--bg-system); color: var(--text-main); margin: 0; padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; touch-action: pan-x pan-y; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.4s, color 0.4s;
+            touch-action: manipulation;
+        }
+        html, body {
+            font-family: var(--font-ui);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        body {
+            background-color: var(--bg-system);
+            color: var(--text-main);
+            margin: 0;
+            padding: calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 20px) 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            touch-action: pan-x pan-y;
+        }
         .welcome-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--card-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.6s, visibility 0.6s; opacity: 0.96; }
         .welcome-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .welcome-content { text-align: center; transform: translateY(30px) scale(0.95); opacity: 0; animation: welcomePopUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.1s; }
@@ -25,18 +49,20 @@
         
         .welcome-goal-box { margin-top: 16px; padding: 8px 20px; border-radius: 20px; font-size: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: 0.3s; }
         
-        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
+        .iphone-container { width: 100%; max-width: 414px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; transition: max-width 0.3s ease; }
         .stagger-item { opacity: 0; transform: translateY(20px) scale(0.98); visibility: hidden; }
         .stagger-item.show { visibility: visible; animation: popInStagger 0.6s forwards; }
         @keyframes popInStagger { to { opacity: 1; transform: translateY(0) scale(1); } }
         .card-box { background: var(--card-bg); border-radius: 18px; padding: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid var(--border); }
         .page { display: none; opacity: 0; transform: translateY(16px) scale(0.98); transition: opacity 0.4s, transform 0.4s; width: 100%; }
         .page.active { display: flex; flex-direction: column; gap: 16px; opacity: 1; transform: translateY(0) scale(1); }
-        .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px 0; color: var(--text-main); }
-        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item, .quiz-option, .pinyin-pill { cursor: pointer; user-select: none; }
+        .title-row { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 0 0 4px 0; }
+        .page-title { font-size: 20px; font-weight: 700; text-align: center; margin: 0; color: var(--text-main); }
+        .device-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: rgba(0, 122, 255, 0.12); color: var(--primary); border: 1px solid rgba(0, 122, 255, 0.25); white-space: nowrap; }
+        button, .btn-menu, .stat-item, .segment-btn, .btn-back, .vocab-item, .quiz-option, .pinyin-pill { cursor: pointer; user-select: none; font-family: var(--font-ui); }
         button:active, .btn-menu:active, .stat-item:active, .segment-btn:active, .btn-back:active, .vocab-item:active, .quiz-option:active { transform: scale(0.95) !important; }
         .btn-back { background: var(--item-bg); color: var(--primary); margin-bottom: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 600; font-size: 15px; border-radius: 12px; padding: 12px; border: none; transition: 0.2s;}
-        .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 10000; display: none; animation: fadeInDown 0.3s ease; text-align: center;}
+        .toast-notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 20px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.15); z-index: 10000; display: none; animation: fadeInDown 0.3s ease; text-align: center; max-width: 90vw; }
         .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; text-align: center; }
         .stat-item { background: var(--item-bg); padding: 8px 2px; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
         .stat-number { font-size: 17px; font-weight: 700; color: var(--text-main); }
@@ -48,7 +74,7 @@
         .bar-chart-wrapper { position: relative; width: 100%; height: 200px; margin-top: 10px; }
         .input-group { margin-bottom: 12px; }
         .input-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; text-transform: uppercase; }
-        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; font-family: inherit; }
+        .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; font-family: var(--font-ui); }
         .input-group textarea { resize: vertical; min-height: 60px; }
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; transition: transform 0.2s;}
@@ -59,6 +85,7 @@
         .variant-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .variant-block-title { font-size: 12px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
         .btn-remove-variant { width: auto; padding: 4px 10px; font-size: 12px; border-radius: 8px; background: rgba(255,59,48,0.12); color: var(--danger); font-weight: 700; }
+        .home-menu-grid { display: flex; flex-direction: column; gap: 16px; width: 100%; }
         .btn-menu { background: var(--card-bg); color: var(--text-main); text-align: left; padding: 16px 18px; font-size: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.04); display: flex; justify-content: space-between; align-items: center; border-radius: 16px; border: 1px solid var(--border); }
         .btn-srs-primary { background: linear-gradient(135deg, var(--primary), #5856d6); color: white; padding: 20px 18px; font-size: 17px; font-weight: 800; border-radius: 18px; box-shadow: 0 8px 24px rgba(0,122,255,0.25); display: flex; justify-content: center; align-items: center; gap: 8px; border: none; }
         .backup-group { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
@@ -123,15 +150,15 @@
             box-shadow: 0 2px 6px rgba(29, 53, 87, 0.25);
         }
 
-        .hanzi-display { font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; }
+        .hanzi-display { font-family: var(--font-zh); font-size: 56px; font-weight: 700; color: var(--text-main); margin-top: 10px; margin-bottom: 8px; word-break: break-all; line-height: 1.25; }
         .card-details { display: none; width: 100%; margin-top: 12px; padding-top: 16px; border-top: 1px dashed var(--border); animation: fadeIn 0.3s ease; }
         .card-details.show { display: block; }
         .pinyin-text { font-size: 26px; color: var(--danger); font-weight: 700; margin-bottom: 8px; }
         .meaning-text { font-size: 20px; color: var(--text-main); font-weight: 600; margin-bottom: 12px;}
         .example-box { margin-top: 12px; padding: 14px 16px; background: #fff8e5; border-radius: 14px; border-left: 5px solid var(--warning); text-align: left; }
         .example-title { font-size: 13px; font-weight: 800; color: #d97706; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
-        #displayExampleText { font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.5; font-family: "SF Pro Display", sans-serif; }
-        .highlight-hanzi { font-size: 24px; font-weight: 800; color: var(--primary); }
+        #displayExampleText { font-family: var(--font-zh); font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.6; }
+        .highlight-hanzi { font-family: var(--font-zh); font-size: 24px; font-weight: 800; color: var(--primary); }
         .click-hint { font-size: 13px; color: var(--text-sub); margin-top: 10px; font-weight: 500;}
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 600; }
         .card-tools { position: absolute; top: 12px; left: 14px; display: flex; gap: 6px; z-index: 10; }
@@ -144,6 +171,7 @@
         .btn-unknow { background: rgba(255,59,48,0.15); color: var(--danger); }
         .btn-undo { background: var(--item-bg); color: var(--text-main); padding: 10px; font-size: 14px; border-radius: 12px; border: 1px solid var(--border); width: 100%;}
         .hint-swipe { text-align: center; font-size: 13px; color: var(--text-sub); font-weight: 500; }
+        .kbd-shortcut-hint { display: none; text-align: center; font-size: 12px; color: var(--primary); background: rgba(0, 122, 255, 0.08); border: 1px solid rgba(0, 122, 255, 0.18); padding: 7px 12px; border-radius: 10px; font-weight: 600; }
         .btn-mic-round { width: 66px; height: 66px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #5856d6); color: white; font-size: 26px; display: flex; justify-content: center; align-items: center; border: none; box-shadow: 0 6px 16px rgba(0,122,255,0.3); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, background 0.3s; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
         .btn-mic-round:active { transform: scale(0.85) !important; box-shadow: 0 3px 8px rgba(0,122,255,0.2); }
         .btn-mic-round.listening { background: linear-gradient(135deg, var(--danger), #ff2d55); animation: pulseMic 1.2s infinite cubic-bezier(0.66, 0, 0, 1); }
@@ -163,9 +191,9 @@
         .vocab-list-container { display: flex; flex-direction: column; gap: 8px; max-height: 500px; overflow-y: auto; margin-top: 8px; }
         .vocab-item { background: var(--item-bg); padding: 12px 14px; border-radius: 12px; display: flex; justify-content: space-between; align-items: flex-start; border: 1px solid var(--border);}
         .vocab-item-left { display: flex; flex-direction: column; flex: 1; padding-right: 8px; }
-        .vocab-item-hanzi { font-size: 19px; font-weight: 700; color: var(--text-main); }
-        .vocab-item-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
-        .vocab-item-eg { font-size: 12px; color: var(--text-main); background: var(--border); padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: inline-block; word-break: break-word; }
+        .vocab-item-hanzi { font-family: var(--font-zh); font-size: 19px; font-weight: 700; color: var(--text-main); }
+        .vocab-item-sub { font-size: 12px; color: var(--text-sub); margin-top: 2px; line-height: 1.45; }
+        .vocab-item-eg { font-family: var(--font-zh); font-size: 12px; color: var(--text-main); background: var(--border); padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: inline-block; word-break: break-word; line-height: 1.45; }
         .vocab-item-actions { display: flex; gap: 6px; align-items: center; }
         .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .setting-label { font-size: 15px; font-weight: 600; color: var(--text-main); }
@@ -177,14 +205,14 @@
         .ratio-left { display: flex; align-items: center; gap: 10px; flex: 1; }
         .ratio-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
         .ratio-input-wrap { display: flex; align-items: center; gap: 4px; background: var(--item-bg); border: 1px solid var(--border); border-radius: 10px; padding: 4px 10px; }
-        .ratio-input { width: 52px; border: none; background: transparent; font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; outline: none; font-family: inherit; }
+        .ratio-input { width: 52px; border: none; background: transparent; font-size: 16px; font-weight: 700; color: var(--text-main); text-align: right; outline: none; font-family: var(--font-ui); }
         .ratio-unit { font-size: 14px; font-weight: 700; color: var(--text-sub); }
         .ratio-total-badge { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 12px; white-space: nowrap; }
         .ratio-total-ok { background: rgba(52, 199, 89, 0.15); color: var(--success); }
         .ratio-total-err { background: rgba(255, 59, 48, 0.15); color: var(--danger); }
 
         .quiz-question-box { background: var(--card-bg); border-radius: 20px; padding: 30px 20px; text-align: center; border: 1px solid var(--border); margin-bottom: 16px;}
-        .quiz-hanzi { font-size: 64px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
+        .quiz-hanzi { font-family: var(--font-zh); font-size: 64px; font-weight: 800; color: var(--text-main); margin-bottom: 10px; }
         .quiz-status { font-size: 14px; color: var(--text-sub); font-weight: 600;}
         .quiz-options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .quiz-option { background: var(--item-bg); border: 2px solid var(--border); border-radius: 16px; padding: 18px 12px; font-size: 16px; font-weight: 600; color: var(--text-main); text-align: center; }
@@ -192,9 +220,93 @@
         .quiz-option.wrong { background: rgba(255,59,48,0.15) !important; border-color: var(--danger) !important; color: var(--danger) !important; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 10000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-box { background: var(--card-bg); width: 90%; max-width: 360px; padding: 24px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(30px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; }
+        .modal-box { background: var(--card-bg); width: 90%; max-width: 380px; padding: 24px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); transform: translateY(30px); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; align-items: center; }
         .modal-overlay.show .modal-box { transform: translateY(0); }
         .modal-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin: 0 0 16px 0; text-align: center; }
+
+        /* =========================================================================
+           TƯƠNG THÍCH TỰ ĐỘNG CHO LAPTOP / DESKTOP (body.is-desktop)
+           ========================================================================= */
+        body.is-desktop {
+            padding: 28px 24px 40px 24px;
+        }
+        body.is-desktop .iphone-container {
+            max-width: 680px;
+            gap: 18px;
+        }
+        body.is-desktop .page-title {
+            font-size: 24px;
+        }
+        body.is-desktop .card-box {
+            padding: 22px;
+            border-radius: 22px;
+        }
+        body.is-desktop .stat-item {
+            padding: 12px 6px;
+        }
+        body.is-desktop .stat-number {
+            font-size: 21px;
+        }
+        body.is-desktop .stat-label {
+            font-size: 12px;
+        }
+        body.is-desktop .home-menu-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        body.is-desktop .home-menu-grid .btn-menu {
+            margin-top: 0 !important;
+            height: 100%;
+        }
+        body.is-desktop .home-menu-grid .btn-menu.full-span {
+            grid-column: 1 / -1;
+        }
+        body.is-desktop .swipe-container,
+        body.is-desktop .flashcard {
+            min-height: 410px;
+        }
+        body.is-desktop .flashcard {
+            padding: 56px 32px 32px 32px;
+        }
+        body.is-desktop .flashcard.has-variants {
+            padding-top: 92px;
+        }
+        body.is-desktop .hanzi-display {
+            font-size: 74px;
+        }
+        body.is-desktop .pinyin-text {
+            font-size: 30px;
+        }
+        body.is-desktop .meaning-text {
+            font-size: 23px;
+        }
+        body.is-desktop #displayExampleText {
+            font-size: 20px;
+        }
+        body.is-desktop .kbd-shortcut-hint {
+            display: block;
+        }
+        body.is-desktop .quiz-options-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        body.is-desktop .vocab-list-container {
+            max-height: 560px;
+        }
+        body.is-desktop .vocab-item-hanzi {
+            font-size: 21px;
+        }
+        body.is-desktop .vocab-item-sub {
+            font-size: 13px;
+        }
+        body.is-desktop .btn-menu:hover,
+        body.is-desktop .stat-item:hover,
+        body.is-desktop .btn-back:hover,
+        body.is-desktop .btn-backup:hover,
+        body.is-desktop .quiz-option:hover {
+            border-color: var(--primary);
+        }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInDown { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translate(-50%, 0); } }
     </style>
@@ -222,7 +334,10 @@
 
 <div class="iphone-container">
     <div id="page-home" class="page active">
-        <h2 class="page-title stagger-item" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
+        <div class="title-row stagger-item">
+            <h2 class="page-title" data-i18n="app_title">Ôn Tập Tiếng Trung</h2>
+            <span class="device-badge" id="deviceModeBadge">📱 iPhone</span>
+        </div>
         <div class="card-box stagger-item">
             <h3 style="margin: 0 0 12px 0; font-size: 16px; text-align: center; color: var(--text-sub);" data-i18n="stats_title">Thống Kê Tiến Độ Học Tập</h3>
             <div class="stats-grid">
@@ -237,11 +352,13 @@
             </div>
         </div>
         <button class="btn-srs-primary stagger-item" onclick="startStudy('srs')"><span data-i18n="btn_srs">🚀 Bắt Đầu Ôn Tập</span></button>
-        <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning); margin-top: 4px;" onclick="startQuizMode()"><span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Trắc Nghiệm Chơi Vô Tận</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item" onclick="resetForm(); showPage('page-add');"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item" onclick="openVocabListFilter('all')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item" onclick="showPage('page-time-stats')"><span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span></button>
-        <button class="btn-menu stagger-item" onclick="showPage('page-settings')"><span data-i18n="btn_settings">⚙️ Cài Đặt Hệ Thống</span> <span>➔</span></button>
+        <div class="home-menu-grid">
+            <button class="btn-menu stagger-item" style="background: rgba(255,149,0,0.1); border-color: var(--warning); margin-top: 4px;" onclick="startQuizMode()"><span style="color: var(--warning); font-weight:700;" data-i18n="btn_quiz">🎮 Trắc Nghiệm Chơi Vô Tận</span> <span>➔</span></button>
+            <button class="btn-menu stagger-item" onclick="resetForm(); showPage('page-add');"><span data-i18n="btn_add">➕ Thêm Từ Vựng Mới</span> <span>➔</span></button>
+            <button class="btn-menu stagger-item" onclick="openVocabListFilter('all')"><span data-i18n="btn_list">📋 Danh Sách Tất Cả Từ Vựng</span> <span>➔</span></button>
+            <button class="btn-menu stagger-item" onclick="showPage('page-time-stats')"><span data-i18n="btn_time_stats">📈 Thống Kê Thời Gian & Tiến Độ</span> <span>➔</span></button>
+            <button class="btn-menu full-span stagger-item" onclick="showPage('page-settings')"><span data-i18n="btn_settings">⚙️ Cài Đặt Hệ Thống</span> <span>➔</span></button>
+        </div>
         <div class="backup-group stagger-item">
             <div class="backup-row">
                 <button class="btn-backup" onclick="exportData()" data-i18n="btn_backup">📥 Tải sao lưu về máy</button>
@@ -257,7 +374,7 @@
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" data-i18n="settings_title">Cài Đặt Hệ Thống</h3>
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="goal_title">Mục tiêu học mỗi ngày</div></div>
-                <div style="width: 100px;">
+                <div style="width: 110px;">
                     <select id="dailyGoalSelect" onchange="updateDailyGoal(this.value)">
                         <option value="30">30 Phút</option>
                         <option value="60">60 Phút</option>
@@ -270,7 +387,7 @@
             </div>
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="lang_title">Ngôn ngữ hiển thị</div></div>
-                <div style="width: 120px;"><select id="languageSelect" onchange="changeLanguage(this.value)"><option value="vi">Tiếng Việt</option><option value="zh">中文 (Chinese)</option></select></div>
+                <div style="width: 130px;"><select id="languageSelect" onchange="changeLanguage(this.value)"><option value="vi">Tiếng Việt</option><option value="zh">中文 (Chinese)</option></select></div>
             </div>
             <div class="setting-item">
                 <div><div class="setting-label" data-i18n="speed_title">Tốc độ đọc giọng nói</div></div>
@@ -417,7 +534,7 @@
         <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div class="card-box">
             <h3 style="margin: 0 0 14px 0; font-size: 18px;" id="formTitle" data-i18n="add_title">Thêm Từ Vựng Mới</h3>
-            <div class="input-group"><label data-i18n="lbl_hanzi">Chữ Hán:</label><input type="text" id="hanziInput" data-i18n-ph="ph_hanzi" oninput="autoPinyin(); checkDuplicateHanzi();"></div>
+            <div class="input-group"><label data-i18n="lbl_hanzi">Chữ Hán:</label><input type="text" id="hanziInput" style="font-family: var(--font-zh);" data-i18n-ph="ph_hanzi" oninput="autoPinyin(); checkDuplicateHanzi();"></div>
             <div class="duplicate-alert" id="duplicateBox" style="display:none; background: rgba(255,149,0,0.1); border: 1px solid var(--warning); padding:10px; border-radius:12px; margin-bottom:12px;">
                 <div style="font-size: 13px; font-weight: 700; color: var(--warning); margin-bottom: 4px;" data-i18n="dup_warn">⚠️ Từ này đã tồn tại!</div>
                 <div style="font-size: 13px; color: var(--text-main); margin-bottom: 8px;" id="duplicateText"></div>
@@ -427,7 +544,7 @@
             <!-- Cách đọc chính (Mặc định #1) -->
             <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" data-i18n-ph="ph_pinyin"></div>
             <div class="input-group"><label data-i18n="lbl_meaning">Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput" data-i18n-ph="ph_meaning"></div>
-            <div class="input-group"><label data-i18n="lbl_example">Ví dụ (Tùy chọn):</label><textarea id="exampleInput" data-i18n-ph="ph_example"></textarea></div>
+            <div class="input-group"><label data-i18n="lbl_example">Ví dụ (Tùy chọn):</label><textarea id="exampleInput" style="font-family: var(--font-zh);" data-i18n-ph="ph_example"></textarea></div>
 
             <!-- Khu vực chứa các cách đọc Pinyin khác (nếu bấm thêm) -->
             <div id="extraVariantsContainer"></div>
@@ -451,6 +568,7 @@
     <div id="page-flashcard" class="page">
         <button class="btn-back" onclick="showPage('page-home')"><span data-i18n="btn_back">⬅ Quay về ban đầu</span></button>
         <div class="hint-swipe" data-i18n="hint_swipe">Bấm nút dưới để chọn mức độ nhớ</div>
+        <div class="kbd-shortcut-hint" data-i18n="kbd_hint">⌨️ Phím tắt Laptop: ← Đã thuộc • → Chưa thuộc • Space Lật thẻ • ↑ Nghe lại</div>
         <div class="swipe-container">
             <div class="flashcard" id="flashcard">
                 <div class="card-tools" onclick="event.stopPropagation()">
@@ -478,7 +596,7 @@
             <button class="btn-undo" id="btnUndoCard" onclick="undoPreviousCard()" style="display:none;" data-i18n="btn_undo">↩ Quay lại từ trước</button>
             <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
                 <button class="btn-mic-round" id="btnMic" onmousedown="startMic(event)" onmouseup="stopMic(event)" onmouseleave="stopMic(event)" ontouchstart="startMic(event)" ontouchend="stopMic(event)" oncontextmenu="return false;">🎤</button>
-                <div class="mic-label">Nhấn giữ để đọc</div>
+                <div class="mic-label" data-i18n="mic_hold">Nhấn giữ để đọc</div>
             </div>
         </div>
     </div>
@@ -495,7 +613,6 @@
 
 <!-- SỬ DỤNG FIREBASE MODULAR SDK MỚI NHẤT & CHẠY SCRIPT NHƯ MỘT MODULE -->
 <script type="module">
-    // Khởi tạo Firebase từ thư viện Modular v10.10.0
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
     import { getDatabase, ref, onValue, set, update, increment } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
@@ -536,7 +653,11 @@
             lvl_4_name: "Nhớ khá", lvl_4_desc: "Khoảng cách ôn 4 – 15 ngày",
             lvl_5_name: "Nhớ sâu", lvl_5_desc: "Khoảng cách ôn trên 15 ngày",
             btn_save_ratio: "💾 Lưu tỉ lệ", btn_default_ratio: "↺ Mặc định",
-            hint_swipe: "Bấm nút dưới để chọn mức độ nhớ", tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
+            hint_swipe: "Bấm nút dưới để chọn mức độ nhớ", kbd_hint: "⌨️ Phím tắt Laptop: ← Đã thuộc • → Chưa thuộc • Space Lật thẻ • ↑ Nghe lại",
+            tool_speak: "🔊 Nghe", tool_edit: "✏️ Sửa", tool_delete: "🗑️ Xóa", click_hint: "Bấm vào thẻ để hiện Pinyin & Nghĩa", btn_know: "👈 Đã thuộc", btn_unknow: "Chưa thuộc 👉", btn_undo: "↩ Quay lại từ trước",
+            mic_hold: "Nhấn giữ để đọc", due_label: "Tới hạn:", unit_word: "từ",
+            quiz_q: "Câu", quiz_q_suffix: "", quiz_score: "Điểm:", next_3s: "(Chuyển sau 3s)", next_5s: "(Chuyển sau 5s)",
+            device_iphone: "📱 Chế độ iPhone", device_laptop: "💻 Chế độ Laptop",
             msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "Cấp độ:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame",
             day_mon: "T2", day_tue: "T3", day_wed: "T4", day_thu: "T5", day_fri: "T6", day_sat: "T7", day_sun: "CN", cal_hint: "🔥 = Đã học trên 30 phút", cal_month: "Tháng",
@@ -562,7 +683,11 @@
             lvl_4_name: "较熟", lvl_4_desc: "复习间隔 4 – 15 天",
             lvl_5_name: "牢记", lvl_5_desc: "复习间隔超过 15 天",
             btn_save_ratio: "💾 保存比例", btn_default_ratio: "↺ 恢复默认",
-            hint_swipe: "点击下方按钮选择掌握程度", tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            hint_swipe: "点击下方按钮选择掌握程度", kbd_hint: "⌨️ 电脑快捷键: ← 已掌握 • → 未掌握 • 空格 翻卡 • ↑ 重听",
+            tool_speak: "🔊 听", tool_edit: "✏️ 编辑", tool_delete: "🗑️ 删除", click_hint: "点击卡片显示拼音和含义", btn_know: "👈 已掌握", btn_unknow: "未掌握 👉", btn_undo: "↩ 返回上一个词",
+            mic_hold: "按住说话", due_label: "到期:", unit_word: "个词",
+            quiz_q: "第", quiz_q_suffix: "题", quiz_score: "得分:", next_3s: "(3秒后切换)", next_5s: "(5秒后切换)",
+            device_iphone: "📱 iPhone 模式", device_laptop: "💻 电脑模式",
             msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
             msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏",
             day_mon: "一", day_tue: "二", day_wed: "三", day_thu: "四", day_fri: "五", day_sat: "六", day_sun: "日", cal_hint: "🔥 = 学习超过30分钟", cal_month: "月",
@@ -571,13 +696,64 @@
     };
 
     let currentLang = localStorage.getItem('my_app_lang') || 'vi';
-    function changeLanguage(lang) { currentLang = lang; localStorage.setItem('my_app_lang', lang); applyLanguage(); if (chartInstance) updateUI(); if (currentRange) renderTimeStats(currentRange); renderCalendar(); if (document.getElementById('page-list').classList.contains('active')) renderVocabList(); updateLevelRatioPreview(); }
-    function applyLanguage() {
-        document.getElementById('languageSelect').value = currentLang; const d = dict[currentLang];
-        document.querySelectorAll('[data-i18n]').forEach(el => { if (d[el.getAttribute('data-i18n')]) el.innerHTML = d[el.getAttribute('data-i18n')]; });
-        document.querySelectorAll('[data-i18n-ph]').forEach(el => { if (d[el.getAttribute('data-i18n-ph')]) el.placeholder = d[el.getAttribute('data-i18n-ph')]; });
+    let isDesktopDevice = false;
+
+    // --- TỰ ĐỘNG PHÁT HIỆN IPHONE / DI ĐỘNG VS LAPTOP / DESKTOP ---
+    function detectDeviceMode() {
+        const ua = navigator.userAgent || '';
+        const isMobileUA = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+        const isIPadOS = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+        const isNarrowTouch = window.innerWidth < 768 && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        isDesktopDevice = !(isMobileUA || isIPadOS || isNarrowTouch);
+
+        document.body.classList.toggle('is-desktop', isDesktopDevice);
+        document.body.classList.toggle('is-mobile', !isDesktopDevice);
+
+        const badge = document.getElementById('deviceModeBadge');
+        if (badge) {
+            badge.innerText = isDesktopDevice ? t('device_laptop') : t('device_iphone');
+        }
     }
-    function t(key) { return dict[currentLang][key] || key; }
+
+    // Mở khóa SpeechSynthesis trên iOS Safari khi chạm lần đầu
+    let iosSpeechUnlocked = false;
+    document.addEventListener('touchstart', () => {
+        if (!iosSpeechUnlocked && 'speechSynthesis' in window) {
+            try {
+                const silentUtter = new SpeechSynthesisUtterance('');
+                silentUtter.volume = 0;
+                window.speechSynthesis.speak(silentUtter);
+                iosSpeechUnlocked = true;
+            } catch (e) {}
+        }
+    }, { passive: true });
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('my_app_lang', lang);
+        applyLanguage();
+        detectDeviceMode();
+        if (chartInstance) updateUI();
+        if (currentRange) renderTimeStats(currentRange);
+        renderCalendar();
+        if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
+        if (document.getElementById('page-quiz').classList.contains('active')) {
+            document.getElementById('quizStatus').innerText = `${t('quiz_q')} ${quizQuestionCount}${t('quiz_q_suffix')} | ${t('quiz_score')} ${quizScore}`;
+        }
+        updateLevelRatioPreview();
+    }
+
+    function applyLanguage() {
+        document.getElementById('languageSelect').value = currentLang;
+        const d = dict[currentLang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            if (d[el.getAttribute('data-i18n')] !== undefined) el.innerHTML = d[el.getAttribute('data-i18n')];
+        });
+        document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+            if (d[el.getAttribute('data-i18n-ph')] !== undefined) el.placeholder = d[el.getAttribute('data-i18n-ph')];
+        });
+    }
+    function t(key) { return dict[currentLang][key] !== undefined ? dict[currentLang][key] : key; }
 
     // =========================================================================
     // BỘ GIẢI MÃ ĐỌC CHUẨN XÁC THEO PINYIN (QUY ĐỔI SANG HÁN TỰ ĐƠN ÂM TƯƠNG ỨNG)
@@ -698,20 +874,32 @@
     })();
     
     let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, currentVariantIndex = 0, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
+    let lastShownCardId = null;
     let currentCalDate = new Date();
     let historyStack = []; 
     let blockManualMark = false; let actionTimeout = null;
-    let localSecondsAccumulated = 0; // Đếm thời gian ảo trên máy
+    let localSecondsAccumulated = 0;
 
-    function getTodayKey() { return new Date().toISOString().split('T')[0]; }
-    function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return d.toISOString().split('T')[0]; }
-    function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return d.toISOString().split('T')[0]; }
+    // --- ĐỊNH DẠNG NGÀY THEO GIỜ ĐỊA PHƯƠNG (VÁ LỖI LỆCH MÚI GIỜ 00:00 - 06:59) ---
+    function formatLocalDate(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+    function getTodayKey() { return formatLocalDate(new Date()); }
+    function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return formatLocalDate(d); }
+    function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return formatLocalDate(d); }
 
     // --- LẮNG NGHE ĐỒNG BỘ REALTIME ---
     onValue(ref(db, 'vocabList'), (snapshot) => {
         const data = snapshot.val();
         vocabList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
-        vocabList.forEach(item => { if (item.interval === undefined) item.interval = 0; if (item.ease === undefined) item.ease = 2.5; if (!item.nextReview) item.nextReview = getTodayKey(); });
+        vocabList.forEach(item => {
+            if (item.interval === undefined) item.interval = 0;
+            if (item.ease === undefined) item.ease = 2.5;
+            if (!item.nextReview) item.nextReview = getTodayKey();
+        });
         localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
         updateUI();
         if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
@@ -823,7 +1011,8 @@
     }
 
     function initWelcome() {
-        applyLanguage(); 
+        applyLanguage();
+        detectDeviceMode();
         document.getElementById('welcomeToggle').checked = showWelcomeScreen;
         document.getElementById('dailyGoalSelect').value = dailyGoalMins;
         populateLevelRatioInputs();
@@ -929,7 +1118,7 @@
 
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
     function startStudy(f) { 
-        currentFilter = f; historyStack = []; updateUndoButton(); 
+        currentFilter = f; historyStack = []; lastShownCardId = null; updateUndoButton(); 
         blockManualMark = false; clearTimeout(actionTimeout);
         showPage('page-flashcard'); loadNextCard(); 
     }
@@ -946,7 +1135,7 @@
             const variants = getCardVariants(f);
             const pyList = variants.map(v => v.pinyin).filter(Boolean).join(' / ');
             const mnList = variants.map(v => v.meaning).filter(Boolean).join(' | ');
-            document.getElementById('duplicateText').innerText = `Chữ: "${f.hanzi}" (${pyList}) - Nghĩa: ${mnList}`;
+            document.getElementById('duplicateText').innerText = `${t('lbl_hanzi')} "${f.hanzi}" (${pyList}) - ${mnList}`;
             bx.style.display = 'block';
         } else {
             bx.style.display = 'none';
@@ -1000,7 +1189,7 @@
             </div>
             <div class="input-group" style="margin-bottom:0;">
                 <label>${t('lbl_example')}</label>
-                <textarea class="var-example" placeholder="${t('ph_example')}">${eg}</textarea>
+                <textarea class="var-example" style="font-family: var(--font-zh);" placeholder="${t('ph_example')}">${eg}</textarea>
             </div>
         `;
         container.appendChild(block);
@@ -1045,7 +1234,11 @@
         document.getElementById('learnedCount').innerText = lr;
         document.getElementById('unlearnedCount').innerText = ulr;
         document.getElementById('unseenCount').innerText = usn;
-        if (chartInstance) { chartInstance.data.datasets[0].data = [lr, ulr, usn]; chartInstance.update(); }
+        if (chartInstance) {
+            chartInstance.data.labels = [t('stat_learned'), t('stat_unlearned'), t('stat_unseen')];
+            chartInstance.data.datasets[0].data = [lr, ulr, usn];
+            chartInstance.update();
+        }
     }
 
     function openMemoryModal() { document.getElementById('memoryModal').classList.add('show'); renderMemoryChart(); }
@@ -1063,8 +1256,11 @@
         if (memoryChartInstance) memoryChartInstance.destroy();
         memoryChartInstance = new Chart(ctx, {
             type: 'bar',
-            data: { labels: ['Chưa nhớ', 'Mới học', 'Tạm nhớ', 'Nhớ khá', 'Nhớ sâu'], datasets: [{ data: [l1, l2, l3, l4, l5], backgroundColor: ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#007aff'], borderRadius: 6, borderSkipped: false }] },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return context.raw + ' từ'; } } } }, scales: { y: { beginAtZero: true, grid: { color: '#e5e5ea' }, ticks: { stepSize: 1, color: '#8e8e93', font: {size: 11} } }, x: { grid: { display: false }, ticks: { color: '#1c1c1e', font: {weight: 'bold', size: 11} } } } }
+            data: {
+                labels: [t('lvl_1_name'), t('lvl_2_name'), t('lvl_3_name'), t('lvl_4_name'), t('lvl_5_name')],
+                datasets: [{ data: [l1, l2, l3, l4, l5], backgroundColor: ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#007aff'], borderRadius: 6, borderSkipped: false }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { return `${context.raw} ${t('unit_word')}`; } } } }, scales: { y: { beginAtZero: true, grid: { color: '#e5e5ea' }, ticks: { stepSize: 1, color: '#8e8e93', font: {size: 11} } }, x: { grid: { display: false }, ticks: { color: '#1c1c1e', font: {weight: 'bold', size: 11} } } } }
         });
     }
 
@@ -1077,7 +1273,7 @@
         const tg = document.getElementById('compareTag'); const ic = document.getElementById('compareTagIcon'); const pt = document.getElementById('compareTagPercent');
         if (ySec === 0) { if (tSec > 0) { tg.className = "compare-tag tag-up"; ic.innerText = "▲"; pt.innerText = "+100%"; } else { tg.className = "compare-tag tag-equal"; ic.innerText = "➖"; pt.innerText = "0%"; } } else { const pct = Math.round(((tSec - ySec) / ySec) * 100); if (pct > 0) { tg.className = "compare-tag tag-up"; ic.innerText = "▲"; pt.innerText = `+${pct}%`; } else if (pct < 0) { tg.className = "compare-tag tag-down"; ic.innerText = "▼"; pt.innerText = `${pct}%`; } else { tg.className = "compare-tag tag-equal"; ic.innerText = "➖"; pt.innerText = "0%"; } }
         const lbls = [], mDts = []; 
-        for (let i = rd - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = d.toISOString().split('T')[0]; const ds = `${d.getDate()}/${d.getMonth() + 1}`; const st = dailyStats[key] || { seconds: 0 }; lbls.push(ds); mDts.push((st.seconds / 60).toFixed(1)); }
+        for (let i = rd - 1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const key = formatLocalDate(d); const ds = `${d.getDate()}/${d.getMonth() + 1}`; const st = dailyStats[key] || { seconds: 0 }; lbls.push(ds); mDts.push((st.seconds / 60).toFixed(1)); }
         const ctx = document.getElementById('timeBarChart').getContext('2d'); if (timeChartInstance) timeChartInstance.destroy(); timeChartInstance = new Chart(ctx, { type: 'bar', data: { labels: lbls, datasets: [ { label: t('time_min'), data: mDts, backgroundColor: '#007aff', borderRadius: 6 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#e5e5ea' } } }, animation: { duration: 800 } } });
     }
 
@@ -1126,14 +1322,14 @@
             const variants = getCardVariants(it);
             const allPinyins = variants.map(v => v.pinyin).filter(Boolean).join(' / ');
             const allMeanings = variants.length > 1
-                ? variants.map((v, idx) => `(${v.pinyin}) ${v.meaning}`).join(' • ')
+                ? variants.map(v => `(${v.pinyin}) ${v.meaning}`).join(' • ')
                 : variants[0].meaning;
             const firstExample = (variants.find(v => v.example && v.example.trim() !== '') || {}).example || '';
-            let st = it.interval > 0 ? `• <span style="color:var(--success);">Tới hạn: ${it.nextReview}</span>` : ''; 
+            let st = it.interval > 0 ? `• <span style="color:var(--success);">${t('due_label')} ${it.nextReview}</span>` : ''; 
             let eg = firstExample ? `<div class="vocab-item-eg">💬 ${firstExample}</div>` : ''; 
             const primaryPy = (variants[0].pinyin || '').replace(/'/g, "\\'");
             const safeHz = it.hanzi.replace(/'/g, "\\'");
-            d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-size:14px; font-weight:normal; color:var(--danger);">${allPinyins}</span></div><div class="vocab-item-sub">${allMeanings} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${safeHz}', '${primaryPy}')">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; 
+            d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-family:var(--font-ui); font-size:14px; font-weight:normal; color:var(--danger);">${allPinyins}</span></div><div class="vocab-item-sub">${allMeanings} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${safeHz}', '${primaryPy}')">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; 
             frag.appendChild(d); 
         }); 
         c.appendChild(frag);
@@ -1256,6 +1452,7 @@
 
     function renderCardUI(sel) {
         currentVariantIndex = 0;
+        lastShownCardId = sel.id;
         const variants = getCardVariants(sel);
         const firstVar = variants[0];
         document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
@@ -1298,6 +1495,7 @@
             document.getElementById('pinyinSwitcher').style.display = 'none';
             document.getElementById('flashcard').classList.remove('has-variants');
             currentCardIndex = -1;
+            lastShownCardId = null;
             return; 
         }
         
@@ -1310,7 +1508,18 @@
             { items: pKha, weight: levelWeights[4] },
             { items: pSau, weight: levelWeights[5] }
         ];
-        const activePools = allPools.filter(p => p.items.length > 0);
+        let activePools = allPools.filter(p => p.items.length > 0);
+
+        // Chống lặp lại đúng thẻ vừa học xong nếu còn ít nhất 2 thẻ đến hạn
+        if (totalDue > 1 && lastShownCardId !== null) {
+            const nonRepeatPools = activePools
+                .map(p => ({ items: p.items.filter(item => item.id !== lastShownCardId), weight: p.weight }))
+                .filter(p => p.items.length > 0);
+            if (nonRepeatPools.length > 0) {
+                activePools = nonRepeatPools;
+            }
+        }
+
         const totalActiveWeight = activePools.reduce((sum, p) => sum + p.weight, 0);
 
         let selectedPool = activePools[0].items;
@@ -1325,7 +1534,6 @@
                 r -= p.weight;
             }
         } else {
-            // Dự phòng nếu các nhóm có từ đều đang để tỉ lệ 0%
             selectedPool = activePools[Math.floor(Math.random() * activePools.length)].items;
         }
 
@@ -1349,6 +1557,7 @@
     function executeCardTransition(isL) {
         isAnimating = true;
         const i = vocabList[currentCardIndex]; 
+        lastShownCardId = i.id;
         
         historyStack.push({ cardIndex: currentCardIndex, cardId: i.id, oldInterval: i.interval, oldEase: i.ease, oldNextReview: i.nextReview, oldSeenCount: i.seenCount });
         updateUndoButton();
@@ -1377,21 +1586,95 @@
         const i = vocabList.find(v => v.id === lastAction.cardId);
         if (i) { i.interval = lastAction.oldInterval; i.ease = lastAction.oldEase; i.nextReview = lastAction.oldNextReview; i.seenCount = lastAction.oldSeenCount; saveData(); updateUI(); currentCardIndex = vocabList.findIndex(v => v.id === i.id); renderCardUI(i); const c = document.getElementById('flashcard'); c.classList.add('card-enter'); setTimeout(() => { c.classList.remove('card-enter'); }, 400); showToast('btn_undo', currentLang==='vi'?'↩ Đã quay lại từ trước và rút lại kết quả!':'↩ 已撤销并恢复卡片！'); }
     }
+
+    function toggleCardDetails() {
+        if (currentCardIndex === -1 || vocabList.length === 0) return;
+        const d = document.getElementById('cardDetails');
+        const h = document.getElementById('clickHint');
+        if (d.classList.contains('show')) {
+            d.classList.remove('show');
+            h.style.display = 'block';
+        } else {
+            d.classList.add('show');
+            h.style.display = 'none';
+        }
+        speakCurrentCard();
+    }
     
-    document.getElementById('flashcard').addEventListener('click', function() { const d = document.getElementById('cardDetails'); const h = document.getElementById('clickHint'); if (d.classList.contains('show')) { d.classList.remove('show'); h.style.display = 'block'; } else { d.classList.add('show'); h.style.display = 'none'; } speakCurrentCard(); });
+    document.getElementById('flashcard').addEventListener('click', toggleCardDetails);
+
+    // =========================================================================
+    // PHÍM TẮT BÀN PHÍM VẬT LÝ CHO LAPTOP (MŨI TÊN TRÁI / PHẢI / SPACE / NGHE)
+    // =========================================================================
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const activeTag = document.activeElement ? document.activeElement.tagName : '';
+        if (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT' || (document.activeElement && document.activeElement.isContentEditable)) {
+            return;
+        }
+        const memModal = document.getElementById('memoryModal');
+        if (memModal && memModal.classList.contains('show')) {
+            if (e.key === 'Escape') closeMemoryModal();
+            return;
+        }
+
+        // Phím tắt trên màn hình Flashcard
+        if (document.getElementById('page-flashcard').classList.contains('active')) {
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                markCard(true);
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                markCard(false);
+            } else if (e.code === 'Space' || e.key === ' ') {
+                e.preventDefault();
+                toggleCardDetails();
+            } else if (e.key === 'ArrowUp' || e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                speakCurrentCard();
+            } else if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+                e.preventDefault();
+                undoPreviousCard();
+            }
+            return;
+        }
+
+        // Phím tắt số 1-4 trên màn hình Trắc nghiệm
+        if (document.getElementById('page-quiz').classList.contains('active')) {
+            const idx = ['1', '2', '3', '4'].indexOf(e.key);
+            if (idx !== -1) {
+                const btns = document.querySelectorAll('#quizOptions .quiz-option');
+                if (btns[idx]) {
+                    e.preventDefault();
+                    btns[idx].click();
+                }
+            }
+        }
+    });
     
     let micRecog; let isMicListening = false;
     function initMicSystem() { const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition; if(SpeechRec) { micRecog = new SpeechRec(); micRecog.lang = 'zh-CN'; micRecog.continuous = false; micRecog.interimResults = false; micRecog.onstart = () => { isMicListening = true; document.getElementById('btnMic').classList.add('listening'); }; micRecog.onresult = (e) => { const tr = e.results[0][0].transcript.replace(/[.,!?。，！？]/g, '').trim().toLowerCase(); handleMicResult(tr); }; micRecog.onerror = () => resetMicUI(); micRecog.onend = () => resetMicUI(); } }
     function startMic(e) { if(e && e.type === 'touchstart') e.preventDefault(); if(blockManualMark) return; if(!micRecog) return alert(currentLang==='vi'?'Trình duyệt không hỗ trợ Mic.':'浏览器不支持麦克风。'); if(!isMicListening) { try { micRecog.start(); } catch(err) {} } }
     function stopMic(e) { if(e && e.type === 'touchend') e.preventDefault(); if(isMicListening && micRecog) { try { micRecog.stop(); } catch(err) {} } }
     function resetMicUI() { isMicListening = false; document.getElementById('btnMic').classList.remove('listening'); }
-    function handleMicResult(tr) { if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return; if(blockManualMark) return; const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase(); const isCorrect = (tr === target || tr.includes(target)); if(isCorrect) { showToast('msg_mic_correct', t('msg_mic_correct') + `${tr} (Chuyển sau 3s)`); } else { showToast('msg_mic_wrong', t('msg_mic_wrong') + `"${tr}" (Chuyển sau 5s)`); } markCard(isCorrect); }
+    function handleMicResult(tr) {
+        if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
+        if(blockManualMark) return;
+        const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
+        const isCorrect = (tr === target || tr.includes(target));
+        if(isCorrect) {
+            showToast('msg_mic_correct', `${t('msg_mic_correct')}${tr} ${t('next_3s')}`);
+        } else {
+            showToast('msg_mic_wrong', `${t('msg_mic_wrong')}"${tr}" ${t('next_5s')}`);
+        }
+        markCard(isCorrect);
+    }
 
     let quizScore = 0; let quizQuestionCount = 0;
     function startQuizMode() { if(vocabList.length < 4) return alert(currentLang==='vi'?'Cần ít nhất 4 từ vựng trong kho để chơi!':'至少需要4个词汇！'); quizScore = 0; quizQuestionCount = 0; showPage('page-quiz'); loadQuizQuestion(); }
     function loadQuizQuestion() {
         quizQuestionCount++;
-        document.getElementById('quizStatus').innerText = `Câu ${quizQuestionCount} | Điểm: ${quizScore}`;
+        document.getElementById('quizStatus').innerText = `${t('quiz_q')} ${quizQuestionCount}${t('quiz_q_suffix')} | ${t('quiz_score')} ${quizScore}`;
         const q = vocabList[Math.floor(Math.random() * vocabList.length)];
         const qVariants = getCardVariants(q);
         const chosenVariant = qVariants[Math.floor(Math.random() * qVariants.length)];
@@ -1427,10 +1710,60 @@
         });
     }
     function endQuiz(manual=false) { if(manual && !confirm(currentLang==='vi'?'Bạn muốn thoát Minigame?':'您想退出游戏吗？')) return; showPage('page-home'); }
-    function exportData() { const b = { vocab: vocabList, dailyStats: dailyStats }; const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2)); const a = document.createElement('a'); a.setAttribute("href", s); a.setAttribute("download", `TuVung_${getTodayKey()}.json`); document.body.appendChild(a); a.click(); a.remove(); }
-    function importData(e) { const r = new FileReader(); r.onload = function(ev) { try { const imp = JSON.parse(ev.target.result); if (imp.vocab) vocabList = imp.vocab; if (imp.dailyStats) dailyStats = imp.dailyStats; saveData(); alert(currentLang === 'vi' ? "Đã khôi phục!" : "成功恢复！"); } catch (err) { alert(currentLang === 'vi' ? "Lỗi File!" : "错误！"); } }; r.readAsText(e.target.files[0]); }
+
+    function exportData() {
+        const b = { vocab: vocabList, dailyStats: dailyStats };
+        const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(b, null, 2));
+        const a = document.createElement('a');
+        a.setAttribute("href", s);
+        a.setAttribute("download", `TuVung_${getTodayKey()}.json`);
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+
+    function importData(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = function(ev) {
+            try {
+                const imp = JSON.parse(ev.target.result);
+                if (Array.isArray(imp.vocab)) {
+                    vocabList = imp.vocab.map(item => ({
+                        ...item,
+                        interval: item.interval !== undefined ? item.interval : 0,
+                        ease: item.ease !== undefined ? item.ease : 2.5,
+                        nextReview: item.nextReview || getTodayKey()
+                    }));
+                    saveData();
+                }
+                if (imp.dailyStats && typeof imp.dailyStats === 'object') {
+                    dailyStats = imp.dailyStats;
+                    localSecondsAccumulated = 0;
+                    localStorage.setItem('my_daily_stats', JSON.stringify(dailyStats));
+                    set(ref(db, 'dailyStats'), dailyStats);
+                }
+                updateUI();
+                renderCalendar();
+                if (document.getElementById('page-time-stats').classList.contains('active')) renderTimeStats(currentRange);
+                if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
+                alert(currentLang === 'vi' ? "Đã khôi phục đầy đủ từ vựng và lịch sử học!" : "已成功恢复词汇和学习记录！");
+            } catch (err) {
+                alert(currentLang === 'vi' ? "Lỗi File sao lưu không hợp lệ!" : "备份文件格式错误！");
+            } finally {
+                e.target.value = '';
+            }
+        };
+        r.readAsText(file);
+    }
+
+    let resizeTimer = null;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(detectDeviceMode, 150);
+    });
     
-    // ĐƯA CÁC HÀM RA TOÀN CỤC ĐỂ GIAO DIỆN HTML (INLINE ONCLICK) CÓ THỂ GỌI ĐƯỢC KHI CHẠY DƯỚI DẠNG MODULE
     Object.assign(window, {
         closeMemoryModal, openVocabListFilter, openMemoryModal, startStudy,
         startQuizMode, showPage, exportData, importData, updateDailyGoal,
@@ -1444,7 +1777,7 @@
         updateLevelRatioPreview, saveLevelRatios, resetLevelRatios
     });
 
-    window.onload = function() { initChart(); updateUI(); initWelcome(); initMicSystem(); };
+    window.onload = function() { detectDeviceMode(); initChart(); updateUI(); initWelcome(); initMicSystem(); };
 </script>
 </body>
 </html>
