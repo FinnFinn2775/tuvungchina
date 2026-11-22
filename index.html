@@ -77,6 +77,10 @@
         .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; font-family: var(--font-ui); }
         .input-group textarea { resize: vertical; min-height: 60px; }
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        .subitem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .subitem-header label { margin-bottom: 0 !important; }
+        .btn-add-subitem { width: auto; padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 9px; background: rgba(0, 122, 255, 0.1); color: var(--primary); border: 1px dashed var(--primary); margin-bottom: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-remove-subitem { width: auto; padding: 2px 8px; font-size: 11px; border-radius: 6px; background: rgba(255,59,48,0.12); color: var(--danger); font-weight: 700; }
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; transition: transform 0.2s;}
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-warning { background: var(--warning); color: white; }
@@ -154,10 +158,16 @@
         .card-details { display: none; width: 100%; margin-top: 12px; padding-top: 16px; border-top: 1px dashed var(--border); animation: fadeIn 0.3s ease; }
         .card-details.show { display: block; }
         .pinyin-text { font-size: 26px; color: var(--danger); font-weight: 700; margin-bottom: 8px; }
-        .meaning-text { font-size: 20px; color: var(--text-main); font-weight: 600; margin-bottom: 12px;}
+        .meaning-text { font-size: 20px; color: var(--text-main); font-weight: 600; margin-bottom: 12px; line-height: 1.45; }
+        .meaning-line { margin-bottom: 4px; }
+        .meaning-line:last-child { margin-bottom: 0; }
+        .meaning-num-tag { color: var(--primary); font-weight: 800; }
         .example-box { margin-top: 12px; padding: 14px 16px; background: #fff8e5; border-radius: 14px; border-left: 5px solid var(--warning); text-align: left; }
         .example-title { font-size: 13px; font-weight: 800; color: #d97706; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
         #displayExampleText { font-family: var(--font-zh); font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.6; }
+        .example-line { margin-bottom: 6px; }
+        .example-line:last-child { margin-bottom: 0; }
+        .example-num-tag { font-family: var(--font-ui); font-size: 13px; font-weight: 800; color: #d97706; margin-right: 4px; }
         .highlight-hanzi { font-family: var(--font-zh); font-size: 24px; font-weight: 800; color: var(--primary); }
         .click-hint { font-size: 13px; color: var(--text-sub); margin-top: 10px; font-weight: 500;}
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 600; }
@@ -543,8 +553,26 @@
             
             <!-- Cách đọc chính (Mặc định #1) -->
             <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" data-i18n-ph="ph_pinyin"></div>
-            <div class="input-group"><label data-i18n="lbl_meaning">Nghĩa Tiếng Việt:</label><input type="text" id="meaningInput" data-i18n-ph="ph_meaning"></div>
-            <div class="input-group"><label data-i18n="lbl_example">Ví dụ (Tùy chọn):</label><textarea id="exampleInput" style="font-family: var(--font-zh);" data-i18n-ph="ph_example"></textarea></div>
+            
+            <div id="primaryMeaningsContainer">
+                <div class="input-group meaning-row" style="margin-bottom:8px;">
+                    <div class="subitem-header">
+                        <label class="meaning-label">Nghĩa 1:</label>
+                    </div>
+                    <input type="text" class="meaning-field" placeholder="Nhập nghĩa 1...">
+                </div>
+            </div>
+            <button type="button" class="btn-add-subitem" onclick="addMeaningField('primaryMeaningsContainer')" data-i18n="btn_add_meaning">➕ Thêm nghĩa</button>
+
+            <div id="primaryExamplesContainer">
+                <div class="input-group example-row" style="margin-bottom:8px;">
+                    <div class="subitem-header">
+                        <label class="example-label">VD 1 (Tùy chọn):</label>
+                    </div>
+                    <textarea class="example-field" style="font-family: var(--font-zh);" placeholder="Nhập ví dụ 1..."></textarea>
+                </div>
+            </div>
+            <button type="button" class="btn-add-subitem" onclick="addExampleField('primaryExamplesContainer')" data-i18n="btn_add_example">➕ Thêm ví dụ</button>
 
             <!-- Khu vực chứa các cách đọc Pinyin khác (nếu bấm thêm) -->
             <div id="extraVariantsContainer"></div>
@@ -642,8 +670,9 @@
             speed_title: "Tốc độ đọc giọng nói", auto_speech_title: "Tự động đọc khi đổi thẻ", goal_title: "Mục tiêu học mỗi ngày",
             btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
-            btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa giải thích...",
-            lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ minh họa...", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
+            btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa",
+            lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
+            btn_add_meaning: "➕ Thêm nghĩa", btn_add_example: "➕ Thêm ví dụ", meaning_item_lbl: "Nghĩa", example_item_lbl: "VD", optional_tag: "(Tùy chọn)",
             btn_add_variant: "➕ Thêm Pinyin / cách đọc khác", variant_lbl: "Cách đọc khác",
             level_ratio_title: "🎯 Tỉ Lệ Hiển Thị Mức Độ Thuộc", level_ratio_sub: "Điều chỉnh tần suất xuất hiện của 6 nhóm mức độ khi ôn tập (Tổng = 100%)",
             lvl_0_name: "Chưa xem", lvl_0_desc: "Từ mới thêm chưa học lần nào",
@@ -672,8 +701,9 @@
             speed_title: "语音播放速度", auto_speech_title: "切换卡片时自动朗读", goal_title: "每日学习目标",
             btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
-            btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释...",
-            lbl_example: "例句 (可选):", ph_example: "输入例句...", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
+            btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释",
+            lbl_example: "例句 (可选):", ph_example: "输入例句", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
+            btn_add_meaning: "➕ 添加含义", btn_add_example: "➕ 添加例句", meaning_item_lbl: "含义", example_item_lbl: "VD", optional_tag: "(可选)",
             btn_add_variant: "➕ 添加其他拼音 / 读音", variant_lbl: "其他读音",
             level_ratio_title: "🎯 掌握程度显示比例", level_ratio_sub: "调整复习时6个分组的出现概率（总计 = 100%）",
             lvl_0_name: "未查看", lvl_0_desc: "新添加尚未学习的词汇",
@@ -751,6 +781,14 @@
         });
         document.querySelectorAll('[data-i18n-ph]').forEach(el => {
             if (d[el.getAttribute('data-i18n-ph')] !== undefined) el.placeholder = d[el.getAttribute('data-i18n-ph')];
+        });
+        updateSubitemLabels(document.getElementById('primaryMeaningsContainer'), 'meaning');
+        updateSubitemLabels(document.getElementById('primaryExamplesContainer'), 'example');
+        document.querySelectorAll('#extraVariantsContainer .variant-block').forEach((blk, idx) => {
+            const titleEl = blk.querySelector('.variant-block-title');
+            if (titleEl) titleEl.innerText = `${t('variant_lbl')} #${idx + 2}`;
+            updateSubitemLabels(blk.querySelector('.var-meanings-container'), 'meaning');
+            updateSubitemLabels(blk.querySelector('.var-examples-container'), 'example');
         });
     }
     function t(key) { return dict[currentLang][key] !== undefined ? dict[currentLang][key] : key; }
@@ -872,21 +910,108 @@
         return false;
     }
 
-    // Lấy danh sách các cách đọc (variants) của 1 từ (tương thích cả từ cũ và từ mới nhiều Pinyin)
+    // Tách chuỗi ngăn cách bởi dấu ; cũ thành mảng sạch
+    function splitLegacySemicolon(str) {
+        if (typeof str !== 'string') return [];
+        return str.split(';').map(s => s.trim()).filter(Boolean);
+    }
+
+    // Chuẩn hóa và tự động chuyển đổi từ cũ (dùng dấu ;) sang mảng meanings / examples mới
+    function migrateVocabItem(item) {
+        if (!item || typeof item !== 'object') return false;
+        let changed = false;
+
+        let rawVariants = [];
+        if (Array.isArray(item.variants) && item.variants.length > 0) {
+            rawVariants = item.variants;
+        } else {
+            rawVariants = [{
+                pinyin: item.pinyin || '',
+                meaning: item.meaning || '',
+                example: item.example || ''
+            }];
+            changed = true;
+        }
+
+        const cleanVariants = rawVariants.map(v => {
+            let meanings = [];
+            if (Array.isArray(v.meanings)) {
+                meanings = v.meanings.map(m => String(m).trim()).filter(Boolean);
+            } else {
+                meanings = splitLegacySemicolon(v.meaning || '');
+                changed = true;
+            }
+            if (v.meaning !== undefined) changed = true;
+
+            let examples = [];
+            if (Array.isArray(v.examples)) {
+                examples = v.examples.map(e => String(e).trim()).filter(Boolean);
+            } else {
+                examples = splitLegacySemicolon(v.example || '');
+                changed = true;
+            }
+            if (v.example !== undefined) changed = true;
+
+            return {
+                pinyin: (v.pinyin || '').trim(),
+                meanings,
+                examples
+            };
+        });
+
+        if (!Array.isArray(item.meanings) || !Array.isArray(item.examples) || item.meaning !== undefined || item.example !== undefined) {
+            changed = true;
+        }
+
+        item.variants = cleanVariants;
+        item.pinyin = cleanVariants[0].pinyin;
+        item.meanings = [...cleanVariants[0].meanings];
+        item.examples = [...cleanVariants[0].examples];
+        delete item.meaning;
+        delete item.example;
+
+        return changed;
+    }
+
+    function migrateVocabList(list) {
+        if (!Array.isArray(list)) return false;
+        let anyChanged = false;
+        list.forEach(item => {
+            if (migrateVocabItem(item)) anyChanged = true;
+        });
+        return anyChanged;
+    }
+
+    // Lấy danh sách các cách đọc (variants) đã chuẩn hóa mảng meanings & examples của 1 từ
     function getCardVariants(item) {
         if (!item) return [];
         if (Array.isArray(item.variants) && item.variants.length > 0) {
-            return item.variants;
+            return item.variants.map(v => ({
+                pinyin: v.pinyin || '',
+                meanings: Array.isArray(v.meanings)
+                    ? v.meanings.map(m => String(m).trim()).filter(Boolean)
+                    : splitLegacySemicolon(v.meaning || ''),
+                examples: Array.isArray(v.examples)
+                    ? v.examples.map(e => String(e).trim()).filter(Boolean)
+                    : splitLegacySemicolon(v.example || '')
+            }));
         }
         return [{
             pinyin: item.pinyin || '',
-            meaning: item.meaning || '',
-            example: item.example || ''
+            meanings: Array.isArray(item.meanings)
+                ? item.meanings.map(m => String(m).trim()).filter(Boolean)
+                : splitLegacySemicolon(item.meaning || ''),
+            examples: Array.isArray(item.examples)
+                ? item.examples.map(e => String(e).trim()).filter(Boolean)
+                : splitLegacySemicolon(item.example || '')
         }];
     }
 
-    // Tính năng OFFLINE CACHE - Đọc ngay từ máy để load tức thì
+    // Tính năng OFFLINE CACHE - Đọc ngay từ máy để load tức thì và tự động chuyển đổi từ cũ
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
+    if (migrateVocabList(vocabList)) {
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+    }
     let dailyStats = JSON.parse(localStorage.getItem('my_daily_stats')) || {};
     let globalSpeechRate = parseFloat(localStorage.getItem('my_speech_rate')) || 1.0;
     let autoSpeechEnabled = localStorage.getItem('my_auto_speech') !== 'false';
@@ -927,12 +1052,16 @@
     onValue(ref(db, 'vocabList'), (snapshot) => {
         const data = snapshot.val();
         vocabList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+        let needsSave = migrateVocabList(vocabList);
         vocabList.forEach(item => {
-            if (item.interval === undefined) item.interval = 0;
-            if (item.ease === undefined) item.ease = 2.5;
-            if (!item.nextReview) item.nextReview = getTodayKey();
+            if (item.interval === undefined) { item.interval = 0; needsSave = true; }
+            if (item.ease === undefined) { item.ease = 2.5; needsSave = true; }
+            if (!item.nextReview) { item.nextReview = getTodayKey(); needsSave = true; }
         });
         localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+        if (needsSave && vocabList.length > 0) {
+            saveData();
+        }
         updateUI();
         if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
     });
@@ -1176,7 +1305,10 @@
             matchedDuplicateItem = f;
             const variants = getCardVariants(f);
             const pyList = variants.map(v => v.pinyin).filter(Boolean).join(' / ');
-            const mnList = variants.map(v => v.meaning).filter(Boolean).join(' | ');
+            const mnList = variants.map(v => {
+                if (v.meanings.length <= 1) return v.meanings[0] || '';
+                return v.meanings.map((m, idx) => `${t('meaning_item_lbl')} ${idx + 1}: ${m}`).join(' / ');
+            }).filter(Boolean).join(' | ');
             document.getElementById('duplicateText').innerText = `${t('lbl_hanzi')} "${f.hanzi}" (${pyList}) - ${mnList}`;
             bx.style.display = 'block';
         } else {
@@ -1185,18 +1317,133 @@
         }
     }
 
+    // --- QUẢN LÝ CÁC Ô NGHĨA 1, 2, 3... VÀ VD 1, 2, 3... TRONG FORM THÊM / SỬA ---
+    function updateSubitemLabels(container, type) {
+        if (!container) return;
+        const rows = container.querySelectorAll(type === 'meaning' ? '.meaning-row' : '.example-row');
+        rows.forEach((row, idx) => {
+            const lbl = row.querySelector(type === 'meaning' ? '.meaning-label' : '.example-label');
+            const inp = row.querySelector(type === 'meaning' ? '.meaning-field' : '.example-field');
+            const num = idx + 1;
+            if (type === 'meaning') {
+                if (lbl) lbl.innerText = `${t('meaning_item_lbl')} ${num}:`;
+                if (inp) inp.placeholder = `${t('ph_meaning')} ${num}...`;
+            } else {
+                if (lbl) lbl.innerText = idx === 0 ? `${t('example_item_lbl')} 1 ${t('optional_tag')}:` : `${t('example_item_lbl')} ${num}:`;
+                if (inp) inp.placeholder = `${t('ph_example')} ${num}...`;
+            }
+        });
+    }
+
+    function addMeaningField(target, value = '', shouldFocus = true) {
+        const container = typeof target === 'string' ? document.getElementById(target) : target;
+        if (!container) return;
+        const num = container.querySelectorAll('.meaning-row').length + 1;
+        const row = document.createElement('div');
+        row.className = 'input-group meaning-row';
+        row.style.marginBottom = '8px';
+        row.innerHTML = `
+            <div class="subitem-header">
+                <label class="meaning-label">${t('meaning_item_lbl')} ${num}:</label>
+                <button type="button" class="btn-remove-subitem" onclick="removeMeaningField(this)">✕</button>
+            </div>
+            <input type="text" class="meaning-field" placeholder="${t('ph_meaning')} ${num}..." value="${String(value).replace(/"/g, '&quot;')}">
+        `;
+        container.appendChild(row);
+        if (shouldFocus) {
+            const inp = row.querySelector('.meaning-field');
+            if (inp) inp.focus();
+        }
+    }
+
+    function removeMeaningField(btn) {
+        const row = btn.closest('.meaning-row');
+        if (!row) return;
+        const container = row.parentElement;
+        row.remove();
+        updateSubitemLabels(container, 'meaning');
+    }
+
+    function addExampleField(target, value = '', shouldFocus = true) {
+        const container = typeof target === 'string' ? document.getElementById(target) : target;
+        if (!container) return;
+        const num = container.querySelectorAll('.example-row').length + 1;
+        const row = document.createElement('div');
+        row.className = 'input-group example-row';
+        row.style.marginBottom = '8px';
+        row.innerHTML = `
+            <div class="subitem-header">
+                <label class="example-label">${t('example_item_lbl')} ${num}:</label>
+                <button type="button" class="btn-remove-subitem" onclick="removeExampleField(this)">✕</button>
+            </div>
+            <textarea class="example-field" style="font-family: var(--font-zh);" placeholder="${t('ph_example')} ${num}...">${value}</textarea>
+        `;
+        container.appendChild(row);
+        if (shouldFocus) {
+            const inp = row.querySelector('.example-field');
+            if (inp) inp.focus();
+        }
+    }
+
+    function removeExampleField(btn) {
+        const row = btn.closest('.example-row');
+        if (!row) return;
+        const container = row.parentElement;
+        row.remove();
+        updateSubitemLabels(container, 'example');
+    }
+
+    function renderSubitemContainers(meaningsContainer, examplesContainer, meaningsArr, examplesArr) {
+        const mList = (Array.isArray(meaningsArr) && meaningsArr.length > 0) ? meaningsArr : [''];
+        meaningsContainer.innerHTML = `
+            <div class="input-group meaning-row" style="margin-bottom:8px;">
+                <div class="subitem-header">
+                    <label class="meaning-label">${t('meaning_item_lbl')} 1:</label>
+                </div>
+                <input type="text" class="meaning-field" placeholder="${t('ph_meaning')} 1..." value="${String(mList[0] || '').replace(/"/g, '&quot;')}">
+            </div>
+        `;
+        for (let i = 1; i < mList.length; i++) {
+            addMeaningField(meaningsContainer, mList[i], false);
+        }
+
+        const eList = (Array.isArray(examplesArr) && examplesArr.length > 0) ? examplesArr : [''];
+        examplesContainer.innerHTML = `
+            <div class="input-group example-row" style="margin-bottom:8px;">
+                <div class="subitem-header">
+                    <label class="example-label">${t('example_item_lbl')} 1 ${t('optional_tag')}:</label>
+                </div>
+                <textarea class="example-field" style="font-family: var(--font-zh);" placeholder="${t('ph_example')} 1...">${eList[0] || ''}</textarea>
+            </div>
+        `;
+        for (let i = 1; i < eList.length; i++) {
+            addExampleField(examplesContainer, eList[i], false);
+        }
+    }
+
+    function collectSubitemValues(container, selector) {
+        if (!container) return [];
+        return Array.from(container.querySelectorAll(selector))
+            .map(el => el.value.trim())
+            .filter(Boolean);
+    }
+
     function populateFormWithItem(item) {
         editingId = item.id;
         const variants = getCardVariants(item);
         document.getElementById('hanziInput').value = item.hanzi;
         document.getElementById('pinyinInput').value = variants[0].pinyin || '';
-        document.getElementById('meaningInput').value = variants[0].meaning || '';
-        document.getElementById('exampleInput').value = variants[0].example || '';
+        renderSubitemContainers(
+            document.getElementById('primaryMeaningsContainer'),
+            document.getElementById('primaryExamplesContainer'),
+            variants[0].meanings,
+            variants[0].examples
+        );
 
         const extraContainer = document.getElementById('extraVariantsContainer');
         extraContainer.innerHTML = '';
         for (let idx = 1; idx < variants.length; idx++) {
-            addVariantBlock(variants[idx].pinyin || '', variants[idx].meaning || '', variants[idx].example || '', false);
+            addVariantBlock(variants[idx].pinyin || '', variants[idx].meanings || [''], variants[idx].examples || [''], false);
         }
 
         document.getElementById('formTitle').innerText = t('edit_title');
@@ -1207,12 +1454,15 @@
 
     function loadDuplicateToEdit() { if (!matchedDuplicateItem) return; populateFormWithItem(matchedDuplicateItem); }
 
-    // Thêm ô nhập Pinyin / nghĩa / ví dụ khác trong form thêm/sửa từ
-    function addVariantBlock(py = '', mn = '', eg = '', shouldFocus = true) {
+    // Thêm ô nhập Pinyin / nghĩa 1, 2, 3... / ví dụ 1, 2, 3... khác trong form thêm/sửa từ
+    function addVariantBlock(py = '', mnArr = [''], egArr = [''], shouldFocus = true) {
         const container = document.getElementById('extraVariantsContainer');
         const hz = document.getElementById('hanziInput').value.trim();
         const defaultPy = py !== '' ? py : (hz ? pinyin(hz, { toneType: 'symbol' }) : '');
         const blockIndex = container.children.length + 2;
+
+        const meaningsList = Array.isArray(mnArr) ? mnArr : splitLegacySemicolon(mnArr);
+        const examplesList = Array.isArray(egArr) ? egArr : splitLegacySemicolon(egArr);
 
         const block = document.createElement('div');
         block.className = 'variant-block';
@@ -1225,16 +1475,18 @@
                 <label>${t('lbl_pinyin')}</label>
                 <input type="text" class="var-pinyin" placeholder="${t('ph_pinyin')}" value="${defaultPy.replace(/"/g, '&quot;')}">
             </div>
-            <div class="input-group" style="margin-bottom:8px;">
-                <label>${t('lbl_meaning')}</label>
-                <input type="text" class="var-meaning" placeholder="${t('ph_meaning')}" value="${mn.replace(/"/g, '&quot;')}">
-            </div>
-            <div class="input-group" style="margin-bottom:0;">
-                <label>${t('lbl_example')}</label>
-                <textarea class="var-example" style="font-family: var(--font-zh);" placeholder="${t('ph_example')}">${eg}</textarea>
-            </div>
+            <div class="var-meanings-container"></div>
+            <button type="button" class="btn-add-subitem" onclick="addMeaningField(this.previousElementSibling)" data-i18n="btn_add_meaning">${t('btn_add_meaning')}</button>
+            <div class="var-examples-container"></div>
+            <button type="button" class="btn-add-subitem" style="margin-bottom:0;" onclick="addExampleField(this.previousElementSibling)" data-i18n="btn_add_example">${t('btn_add_example')}</button>
         `;
         container.appendChild(block);
+        renderSubitemContainers(
+            block.querySelector('.var-meanings-container'),
+            block.querySelector('.var-examples-container'),
+            meaningsList,
+            examplesList
+        );
         if (shouldFocus) {
             const pyInput = block.querySelector('.var-pinyin');
             if (pyInput) pyInput.focus();
@@ -1347,9 +1599,9 @@
         const flt = tl.filter(v => {
             const variants = getCardVariants(v);
             const matchVariant = variants.some(vr =>
-                (vr.meaning && vr.meaning.toLowerCase().includes(q)) ||
+                vr.meanings.some(m => m.toLowerCase().includes(q)) ||
                 (vr.pinyin && vr.pinyin.toLowerCase().includes(q)) ||
-                (vr.example && vr.example.toLowerCase().includes(q))
+                vr.examples.some(ex => ex.toLowerCase().includes(q))
             );
             return v.hanzi.toLowerCase().includes(q) || matchVariant;
         });
@@ -1363,12 +1615,26 @@
             const d = document.createElement('div'); d.className = 'vocab-item'; 
             const variants = getCardVariants(it);
             const allPinyins = variants.map(v => v.pinyin).filter(Boolean).join(' / ');
+            const formatMeaningsHtml = (mList) => {
+                if (!mList || mList.length === 0) return '';
+                if (mList.length === 1) return mList[0];
+                return mList.map((m, idx) => `<b>${t('meaning_item_lbl')} ${idx + 1}:</b> ${m}`).join('<br>');
+            };
             const allMeanings = variants.length > 1
-                ? variants.map(v => `(${v.pinyin}) ${v.meaning}`).join(' • ')
-                : variants[0].meaning;
-            const firstExample = (variants.find(v => v.example && v.example.trim() !== '') || {}).example || '';
-            let st = it.interval > 0 ? `• <span style="color:var(--success);">${t('due_label')} ${it.nextReview}</span>` : ''; 
-            let eg = firstExample ? `<div class="vocab-item-eg">💬 ${firstExample}</div>` : ''; 
+                ? variants.map(v => `<b>(${v.pinyin})</b> ${v.meanings.length > 1 ? '<br>' + formatMeaningsHtml(v.meanings) : (v.meanings[0] || '')}`).join('<br>')
+                : formatMeaningsHtml(variants[0].meanings);
+
+            const allExamples = [];
+            variants.forEach(v => {
+                v.examples.forEach(ex => { if (ex) allExamples.push(ex); });
+            });
+            let st = it.interval > 0 ? `<br><span style="color:var(--success);">${t('due_label')} ${it.nextReview}</span>` : ''; 
+            let eg = '';
+            if (allExamples.length === 1) {
+                eg = `<div class="vocab-item-eg">💬 ${allExamples[0]}</div>`;
+            } else if (allExamples.length > 1) {
+                eg = `<div class="vocab-item-eg">${allExamples.map((ex, idx) => `💬 <b>${t('example_item_lbl')} ${idx + 1}:</b> ${ex}`).join('<br>')}</div>`;
+            }
             const primaryPy = (variants[0].pinyin || '').replace(/'/g, "\\'");
             const safeHz = it.hanzi.replace(/'/g, "\\'");
             const isMulti = variants.length > 1;
@@ -1384,23 +1650,23 @@
     function addOrUpdateWord() {
         const hz = document.getElementById('hanziInput').value.trim();
         const py0 = document.getElementById('pinyinInput').value.trim();
-        const mn0 = document.getElementById('meaningInput').value.trim();
-        const eg0 = document.getElementById('exampleInput').value.trim();
+        const mnList0 = collectSubitemValues(document.getElementById('primaryMeaningsContainer'), '.meaning-field');
+        const egList0 = collectSubitemValues(document.getElementById('primaryExamplesContainer'), '.example-field');
 
-        if (!hz || !mn0) { alert(currentLang === 'vi' ? 'Vui lòng nhập Chữ Hán và Nghĩa!' : '请输入汉字和含义！'); return; }
+        if (!hz || mnList0.length === 0) { alert(currentLang === 'vi' ? 'Vui lòng nhập Chữ Hán và ít nhất Nghĩa 1!' : '请输入汉字和至少含义 1！'); return; }
 
-        const variants = [{ pinyin: py0, meaning: mn0, example: eg0 }];
+        const variants = [{ pinyin: py0, meanings: mnList0, examples: egList0 }];
         const extraBlocks = document.querySelectorAll('#extraVariantsContainer .variant-block');
         for (const blk of extraBlocks) {
             const vPy = blk.querySelector('.var-pinyin').value.trim();
-            const vMn = blk.querySelector('.var-meaning').value.trim();
-            const vEg = blk.querySelector('.var-example').value.trim();
-            if (vPy || vMn || vEg) {
-                if (!vPy || !vMn) {
-                    alert(currentLang === 'vi' ? 'Vui lòng nhập đầy đủ Pinyin và Nghĩa cho cách đọc phụ!' : '请完整填写其他读音的拼音和含义！');
+            const vMnList = collectSubitemValues(blk.querySelector('.var-meanings-container'), '.meaning-field');
+            const vEgList = collectSubitemValues(blk.querySelector('.var-examples-container'), '.example-field');
+            if (vPy || vMnList.length > 0 || vEgList.length > 0) {
+                if (!vPy || vMnList.length === 0) {
+                    alert(currentLang === 'vi' ? 'Vui lòng nhập đầy đủ Pinyin và ít nhất Nghĩa 1 cho cách đọc phụ!' : '请完整填写其他读音的拼音和至少含义 1！');
                     return;
                 }
-                variants.push({ pinyin: vPy, meaning: vMn, example: vEg });
+                variants.push({ pinyin: vPy, meanings: vMnList, examples: vEgList });
             }
         }
 
@@ -1409,9 +1675,11 @@
             if (idx !== -1) {
                 vocabList[idx].hanzi = hz;
                 vocabList[idx].pinyin = variants[0].pinyin;
-                vocabList[idx].meaning = variants[0].meaning;
-                vocabList[idx].example = variants[0].example;
+                vocabList[idx].meanings = [...variants[0].meanings];
+                vocabList[idx].examples = [...variants[0].examples];
                 vocabList[idx].variants = variants;
+                delete vocabList[idx].meaning;
+                delete vocabList[idx].example;
             }
             showToast('msg_update');
         } else {
@@ -1419,8 +1687,8 @@
                 id: Date.now(),
                 hanzi: hz,
                 pinyin: variants[0].pinyin,
-                meaning: variants[0].meaning,
-                example: variants[0].example,
+                meanings: [...variants[0].meanings],
+                examples: [...variants[0].examples],
                 variants: variants,
                 status: 'unlearned',
                 seenCount: 0,
@@ -1441,8 +1709,12 @@
         editingId = null; matchedDuplicateItem = null;
         document.getElementById('hanziInput').value = '';
         document.getElementById('pinyinInput').value = '';
-        document.getElementById('meaningInput').value = '';
-        document.getElementById('exampleInput').value = '';
+        renderSubitemContainers(
+            document.getElementById('primaryMeaningsContainer'),
+            document.getElementById('primaryExamplesContainer'),
+            [''],
+            ['']
+        );
         document.getElementById('extraVariantsContainer').innerHTML = '';
         document.getElementById('duplicateBox').style.display = 'none';
         document.getElementById('formTitle').innerText = t('add_title');
@@ -1478,15 +1750,40 @@
         ).join('');
     }
 
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     function applyVariantDetailsToCard(sel, variant) {
         document.getElementById('displayPinyin').innerText = variant.pinyin || '';
-        document.getElementById('displayMeaning').innerText = variant.meaning || '';
+        const mnEl = document.getElementById('displayMeaning');
+        const mList = Array.isArray(variant.meanings) ? variant.meanings.filter(Boolean) : [];
+        if (mList.length <= 1) {
+            mnEl.innerText = mList[0] || '';
+        } else {
+            mnEl.innerHTML = mList.map((m, idx) =>
+                `<div class="meaning-line"><span class="meaning-num-tag">${t('meaning_item_lbl')} ${idx + 1}:</span> ${escapeHtml(m)}</div>`
+            ).join('');
+        }
+
         const eb = document.getElementById('displayExampleBox');
         const et = document.getElementById('displayExampleText');
-        if (variant.example && variant.example.trim() !== '') {
+        const eList = Array.isArray(variant.examples) ? variant.examples.filter(e => e && e.trim() !== '') : [];
+        if (eList.length > 0) {
             const escapedHz = sel.hanzi.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedHz, 'g');
-            et.innerHTML = variant.example.replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
+            if (eList.length === 1) {
+                et.innerHTML = escapeHtml(eList[0]).replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
+            } else {
+                et.innerHTML = eList.map((ex, idx) => {
+                    const highlighted = escapeHtml(ex).replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
+                    return `<div class="example-line"><span class="example-num-tag">${t('example_item_lbl')} ${idx + 1}:</span>${highlighted}</div>`;
+                }).join('');
+            }
             eb.style.display = 'block';
         } else {
             eb.style.display = 'none';
@@ -1721,13 +2018,14 @@
         const q = vocabList[Math.floor(Math.random() * vocabList.length)];
         const qVariants = getCardVariants(q);
         const chosenVariant = qVariants[Math.floor(Math.random() * qVariants.length)];
+        const chosenMeaning = chosenVariant.meanings[Math.floor(Math.random() * chosenVariant.meanings.length)] || '';
         document.getElementById('quizHanzi').innerText = q.hanzi;
 
-        let opts = [{ id: q.id, meaning: chosenVariant.meaning }];
+        let opts = [{ id: q.id, meaning: chosenMeaning }];
         let others = vocabList.filter(v => v.id !== q.id).sort(() => 0.5 - Math.random());
         others.slice(0, 3).forEach(o => {
             const ov = getCardVariants(o);
-            opts.push({ id: o.id, meaning: ov[0].meaning });
+            opts.push({ id: o.id, meaning: ov[0].meanings[0] || '' });
         });
         opts.sort(() => 0.5 - Math.random());
 
@@ -1745,7 +2043,7 @@
                     setTimeout(() => { loadQuizQuestion(); }, 800);
                 } else {
                     btn.classList.add('wrong');
-                    Array.from(grid.children).forEach(b => { if(b.innerText === chosenVariant.meaning) b.classList.add('correct'); });
+                    Array.from(grid.children).forEach(b => { if(b.innerText === chosenMeaning) b.classList.add('correct'); });
                     setTimeout(() => { loadQuizQuestion(); }, 1500);
                 }
             };
@@ -1779,6 +2077,7 @@
                         ease: item.ease !== undefined ? item.ease : 2.5,
                         nextReview: item.nextReview || getTodayKey()
                     }));
+                    migrateVocabList(vocabList);
                     saveData();
                 }
                 if (imp.dailyStats && typeof imp.dailyStats === 'object') {
@@ -1816,6 +2115,7 @@
         resetForm, renderVocabList, speakCurrentCard, editCurrentCard,
         deleteCurrentCard, markCard, undoPreviousCard, startMic, stopMic, endQuiz,
         speakText, editWordFromList, deleteWordFromList,
+        addMeaningField, removeMeaningField, addExampleField, removeExampleField,
         addVariantBlock, removeVariantBlock, selectCardVariant,
         updateLevelRatioPreview, saveLevelRatios, resetLevelRatios
     });
