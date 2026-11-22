@@ -77,8 +77,10 @@
         .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-size: 16px; background: var(--input-bg); color: var(--text-main); outline: none; transition: border-color 0.2s; font-family: var(--font-ui); }
         .input-group textarea { resize: vertical; min-height: 60px; }
         .input-group input:focus, .input-group textarea:focus, .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,122,255,0.15); }
+        .sense-row { background: rgba(0, 122, 255, 0.03); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin-bottom: 10px; }
         .subitem-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .subitem-header label { margin-bottom: 0 !important; }
+        .subitem-header label { display: block; font-size: 12px; font-weight: 700; color: var(--primary); margin-bottom: 0 !important; text-transform: uppercase; }
+        .sense-sub-label { display: block; font-size: 11px; font-weight: 600; color: var(--text-sub); margin: 8px 0 4px 0; text-transform: uppercase; }
         .btn-add-subitem { width: auto; padding: 6px 12px; font-size: 12px; font-weight: 700; border-radius: 9px; background: rgba(0, 122, 255, 0.1); color: var(--primary); border: 1px dashed var(--primary); margin-bottom: 12px; display: inline-flex; align-items: center; gap: 4px; }
         .btn-remove-subitem { width: auto; padding: 2px 8px; font-size: 11px; border-radius: 6px; background: rgba(255,59,48,0.12); color: var(--danger); font-weight: 700; }
         button { width: 100%; padding: 14px; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; transition: transform 0.2s;}
@@ -86,6 +88,7 @@
         .btn-warning { background: var(--warning); color: white; }
         .btn-add-variant { background: rgba(0, 122, 255, 0.1); color: var(--primary); border: 1.5px dashed var(--primary); padding: 11px; font-size: 14px; border-radius: 12px; margin-bottom: 12px; font-weight: 700; }
         .variant-block { background: var(--item-bg); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 12px; animation: fadeIn 0.25s ease; }
+        .variant-block .sense-row { background: var(--card-bg); }
         .variant-block-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .variant-block-title { font-size: 12px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
         .btn-remove-variant { width: auto; padding: 4px 10px; font-size: 12px; border-radius: 8px; background: rgba(255,59,48,0.12); color: var(--danger); font-weight: 700; }
@@ -111,7 +114,8 @@
         .cal-day.highlight.today { border: 2px solid #fff; }
         .swipe-container { position: relative; width: 100%; min-height: 350px; }
         .flashcard { width: 100%; min-height: 350px; position: relative; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); padding: 48px 20px 24px 20px; text-align: center; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; user-select: none; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, background-color 0.4s ease; }
-        .flashcard.has-variants { padding-top: 84px; }
+        .flashcard.has-1-switcher { padding-top: 86px; }
+        .flashcard.has-2-switchers { padding-top: 124px; }
         .flashcard:active { transform: scale(0.96); }
         .flashcard.learned-bg { background-color: rgba(52,199,89,0.15) !important; border-color: var(--success) !important; }
         .flashcard.unlearned-bg { background-color: rgba(255,59,48,0.15) !important; border-color: var(--danger) !important; }
@@ -120,23 +124,32 @@
         .flashcard.card-enter { animation: popInCard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes popInCard { from { opacity: 0; transform: scale(0.9) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         
-        /* Thanh chuyển đổi nhiều cách đọc (Pinyin Switcher) ở góc trái trên Flashcard */
-        .pinyin-switcher {
+        /* Khu vực chứa thanh nhiều cách đọc & thanh nhiều nghĩa xếp tách tầng dọc để không bao giờ đè nhau */
+        .card-top-switchers {
             position: absolute;
             top: 46px;
             left: 14px;
-            z-index: 12;
+            right: 14px;
+            z-index: 15;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            pointer-events: none;
+        }
+        .switcher-pill-bar {
+            pointer-events: auto;
             display: inline-flex;
             align-items: center;
             background: #f0f0f3;
             border-radius: 999px;
             padding: 3px;
             gap: 2px;
-            max-width: calc(100% - 28px);
+            max-width: 100%;
             overflow-x: auto;
             box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);
         }
-        .pinyin-switcher::-webkit-scrollbar { display: none; }
+        .switcher-pill-bar::-webkit-scrollbar { display: none; }
         .pinyin-pill {
             padding: 4px 13px;
             border-radius: 999px;
@@ -159,15 +172,10 @@
         .card-details.show { display: block; }
         .pinyin-text { font-size: 26px; color: var(--danger); font-weight: 700; margin-bottom: 8px; }
         .meaning-text { font-size: 20px; color: var(--text-main); font-weight: 600; margin-bottom: 12px; line-height: 1.45; }
-        .meaning-line { margin-bottom: 4px; }
-        .meaning-line:last-child { margin-bottom: 0; }
         .meaning-num-tag { color: var(--primary); font-weight: 800; }
         .example-box { margin-top: 12px; padding: 14px 16px; background: #fff8e5; border-radius: 14px; border-left: 5px solid var(--warning); text-align: left; }
         .example-title { font-size: 13px; font-weight: 800; color: #d97706; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;}
         #displayExampleText { font-family: var(--font-zh); font-size: 18px; color: #1c1c1e; font-weight: 500; line-height: 1.6; }
-        .example-line { margin-bottom: 6px; }
-        .example-line:last-child { margin-bottom: 0; }
-        .example-num-tag { font-family: var(--font-ui); font-size: 13px; font-weight: 800; color: #d97706; margin-right: 4px; }
         .highlight-hanzi { font-family: var(--font-zh); font-size: 24px; font-weight: 800; color: var(--primary); }
         .click-hint { font-size: 13px; color: var(--text-sub); margin-top: 10px; font-weight: 500;}
         .seen-badge { position: absolute; top: 14px; right: 16px; font-size: 12px; color: var(--text-sub); font-weight: 600; }
@@ -279,8 +287,11 @@
         body.is-desktop .flashcard {
             padding: 56px 32px 32px 32px;
         }
-        body.is-desktop .flashcard.has-variants {
+        body.is-desktop .flashcard.has-1-switcher {
             padding-top: 92px;
+        }
+        body.is-desktop .flashcard.has-2-switchers {
+            padding-top: 132px;
         }
         body.is-desktop .hanzi-display {
             font-size: 74px;
@@ -554,25 +565,17 @@
             <!-- Cách đọc chính (Mặc định #1) -->
             <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" data-i18n-ph="ph_pinyin"></div>
             
-            <div id="primaryMeaningsContainer">
-                <div class="input-group meaning-row" style="margin-bottom:8px;">
+            <div id="primarySensesContainer">
+                <div class="input-group sense-row">
                     <div class="subitem-header">
-                        <label class="meaning-label">Nghĩa 1:</label>
+                        <label class="sense-label">Nghĩa 1:</label>
                     </div>
-                    <input type="text" class="meaning-field" placeholder="Nhập nghĩa 1...">
+                    <input type="text" class="sense-meaning" placeholder="Nhập nghĩa 1...">
+                    <span class="sense-sub-label">VD (Tùy chọn):</span>
+                    <textarea class="sense-example" style="font-family: var(--font-zh);" placeholder="Nhập câu ví dụ..."></textarea>
                 </div>
             </div>
-            <button type="button" class="btn-add-subitem" onclick="addMeaningField('primaryMeaningsContainer')" data-i18n="btn_add_meaning">➕ Thêm nghĩa</button>
-
-            <div id="primaryExamplesContainer">
-                <div class="input-group example-row" style="margin-bottom:8px;">
-                    <div class="subitem-header">
-                        <label class="example-label">VD 1 (Tùy chọn):</label>
-                    </div>
-                    <textarea class="example-field" style="font-family: var(--font-zh);" placeholder="Nhập ví dụ 1..."></textarea>
-                </div>
-            </div>
-            <button type="button" class="btn-add-subitem" onclick="addExampleField('primaryExamplesContainer')" data-i18n="btn_add_example">➕ Thêm ví dụ</button>
+            <button type="button" class="btn-add-subitem" onclick="addSenseField('primarySensesContainer')" data-i18n="btn_add_meaning">➕ Thêm nghĩa</button>
 
             <!-- Khu vực chứa các cách đọc Pinyin khác (nếu bấm thêm) -->
             <div id="extraVariantsContainer"></div>
@@ -605,14 +608,17 @@
                     <button class="btn-tool btn-delete" onclick="deleteCurrentCard()" data-i18n="tool_delete">🗑️ Xóa</button>
                 </div>
                 <span class="seen-badge" id="seenCount">Cấp độ: 0</span>
-                <!-- Thanh chuyển đổi nhiều cách đọc ở góc trên bên trái -->
-                <div class="pinyin-switcher" id="pinyinSwitcher" onclick="event.stopPropagation()" style="display:none;"></div>
+                <!-- Thanh chuyển đổi nhiều cách đọc & nhiều nghĩa xếp tách tầng ở phía trên thẻ -->
+                <div class="card-top-switchers" id="cardTopSwitchers" onclick="event.stopPropagation()" style="display:none;">
+                    <div class="switcher-pill-bar" id="pinyinSwitcher" style="display:none;"></div>
+                    <div class="switcher-pill-bar" id="meaningSwitcher" style="display:none;"></div>
+                </div>
                 <div class="hanzi-display" id="displayHanzi">Vui lòng thêm từ</div>
                 <div class="click-hint" id="clickHint" data-i18n="click_hint">Bấm vào thẻ để hiện Pinyin & Nghĩa</div>
                 <div class="card-details" id="cardDetails">
                     <div class="pinyin-text" id="displayPinyin"></div>
                     <div class="meaning-text" id="displayMeaning"></div>
-                    <div class="example-box" id="displayExampleBox" style="display:none;"><div class="example-title" data-i18n="lbl_example_tag">💡 VÍ DỤ:</div><div id="displayExampleText"></div></div>
+                    <div class="example-box" id="displayExampleBox" style="display:none;"><div class="example-title" data-i18n="lbl_example_tag">💡 VD:</div><div id="displayExampleText"></div></div>
                 </div>
             </div>
         </div>
@@ -671,8 +677,8 @@
             btn_test_speech: "🔊 Thử giọng đọc (你好)", total_days: "TỔNG NGÀY HỌC", total_time: "TỔNG THỜI GIAN HỌC", time_7: "7 Ngày", time_30: "30 Ngày", time_90: "90 Ngày",
             compare_title: "So với ngày hôm qua", add_title: "Thêm Từ Vựng Mới", edit_title: "Sửa Từ Vựng", lbl_hanzi: "Chữ Hán:", ph_hanzi: "Nhập chữ Hán...", dup_warn: "⚠️ Từ này đã tồn tại!",
             btn_edit_old: "✏️ Sửa từ cũ này", lbl_pinyin: "Bính âm (Pinyin):", ph_pinyin: "Tự động hiện Pinyin", lbl_meaning: "Nghĩa Tiếng Việt:", ph_meaning: "Nhập nghĩa",
-            lbl_example: "Ví dụ (Tùy chọn):", ph_example: "Nhập câu ví dụ", lbl_example_tag: "💡 VÍ DỤ:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
-            btn_add_meaning: "➕ Thêm nghĩa", btn_add_example: "➕ Thêm ví dụ", meaning_item_lbl: "Nghĩa", example_item_lbl: "VD", optional_tag: "(Tùy chọn)",
+            lbl_example: "VD (Tùy chọn):", ph_example: "Nhập câu ví dụ", lbl_example_tag: "💡 VD:", btn_save_word: "Lưu Từ Vựng", btn_update_word: "Cập Nhật Từ", btn_cancel: "Hủy Chỉnh Sửa", ph_search: "🔍 Tìm kiếm chữ Hán hoặc nghĩa...",
+            btn_add_meaning: "➕ Thêm nghĩa", meaning_item_lbl: "Nghĩa", example_item_lbl: "VD", optional_tag: "(Tùy chọn)",
             btn_add_variant: "➕ Thêm Pinyin / cách đọc khác", variant_lbl: "Cách đọc khác",
             level_ratio_title: "🎯 Tỉ Lệ Hiển Thị Mức Độ Thuộc", level_ratio_sub: "Điều chỉnh tần suất xuất hiện của 6 nhóm mức độ khi ôn tập (Tổng = 100%)",
             lvl_0_name: "Chưa xem", lvl_0_desc: "Từ mới thêm chưa học lần nào",
@@ -702,8 +708,8 @@
             btn_test_speech: "🔊 试听语音 (你好)", total_days: "总学习天数", total_time: "总学习时长", time_7: "7 天", time_30: "30 天", time_90: "90 天",
             compare_title: "与昨天相比", add_title: "添加新词汇", edit_title: "编辑词汇", lbl_hanzi: "汉字:", ph_hanzi: "输入汉字...", dup_warn: "⚠️ 该词汇已存在！",
             btn_edit_old: "✏️ 编辑此旧词", lbl_pinyin: "拼音:", ph_pinyin: "自动显示拼音", lbl_meaning: "含义:", ph_meaning: "输入解释",
-            lbl_example: "例句 (可选):", ph_example: "输入例句", lbl_example_tag: "💡 例句:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
-            btn_add_meaning: "➕ 添加含义", btn_add_example: "➕ 添加例句", meaning_item_lbl: "含义", example_item_lbl: "VD", optional_tag: "(可选)",
+            lbl_example: "VD (可选):", ph_example: "输入例句", lbl_example_tag: "💡 VD:", btn_save_word: "保存词汇", btn_update_word: "更新词汇", btn_cancel: "取消编辑", ph_search: "🔍 搜索...",
+            btn_add_meaning: "➕ 添加含义", meaning_item_lbl: "含义", example_item_lbl: "VD", optional_tag: "(可选)",
             btn_add_variant: "➕ 添加其他拼音 / 读音", variant_lbl: "其他读音",
             level_ratio_title: "🎯 掌握程度显示比例", level_ratio_sub: "调整复习时6个分组的出现概率（总计 = 100%）",
             lvl_0_name: "未查看", lvl_0_desc: "新添加尚未学习的词汇",
@@ -767,6 +773,15 @@
         if (currentRange) renderTimeStats(currentRange);
         renderCalendar();
         if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
+        if (document.getElementById('page-flashcard').classList.contains('active') && currentCardIndex !== -1 && vocabList[currentCardIndex]) {
+            const item = vocabList[currentCardIndex];
+            const variants = getCardVariants(item);
+            const activeVar = variants[currentVariantIndex] || variants[0];
+            const activeSense = activeVar.senses[currentSenseIndex] || activeVar.senses[0];
+            renderTopSwitchers(variants, currentVariantIndex, currentSenseIndex);
+            applySenseDetailsToCard(item, activeVar, activeSense, currentSenseIndex, activeVar.senses.length);
+            document.getElementById('seenCount').innerText = `${t('seen_count')} ${activeSense.interval ?? item.interval ?? 0}`;
+        }
         if (document.getElementById('page-quiz').classList.contains('active')) {
             document.getElementById('quizStatus').innerText = `${t('quiz_q')} ${quizQuestionCount}${t('quiz_q_suffix')} | ${t('quiz_score')} ${quizScore}`;
         }
@@ -782,13 +797,11 @@
         document.querySelectorAll('[data-i18n-ph]').forEach(el => {
             if (d[el.getAttribute('data-i18n-ph')] !== undefined) el.placeholder = d[el.getAttribute('data-i18n-ph')];
         });
-        updateSubitemLabels(document.getElementById('primaryMeaningsContainer'), 'meaning');
-        updateSubitemLabels(document.getElementById('primaryExamplesContainer'), 'example');
+        updateSenseLabels(document.getElementById('primarySensesContainer'));
         document.querySelectorAll('#extraVariantsContainer .variant-block').forEach((blk, idx) => {
             const titleEl = blk.querySelector('.variant-block-title');
             if (titleEl) titleEl.innerText = `${t('variant_lbl')} #${idx + 2}`;
-            updateSubitemLabels(blk.querySelector('.var-meanings-container'), 'meaning');
-            updateSubitemLabels(blk.querySelector('.var-examples-container'), 'example');
+            updateSenseLabels(blk.querySelector('.var-senses-container'));
         });
     }
     function t(key) { return dict[currentLang][key] !== undefined ? dict[currentLang][key] : key; }
@@ -910,16 +923,57 @@
         return false;
     }
 
+    // --- ĐỊNH DẠNG NGÀY THEO GIỜ ĐỊA PHƯƠNG ---
+    function formatLocalDate(dateObj) {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const d = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+    function getTodayKey() { return formatLocalDate(new Date()); }
+    function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return formatLocalDate(d); }
+    function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return formatLocalDate(d); }
+
     // Tách chuỗi ngăn cách bởi dấu ; cũ thành mảng sạch
     function splitLegacySemicolon(str) {
         if (typeof str !== 'string') return [];
         return str.split(';').map(s => s.trim()).filter(Boolean);
     }
 
-    // Chuẩn hóa và tự động chuyển đổi từ cũ (dùng dấu ;) sang mảng meanings / examples mới
+    // Đồng bộ lại các trường SRS tổng của từ dựa trên toàn bộ các nghĩa (senses)
+    function syncWordAggregatesFromSenses(item) {
+        if (!item || !Array.isArray(item.variants) || item.variants.length === 0) return;
+        const allSenses = [];
+        item.variants.forEach(v => {
+            if (Array.isArray(v.senses)) {
+                v.senses.forEach(s => allSenses.push(s));
+            }
+        });
+        if (allSenses.length === 0) return;
+
+        const totalSeen = allSenses.reduce((sum, s) => sum + (Number(s.seenCount) || 0), 0);
+        const minInterval = Math.min(...allSenses.map(s => Number(s.interval) || 0));
+        const avgEase = allSenses.reduce((sum, s) => sum + (Number(s.ease) || 2.5), 0) / allSenses.length;
+        const earliestReview = allSenses
+            .map(s => s.nextReview || getTodayKey())
+            .sort()[0] || getTodayKey();
+
+        item.seenCount = totalSeen;
+        item.interval = minInterval;
+        item.ease = Math.round(avgEase * 100) / 100;
+        item.nextReview = minInterval === 0 ? getTodayKey() : earliestReview;
+        item.status = (totalSeen > 0 && minInterval > 0 && item.nextReview > getTodayKey()) ? 'learned' : 'unlearned';
+    }
+
+    // Chuẩn hóa và tự động chuyển đổi dữ liệu cũ sang cấu trúc senses: [{ meaning, example, interval, ease, nextReview, seenCount }]
     function migrateVocabItem(item) {
         if (!item || typeof item !== 'object') return false;
         let changed = false;
+
+        const baseInterval = item.interval !== undefined ? Number(item.interval) : 0;
+        const baseEase = item.ease !== undefined ? Number(item.ease) : 2.5;
+        const baseNextReview = item.nextReview || getTodayKey();
+        const baseSeenCount = item.seenCount !== undefined ? Number(item.seenCount) : 0;
 
         let rawVariants = [];
         if (Array.isArray(item.variants) && item.variants.length > 0) {
@@ -927,6 +981,9 @@
         } else {
             rawVariants = [{
                 pinyin: item.pinyin || '',
+                senses: item.senses,
+                meanings: item.meanings,
+                examples: item.examples,
                 meaning: item.meaning || '',
                 example: item.example || ''
             }];
@@ -934,41 +991,85 @@
         }
 
         const cleanVariants = rawVariants.map(v => {
-            let meanings = [];
-            if (Array.isArray(v.meanings)) {
-                meanings = v.meanings.map(m => String(m).trim()).filter(Boolean);
+            let senses = [];
+            if (Array.isArray(v.senses) && v.senses.length > 0) {
+                senses = v.senses.map(s => {
+                    const sInterval = s.interval !== undefined ? Number(s.interval) : baseInterval;
+                    const sEase = s.ease !== undefined ? Number(s.ease) : baseEase;
+                    const sNext = s.nextReview || baseNextReview;
+                    const sSeen = s.seenCount !== undefined ? Number(s.seenCount) : baseSeenCount;
+                    if (s.interval === undefined || s.ease === undefined || !s.nextReview || s.seenCount === undefined) {
+                        changed = true;
+                    }
+                    return {
+                        meaning: String(s.meaning || '').trim(),
+                        example: String(s.example || '').trim(),
+                        interval: sInterval,
+                        ease: sEase,
+                        nextReview: sNext,
+                        seenCount: sSeen
+                    };
+                }).filter(s => s.meaning !== '');
             } else {
-                meanings = splitLegacySemicolon(v.meaning || '');
-                changed = true;
-            }
-            if (v.meaning !== undefined) changed = true;
+                let mList = Array.isArray(v.meanings)
+                    ? v.meanings.map(m => String(m).trim()).filter(Boolean)
+                    : splitLegacySemicolon(v.meaning || '');
+                let eList = Array.isArray(v.examples)
+                    ? v.examples.map(e => String(e).trim())
+                    : splitLegacySemicolon(v.example || '');
 
-            let examples = [];
-            if (Array.isArray(v.examples)) {
-                examples = v.examples.map(e => String(e).trim()).filter(Boolean);
-            } else {
-                examples = splitLegacySemicolon(v.example || '');
+                if (mList.length === 0 && v.meaning) mList = [String(v.meaning).trim()];
+                const maxLen = Math.max(mList.length, eList.length);
+                for (let idx = 0; idx < maxLen; idx++) {
+                    const mn = (mList[idx] || '').trim();
+                    const eg = (eList[idx] || '').trim();
+                    if (mn || eg) {
+                        senses.push({
+                            meaning: mn,
+                            example: eg,
+                            interval: baseInterval,
+                            ease: baseEase,
+                            nextReview: baseNextReview,
+                            seenCount: baseSeenCount
+                        });
+                    }
+                }
                 changed = true;
             }
-            if (v.example !== undefined) changed = true;
+
+            if (senses.length === 0) {
+                senses.push({
+                    meaning: '',
+                    example: '',
+                    interval: baseInterval,
+                    ease: baseEase,
+                    nextReview: baseNextReview,
+                    seenCount: baseSeenCount
+                });
+            }
+
+            if (v.meaning !== undefined || v.example !== undefined || v.meanings !== undefined || v.examples !== undefined) {
+                changed = true;
+            }
 
             return {
                 pinyin: (v.pinyin || '').trim(),
-                meanings,
-                examples
+                senses
             };
         });
 
-        if (!Array.isArray(item.meanings) || !Array.isArray(item.examples) || item.meaning !== undefined || item.example !== undefined) {
+        if (item.meaning !== undefined || item.example !== undefined || item.meanings !== undefined || item.examples !== undefined) {
             changed = true;
         }
 
         item.variants = cleanVariants;
         item.pinyin = cleanVariants[0].pinyin;
-        item.meanings = [...cleanVariants[0].meanings];
-        item.examples = [...cleanVariants[0].examples];
         delete item.meaning;
         delete item.example;
+        delete item.meanings;
+        delete item.examples;
+
+        syncWordAggregatesFromSenses(item);
 
         return changed;
     }
@@ -982,29 +1083,13 @@
         return anyChanged;
     }
 
-    // Lấy danh sách các cách đọc (variants) đã chuẩn hóa mảng meanings & examples của 1 từ
+    // Lấy danh sách các cách đọc (variants) cùng mảng senses đã chuẩn hóa của 1 từ
     function getCardVariants(item) {
         if (!item) return [];
-        if (Array.isArray(item.variants) && item.variants.length > 0) {
-            return item.variants.map(v => ({
-                pinyin: v.pinyin || '',
-                meanings: Array.isArray(v.meanings)
-                    ? v.meanings.map(m => String(m).trim()).filter(Boolean)
-                    : splitLegacySemicolon(v.meaning || ''),
-                examples: Array.isArray(v.examples)
-                    ? v.examples.map(e => String(e).trim()).filter(Boolean)
-                    : splitLegacySemicolon(v.example || '')
-            }));
+        if (!Array.isArray(item.variants) || item.variants.length === 0) {
+            migrateVocabItem(item);
         }
-        return [{
-            pinyin: item.pinyin || '',
-            meanings: Array.isArray(item.meanings)
-                ? item.meanings.map(m => String(m).trim()).filter(Boolean)
-                : splitLegacySemicolon(item.meaning || ''),
-            examples: Array.isArray(item.examples)
-                ? item.examples.map(e => String(e).trim()).filter(Boolean)
-                : splitLegacySemicolon(item.example || '')
-        }];
+        return item.variants;
     }
 
     // Tính năng OFFLINE CACHE - Đọc ngay từ máy để load tức thì và tự động chuyển đổi từ cũ
@@ -1030,34 +1115,21 @@
         return [...DEFAULT_LEVEL_WEIGHTS];
     })();
     
-    let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, currentVariantIndex = 0, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
+    let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, currentVariantIndex = 0, currentSenseIndex = 0, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let lastShownCardId = null;
+    let reviewedSensesInVisit = new Set();
     let currentCalDate = new Date();
     let historyStack = []; 
-    let blockManualMark = false; let actionTimeout = null;
+    let blockManualMark = false;
+    let pendingMarkResult = null;
+    let actionTimeout = null;
     let localSecondsAccumulated = 0;
-
-    // --- ĐỊNH DẠNG NGÀY THEO GIỜ ĐỊA PHƯƠNG (VÁ LỖI LỆCH MÚI GIỜ 00:00 - 06:59) ---
-    function formatLocalDate(dateObj) {
-        const y = dateObj.getFullYear();
-        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const d = String(dateObj.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-    }
-    function getTodayKey() { return formatLocalDate(new Date()); }
-    function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return formatLocalDate(d); }
-    function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return formatLocalDate(d); }
 
     // --- LẮNG NGHE ĐỒNG BỘ REALTIME ---
     onValue(ref(db, 'vocabList'), (snapshot) => {
         const data = snapshot.val();
         vocabList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
         let needsSave = migrateVocabList(vocabList);
-        vocabList.forEach(item => {
-            if (item.interval === undefined) { item.interval = 0; needsSave = true; }
-            if (item.ease === undefined) { item.ease = 2.5; needsSave = true; }
-            if (!item.nextReview) { item.nextReview = getTodayKey(); needsSave = true; }
-        });
         localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
         if (needsSave && vocabList.length > 0) {
             saveData();
@@ -1289,8 +1361,8 @@
 
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
     function startStudy(f) { 
-        currentFilter = f; historyStack = []; lastShownCardId = null; updateUndoButton(); 
-        blockManualMark = false; clearTimeout(actionTimeout);
+        currentFilter = f; historyStack = []; lastShownCardId = null; reviewedSensesInVisit = new Set(); updateUndoButton(); 
+        blockManualMark = false; pendingMarkResult = null; clearTimeout(actionTimeout);
         showPage('page-flashcard'); loadNextCard(); 
     }
     
@@ -1306,8 +1378,8 @@
             const variants = getCardVariants(f);
             const pyList = variants.map(v => v.pinyin).filter(Boolean).join(' / ');
             const mnList = variants.map(v => {
-                if (v.meanings.length <= 1) return v.meanings[0] || '';
-                return v.meanings.map((m, idx) => `${t('meaning_item_lbl')} ${idx + 1}: ${m}`).join(' / ');
+                if (v.senses.length <= 1) return v.senses[0]?.meaning || '';
+                return v.senses.map((s, idx) => `${t('meaning_item_lbl')} ${idx + 1}: ${s.meaning}`).join(' / ');
             }).filter(Boolean).join(' | ');
             document.getElementById('duplicateText').innerText = `${t('lbl_hanzi')} "${f.hanzi}" (${pyList}) - ${mnList}`;
             bx.style.display = 'block';
@@ -1317,115 +1389,90 @@
         }
     }
 
-    // --- QUẢN LÝ CÁC Ô NGHĨA 1, 2, 3... VÀ VD 1, 2, 3... TRONG FORM THÊM / SỬA ---
-    function updateSubitemLabels(container, type) {
+    // --- QUẢN LÝ CÁC CẶP (NGHĨA 1, 2, 3... ĐI KÈM VD TƯƠNG ỨNG KHÔNG ĐÁNH SỐ) TRONG FORM THÊM / SỬA ---
+    function updateSenseLabels(container) {
         if (!container) return;
-        const rows = container.querySelectorAll(type === 'meaning' ? '.meaning-row' : '.example-row');
+        const rows = container.querySelectorAll('.sense-row');
         rows.forEach((row, idx) => {
-            const lbl = row.querySelector(type === 'meaning' ? '.meaning-label' : '.example-label');
-            const inp = row.querySelector(type === 'meaning' ? '.meaning-field' : '.example-field');
+            const lbl = row.querySelector('.sense-label');
+            const inp = row.querySelector('.sense-meaning');
+            const subLbl = row.querySelector('.sense-sub-label');
+            const egInp = row.querySelector('.sense-example');
             const num = idx + 1;
-            if (type === 'meaning') {
-                if (lbl) lbl.innerText = `${t('meaning_item_lbl')} ${num}:`;
-                if (inp) inp.placeholder = `${t('ph_meaning')} ${num}...`;
-            } else {
-                if (lbl) lbl.innerText = idx === 0 ? `${t('example_item_lbl')} 1 ${t('optional_tag')}:` : `${t('example_item_lbl')} ${num}:`;
-                if (inp) inp.placeholder = `${t('ph_example')} ${num}...`;
-            }
+            if (lbl) lbl.innerText = `${t('meaning_item_lbl')} ${num}:`;
+            if (inp) inp.placeholder = `${t('ph_meaning')} ${num}...`;
+            if (subLbl) subLbl.innerText = t('lbl_example');
+            if (egInp) egInp.placeholder = `${t('ph_example')}...`;
         });
     }
 
-    function addMeaningField(target, value = '', shouldFocus = true) {
+    function addSenseField(target, senseObj = { meaning: '', example: '' }, shouldFocus = true) {
         const container = typeof target === 'string' ? document.getElementById(target) : target;
         if (!container) return;
-        const num = container.querySelectorAll('.meaning-row').length + 1;
+        const num = container.querySelectorAll('.sense-row').length + 1;
         const row = document.createElement('div');
-        row.className = 'input-group meaning-row';
-        row.style.marginBottom = '8px';
+        row.className = 'input-group sense-row';
         row.innerHTML = `
             <div class="subitem-header">
-                <label class="meaning-label">${t('meaning_item_lbl')} ${num}:</label>
-                <button type="button" class="btn-remove-subitem" onclick="removeMeaningField(this)">✕</button>
+                <label class="sense-label">${t('meaning_item_lbl')} ${num}:</label>
+                <button type="button" class="btn-remove-subitem" onclick="removeSenseField(this)">✕</button>
             </div>
-            <input type="text" class="meaning-field" placeholder="${t('ph_meaning')} ${num}..." value="${String(value).replace(/"/g, '&quot;')}">
+            <input type="text" class="sense-meaning" placeholder="${t('ph_meaning')} ${num}..." value="${String(senseObj.meaning || '').replace(/"/g, '&quot;')}">
+            <span class="sense-sub-label">${t('lbl_example')}</span>
+            <textarea class="sense-example" style="font-family: var(--font-zh);" placeholder="${t('ph_example')}...">${senseObj.example || ''}</textarea>
         `;
         container.appendChild(row);
         if (shouldFocus) {
-            const inp = row.querySelector('.meaning-field');
+            const inp = row.querySelector('.sense-meaning');
             if (inp) inp.focus();
         }
     }
 
-    function removeMeaningField(btn) {
-        const row = btn.closest('.meaning-row');
+    function removeSenseField(btn) {
+        const row = btn.closest('.sense-row');
         if (!row) return;
         const container = row.parentElement;
         row.remove();
-        updateSubitemLabels(container, 'meaning');
+        updateSenseLabels(container);
     }
 
-    function addExampleField(target, value = '', shouldFocus = true) {
-        const container = typeof target === 'string' ? document.getElementById(target) : target;
-        if (!container) return;
-        const num = container.querySelectorAll('.example-row').length + 1;
-        const row = document.createElement('div');
-        row.className = 'input-group example-row';
-        row.style.marginBottom = '8px';
-        row.innerHTML = `
-            <div class="subitem-header">
-                <label class="example-label">${t('example_item_lbl')} ${num}:</label>
-                <button type="button" class="btn-remove-subitem" onclick="removeExampleField(this)">✕</button>
-            </div>
-            <textarea class="example-field" style="font-family: var(--font-zh);" placeholder="${t('ph_example')} ${num}...">${value}</textarea>
-        `;
-        container.appendChild(row);
-        if (shouldFocus) {
-            const inp = row.querySelector('.example-field');
-            if (inp) inp.focus();
-        }
-    }
-
-    function removeExampleField(btn) {
-        const row = btn.closest('.example-row');
-        if (!row) return;
-        const container = row.parentElement;
-        row.remove();
-        updateSubitemLabels(container, 'example');
-    }
-
-    function renderSubitemContainers(meaningsContainer, examplesContainer, meaningsArr, examplesArr) {
-        const mList = (Array.isArray(meaningsArr) && meaningsArr.length > 0) ? meaningsArr : [''];
-        meaningsContainer.innerHTML = `
-            <div class="input-group meaning-row" style="margin-bottom:8px;">
+    function renderSensesContainer(container, sensesArr) {
+        const list = (Array.isArray(sensesArr) && sensesArr.length > 0) ? sensesArr : [{ meaning: '', example: '' }];
+        container.innerHTML = `
+            <div class="input-group sense-row">
                 <div class="subitem-header">
-                    <label class="meaning-label">${t('meaning_item_lbl')} 1:</label>
+                    <label class="sense-label">${t('meaning_item_lbl')} 1:</label>
                 </div>
-                <input type="text" class="meaning-field" placeholder="${t('ph_meaning')} 1..." value="${String(mList[0] || '').replace(/"/g, '&quot;')}">
+                <input type="text" class="sense-meaning" placeholder="${t('ph_meaning')} 1..." value="${String(list[0].meaning || '').replace(/"/g, '&quot;')}">
+                <span class="sense-sub-label">${t('lbl_example')}</span>
+                <textarea class="sense-example" style="font-family: var(--font-zh);" placeholder="${t('ph_example')}...">${list[0].example || ''}</textarea>
             </div>
         `;
-        for (let i = 1; i < mList.length; i++) {
-            addMeaningField(meaningsContainer, mList[i], false);
-        }
-
-        const eList = (Array.isArray(examplesArr) && examplesArr.length > 0) ? examplesArr : [''];
-        examplesContainer.innerHTML = `
-            <div class="input-group example-row" style="margin-bottom:8px;">
-                <div class="subitem-header">
-                    <label class="example-label">${t('example_item_lbl')} 1 ${t('optional_tag')}:</label>
-                </div>
-                <textarea class="example-field" style="font-family: var(--font-zh);" placeholder="${t('ph_example')} 1...">${eList[0] || ''}</textarea>
-            </div>
-        `;
-        for (let i = 1; i < eList.length; i++) {
-            addExampleField(examplesContainer, eList[i], false);
+        for (let i = 1; i < list.length; i++) {
+            addSenseField(container, list[i], false);
         }
     }
 
-    function collectSubitemValues(container, selector) {
+    function collectSensesFromContainer(container, existingSenses = []) {
         if (!container) return [];
-        return Array.from(container.querySelectorAll(selector))
-            .map(el => el.value.trim())
-            .filter(Boolean);
+        const rows = Array.from(container.querySelectorAll('.sense-row'));
+        const result = [];
+        rows.forEach((row, idx) => {
+            const meaning = row.querySelector('.sense-meaning')?.value.trim() || '';
+            const example = row.querySelector('.sense-example')?.value.trim() || '';
+            if (meaning || example) {
+                const prev = existingSenses[idx];
+                result.push({
+                    meaning,
+                    example,
+                    interval: prev && prev.interval !== undefined ? prev.interval : 0,
+                    ease: prev && prev.ease !== undefined ? prev.ease : 2.5,
+                    nextReview: prev && prev.nextReview ? prev.nextReview : getTodayKey(),
+                    seenCount: prev && prev.seenCount !== undefined ? prev.seenCount : 0
+                });
+            }
+        });
+        return result;
     }
 
     function populateFormWithItem(item) {
@@ -1433,17 +1480,12 @@
         const variants = getCardVariants(item);
         document.getElementById('hanziInput').value = item.hanzi;
         document.getElementById('pinyinInput').value = variants[0].pinyin || '';
-        renderSubitemContainers(
-            document.getElementById('primaryMeaningsContainer'),
-            document.getElementById('primaryExamplesContainer'),
-            variants[0].meanings,
-            variants[0].examples
-        );
+        renderSensesContainer(document.getElementById('primarySensesContainer'), variants[0].senses);
 
         const extraContainer = document.getElementById('extraVariantsContainer');
         extraContainer.innerHTML = '';
         for (let idx = 1; idx < variants.length; idx++) {
-            addVariantBlock(variants[idx].pinyin || '', variants[idx].meanings || [''], variants[idx].examples || [''], false);
+            addVariantBlock(variants[idx].pinyin || '', variants[idx].senses || [{ meaning: '', example: '' }], false);
         }
 
         document.getElementById('formTitle').innerText = t('edit_title');
@@ -1454,15 +1496,12 @@
 
     function loadDuplicateToEdit() { if (!matchedDuplicateItem) return; populateFormWithItem(matchedDuplicateItem); }
 
-    // Thêm ô nhập Pinyin / nghĩa 1, 2, 3... / ví dụ 1, 2, 3... khác trong form thêm/sửa từ
-    function addVariantBlock(py = '', mnArr = [''], egArr = [''], shouldFocus = true) {
+    // Thêm ô nhập Pinyin / cách đọc khác trong form thêm/sửa từ
+    function addVariantBlock(py = '', sensesArr = [{ meaning: '', example: '' }], shouldFocus = true) {
         const container = document.getElementById('extraVariantsContainer');
         const hz = document.getElementById('hanziInput').value.trim();
         const defaultPy = py !== '' ? py : (hz ? pinyin(hz, { toneType: 'symbol' }) : '');
         const blockIndex = container.children.length + 2;
-
-        const meaningsList = Array.isArray(mnArr) ? mnArr : splitLegacySemicolon(mnArr);
-        const examplesList = Array.isArray(egArr) ? egArr : splitLegacySemicolon(egArr);
 
         const block = document.createElement('div');
         block.className = 'variant-block';
@@ -1475,18 +1514,11 @@
                 <label>${t('lbl_pinyin')}</label>
                 <input type="text" class="var-pinyin" placeholder="${t('ph_pinyin')}" value="${defaultPy.replace(/"/g, '&quot;')}">
             </div>
-            <div class="var-meanings-container"></div>
-            <button type="button" class="btn-add-subitem" onclick="addMeaningField(this.previousElementSibling)" data-i18n="btn_add_meaning">${t('btn_add_meaning')}</button>
-            <div class="var-examples-container"></div>
-            <button type="button" class="btn-add-subitem" style="margin-bottom:0;" onclick="addExampleField(this.previousElementSibling)" data-i18n="btn_add_example">${t('btn_add_example')}</button>
+            <div class="var-senses-container"></div>
+            <button type="button" class="btn-add-subitem" style="margin-bottom:0;" onclick="addSenseField(this.previousElementSibling)" data-i18n="btn_add_meaning">${t('btn_add_meaning')}</button>
         `;
         container.appendChild(block);
-        renderSubitemContainers(
-            block.querySelector('.var-meanings-container'),
-            block.querySelector('.var-examples-container'),
-            meaningsList,
-            examplesList
-        );
+        renderSensesContainer(block.querySelector('.var-senses-container'), sensesArr);
         if (shouldFocus) {
             const pyInput = block.querySelector('.var-pinyin');
             if (pyInput) pyInput.focus();
@@ -1599,9 +1631,11 @@
         const flt = tl.filter(v => {
             const variants = getCardVariants(v);
             const matchVariant = variants.some(vr =>
-                vr.meanings.some(m => m.toLowerCase().includes(q)) ||
                 (vr.pinyin && vr.pinyin.toLowerCase().includes(q)) ||
-                vr.examples.some(ex => ex.toLowerCase().includes(q))
+                vr.senses.some(s =>
+                    (s.meaning && s.meaning.toLowerCase().includes(q)) ||
+                    (s.example && s.example.toLowerCase().includes(q))
+                )
             );
             return v.hanzi.toLowerCase().includes(q) || matchVariant;
         });
@@ -1615,30 +1649,28 @@
             const d = document.createElement('div'); d.className = 'vocab-item'; 
             const variants = getCardVariants(it);
             const allPinyins = variants.map(v => v.pinyin).filter(Boolean).join(' / ');
-            const formatMeaningsHtml = (mList) => {
-                if (!mList || mList.length === 0) return '';
-                if (mList.length === 1) return mList[0];
-                return mList.map((m, idx) => `<b>${t('meaning_item_lbl')} ${idx + 1}:</b> ${m}`).join('<br>');
+            const formatSensesHtml = (sList) => {
+                if (!sList || sList.length === 0) return '';
+                if (sList.length === 1) return escapeHtml(sList[0].meaning || '');
+                return sList.map((s, idx) => `<b>${t('meaning_item_lbl')} ${idx + 1}:</b> ${escapeHtml(s.meaning || '')}`).join('<br>');
             };
             const allMeanings = variants.length > 1
-                ? variants.map(v => `<b>(${v.pinyin})</b> ${v.meanings.length > 1 ? '<br>' + formatMeaningsHtml(v.meanings) : (v.meanings[0] || '')}`).join('<br>')
-                : formatMeaningsHtml(variants[0].meanings);
+                ? variants.map(v => `<b>(${escapeHtml(v.pinyin)})</b> ${v.senses.length > 1 ? '<br>' + formatSensesHtml(v.senses) : escapeHtml(v.senses[0]?.meaning || '')}`).join('<br>')
+                : formatSensesHtml(variants[0].senses);
 
             const allExamples = [];
             variants.forEach(v => {
-                v.examples.forEach(ex => { if (ex) allExamples.push(ex); });
+                v.senses.forEach(s => { if (s.example) allExamples.push(s.example); });
             });
             let st = it.interval > 0 ? `<br><span style="color:var(--success);">${t('due_label')} ${it.nextReview}</span>` : ''; 
             let eg = '';
-            if (allExamples.length === 1) {
-                eg = `<div class="vocab-item-eg">💬 ${allExamples[0]}</div>`;
-            } else if (allExamples.length > 1) {
-                eg = `<div class="vocab-item-eg">${allExamples.map((ex, idx) => `💬 <b>${t('example_item_lbl')} ${idx + 1}:</b> ${ex}`).join('<br>')}</div>`;
+            if (allExamples.length > 0) {
+                eg = `<div class="vocab-item-eg">${allExamples.map(ex => `💬 ${escapeHtml(ex)}`).join('<br>')}</div>`;
             }
             const primaryPy = (variants[0].pinyin || '').replace(/'/g, "\\'");
             const safeHz = it.hanzi.replace(/'/g, "\\'");
             const isMulti = variants.length > 1;
-            d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${it.hanzi} <span style="font-family:var(--font-ui); font-size:14px; font-weight:normal; color:var(--danger);">${allPinyins}</span></div><div class="vocab-item-sub">${allMeanings} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${safeHz}', '${primaryPy}', ${isMulti})">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; 
+            d.innerHTML = `<div class="vocab-item-left"><div class="vocab-item-hanzi">${escapeHtml(it.hanzi)} <span style="font-family:var(--font-ui); font-size:14px; font-weight:normal; color:var(--danger);">${escapeHtml(allPinyins)}</span></div><div class="vocab-item-sub">${allMeanings} ${st}</div>${eg}</div><div class="vocab-item-actions"><button class="btn-tool btn-speak" onclick="speakText('${safeHz}', '${primaryPy}', ${isMulti})">🔊</button><button class="btn-tool btn-edit" onclick="editWordFromList(${it.id})">✏️</button><button class="btn-tool btn-delete" onclick="deleteWordFromList(${it.id})">🗑️</button></div>`; 
             frag.appendChild(d); 
         }); 
         c.appendChild(frag);
@@ -1650,24 +1682,36 @@
     function addOrUpdateWord() {
         const hz = document.getElementById('hanziInput').value.trim();
         const py0 = document.getElementById('pinyinInput').value.trim();
-        const mnList0 = collectSubitemValues(document.getElementById('primaryMeaningsContainer'), '.meaning-field');
-        const egList0 = collectSubitemValues(document.getElementById('primaryExamplesContainer'), '.example-field');
+        const existingItem = editingId ? vocabList.find(v => v.id === editingId) : null;
+        const existingVariants = existingItem ? getCardVariants(existingItem) : [];
 
-        if (!hz || mnList0.length === 0) { alert(currentLang === 'vi' ? 'Vui lòng nhập Chữ Hán và ít nhất Nghĩa 1!' : '请输入汉字和至少含义 1！'); return; }
+        const senses0 = collectSensesFromContainer(
+            document.getElementById('primarySensesContainer'),
+            existingVariants[0]?.senses || []
+        );
 
-        const variants = [{ pinyin: py0, meanings: mnList0, examples: egList0 }];
+        if (!hz || senses0.length === 0 || !senses0[0].meaning) {
+            alert(currentLang === 'vi' ? 'Vui lòng nhập Chữ Hán và ít nhất Nghĩa 1!' : '请输入汉字和至少含义 1！');
+            return;
+        }
+
+        const variants = [{ pinyin: py0, senses: senses0 }];
         const extraBlocks = document.querySelectorAll('#extraVariantsContainer .variant-block');
+        let varIdx = 1;
         for (const blk of extraBlocks) {
             const vPy = blk.querySelector('.var-pinyin').value.trim();
-            const vMnList = collectSubitemValues(blk.querySelector('.var-meanings-container'), '.meaning-field');
-            const vEgList = collectSubitemValues(blk.querySelector('.var-examples-container'), '.example-field');
-            if (vPy || vMnList.length > 0 || vEgList.length > 0) {
-                if (!vPy || vMnList.length === 0) {
+            const vSenses = collectSensesFromContainer(
+                blk.querySelector('.var-senses-container'),
+                existingVariants[varIdx]?.senses || []
+            );
+            if (vPy || vSenses.length > 0) {
+                if (!vPy || vSenses.length === 0 || !vSenses[0].meaning) {
                     alert(currentLang === 'vi' ? 'Vui lòng nhập đầy đủ Pinyin và ít nhất Nghĩa 1 cho cách đọc phụ!' : '请完整填写其他读音的拼音和至少含义 1！');
                     return;
                 }
-                variants.push({ pinyin: vPy, meanings: vMnList, examples: vEgList });
+                variants.push({ pinyin: vPy, senses: vSenses });
             }
+            varIdx++;
         }
 
         if (editingId) {
@@ -1675,20 +1719,19 @@
             if (idx !== -1) {
                 vocabList[idx].hanzi = hz;
                 vocabList[idx].pinyin = variants[0].pinyin;
-                vocabList[idx].meanings = [...variants[0].meanings];
-                vocabList[idx].examples = [...variants[0].examples];
                 vocabList[idx].variants = variants;
                 delete vocabList[idx].meaning;
                 delete vocabList[idx].example;
+                delete vocabList[idx].meanings;
+                delete vocabList[idx].examples;
+                syncWordAggregatesFromSenses(vocabList[idx]);
             }
             showToast('msg_update');
         } else {
-            vocabList.push({
+            const newItem = {
                 id: Date.now(),
                 hanzi: hz,
                 pinyin: variants[0].pinyin,
-                meanings: [...variants[0].meanings],
-                examples: [...variants[0].examples],
                 variants: variants,
                 status: 'unlearned',
                 seenCount: 0,
@@ -1696,25 +1739,48 @@
                 interval: 0,
                 ease: 2.5,
                 nextReview: getTodayKey()
-            });
+            };
+            syncWordAggregatesFromSenses(newItem);
+            vocabList.push(newItem);
             showToast('msg_save');
         }
         saveData(); resetForm(); updateUI();
     }
 
-    function resetAllSeenCounts() { if (vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn Reset toàn bộ tiến độ học về 0?" : "确定重置所有学习进度？")) { vocabList.forEach(v => { v.seenCount = 0; v.status = 'unlearned'; v.interval = 0; v.ease = 2.5; v.nextReview = getTodayKey(); }); saveData(); updateUI(); showToast('msg_update'); } }
-    function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; populateFormWithItem(vocabList[currentCardIndex]); showPage('page-add'); }
-    function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); blockManualMark = false; clearTimeout(actionTimeout); loadNextCard(); updateUI(); } }
+    function resetAllSeenCounts() {
+        if (vocabList.length === 0) return;
+        if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn Reset toàn bộ tiến độ học về 0?" : "确定重置所有学习进度？")) {
+            vocabList.forEach(v => {
+                v.seenCount = 0;
+                v.status = 'unlearned';
+                v.interval = 0;
+                v.ease = 2.5;
+                v.nextReview = getTodayKey();
+                if (Array.isArray(v.variants)) {
+                    v.variants.forEach(vr => {
+                        if (Array.isArray(vr.senses)) {
+                            vr.senses.forEach(s => {
+                                s.seenCount = 0;
+                                s.interval = 0;
+                                s.ease = 2.5;
+                                s.nextReview = getTodayKey();
+                            });
+                        }
+                    });
+                }
+            });
+            saveData();
+            updateUI();
+            showToast('msg_update');
+        }
+    }
+    function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; blockManualMark = false; pendingMarkResult = null; clearTimeout(actionTimeout); populateFormWithItem(vocabList[currentCardIndex]); showPage('page-add'); }
+    function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); blockManualMark = false; pendingMarkResult = null; clearTimeout(actionTimeout); loadNextCard(); updateUI(); } }
     function resetForm() {
         editingId = null; matchedDuplicateItem = null;
         document.getElementById('hanziInput').value = '';
         document.getElementById('pinyinInput').value = '';
-        renderSubitemContainers(
-            document.getElementById('primaryMeaningsContainer'),
-            document.getElementById('primaryExamplesContainer'),
-            [''],
-            ['']
-        );
+        renderSensesContainer(document.getElementById('primarySensesContainer'), [{ meaning: '', example: '' }]);
         document.getElementById('extraVariantsContainer').innerHTML = '';
         document.getElementById('duplicateBox').style.display = 'none';
         document.getElementById('formTitle').innerText = t('add_title');
@@ -1729,25 +1795,71 @@
         const variants = getCardVariants(item);
         if (idx < 0 || idx >= variants.length) return;
         currentVariantIndex = idx;
-        applyVariantDetailsToCard(item, variants[idx]);
-        renderPinyinSwitcher(variants, idx);
-        speakText(item.hanzi, variants[idx].pinyin, variants.length > 1);
+        currentSenseIndex = 0;
+        const activeVar = variants[idx];
+        const activeSense = activeVar.senses[0] || { meaning: '', example: '', interval: item.interval };
+        document.getElementById('seenCount').innerText = `${t('seen_count')} ${activeSense.interval ?? item.interval ?? 0}`;
+        applySenseDetailsToCard(item, activeVar, activeSense, 0, activeVar.senses.length);
+        renderTopSwitchers(variants, idx, 0);
+        speakText(item.hanzi, activeVar.pinyin, variants.length > 1);
     }
 
-    function renderPinyinSwitcher(variants, activeIdx) {
-        const switcher = document.getElementById('pinyinSwitcher');
+    // Chuyển đổi qua lại giữa Nghĩa 1, Nghĩa 2, Nghĩa 3... và hiện đúng VD tương ứng
+    function selectCardMeaning(mIdx) {
+        if (currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
+        const item = vocabList[currentCardIndex];
+        const variants = getCardVariants(item);
+        const activeVar = variants[currentVariantIndex] || variants[0];
+        if (!activeVar || mIdx < 0 || mIdx >= activeVar.senses.length) return;
+        currentSenseIndex = mIdx;
+        const activeSense = activeVar.senses[mIdx];
+        document.getElementById('seenCount').innerText = `${t('seen_count')} ${activeSense.interval ?? item.interval ?? 0}`;
+        applySenseDetailsToCard(item, activeVar, activeSense, mIdx, activeVar.senses.length);
+        renderTopSwitchers(variants, currentVariantIndex, mIdx);
+    }
+
+    function renderTopSwitchers(variants, activeVarIdx, activeSenseIdx) {
+        const wrapper = document.getElementById('cardTopSwitchers');
+        const pyBar = document.getElementById('pinyinSwitcher');
+        const mnBar = document.getElementById('meaningSwitcher');
         const cardEl = document.getElementById('flashcard');
-        if (!variants || variants.length <= 1) {
-            switcher.style.display = 'none';
-            switcher.innerHTML = '';
-            cardEl.classList.remove('has-variants');
+
+        const activeVar = (variants && variants[activeVarIdx]) ? variants[activeVarIdx] : { senses: [] };
+        const hasMultiPinyin = Array.isArray(variants) && variants.length > 1;
+        const hasMultiMeaning = Array.isArray(activeVar.senses) && activeVar.senses.length > 1;
+
+        cardEl.classList.remove('has-1-switcher', 'has-2-switchers');
+
+        if (!hasMultiPinyin && !hasMultiMeaning) {
+            wrapper.style.display = 'none';
+            pyBar.style.display = 'none';
+            mnBar.style.display = 'none';
             return;
         }
-        cardEl.classList.add('has-variants');
-        switcher.style.display = 'inline-flex';
-        switcher.innerHTML = variants.map((v, i) =>
-            `<div class="pinyin-pill ${i === activeIdx ? 'active' : ''}" onclick="selectCardVariant(${i})">${v.pinyin || ('#' + (i + 1))}</div>`
-        ).join('');
+
+        wrapper.style.display = 'flex';
+        const rowCount = (hasMultiPinyin ? 1 : 0) + (hasMultiMeaning ? 1 : 0);
+        cardEl.classList.add(rowCount === 2 ? 'has-2-switchers' : 'has-1-switcher');
+
+        if (hasMultiPinyin) {
+            pyBar.style.display = 'inline-flex';
+            pyBar.innerHTML = variants.map((v, i) =>
+                `<div class="pinyin-pill ${i === activeVarIdx ? 'active' : ''}" onclick="selectCardVariant(${i})">${escapeHtml(v.pinyin || ('#' + (i + 1)))}</div>`
+            ).join('');
+        } else {
+            pyBar.style.display = 'none';
+            pyBar.innerHTML = '';
+        }
+
+        if (hasMultiMeaning) {
+            mnBar.style.display = 'inline-flex';
+            mnBar.innerHTML = activeVar.senses.map((s, i) =>
+                `<div class="pinyin-pill ${i === activeSenseIdx ? 'active' : ''}" onclick="selectCardMeaning(${i})">${t('meaning_item_lbl')} ${i + 1}</div>`
+            ).join('');
+        } else {
+            mnBar.style.display = 'none';
+            mnBar.innerHTML = '';
+        }
     }
 
     function escapeHtml(str) {
@@ -1758,51 +1870,75 @@
             .replace(/"/g, '&quot;');
     }
 
-    function applyVariantDetailsToCard(sel, variant) {
+    function applySenseDetailsToCard(sel, variant, sense, senseIdx, totalSenses) {
         document.getElementById('displayPinyin').innerText = variant.pinyin || '';
         const mnEl = document.getElementById('displayMeaning');
-        const mList = Array.isArray(variant.meanings) ? variant.meanings.filter(Boolean) : [];
-        if (mList.length <= 1) {
-            mnEl.innerText = mList[0] || '';
+        const meaningStr = sense?.meaning || '';
+        if (totalSenses > 1) {
+            mnEl.innerHTML = `<span class="meaning-num-tag">${t('meaning_item_lbl')} ${senseIdx + 1}:</span> ${escapeHtml(meaningStr)}`;
         } else {
-            mnEl.innerHTML = mList.map((m, idx) =>
-                `<div class="meaning-line"><span class="meaning-num-tag">${t('meaning_item_lbl')} ${idx + 1}:</span> ${escapeHtml(m)}</div>`
-            ).join('');
+            mnEl.innerText = meaningStr;
         }
 
         const eb = document.getElementById('displayExampleBox');
         const et = document.getElementById('displayExampleText');
-        const eList = Array.isArray(variant.examples) ? variant.examples.filter(e => e && e.trim() !== '') : [];
-        if (eList.length > 0) {
+        const egStr = (sense?.example || '').trim();
+        if (egStr !== '') {
             const escapedHz = sel.hanzi.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedHz, 'g');
-            if (eList.length === 1) {
-                et.innerHTML = escapeHtml(eList[0]).replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
-            } else {
-                et.innerHTML = eList.map((ex, idx) => {
-                    const highlighted = escapeHtml(ex).replace(regex, `<span class="highlight-hanzi">${sel.hanzi}</span>`);
-                    return `<div class="example-line"><span class="example-num-tag">${t('example_item_lbl')} ${idx + 1}:</span>${highlighted}</div>`;
-                }).join('');
-            }
+            et.innerHTML = escapeHtml(egStr).replace(regex, `<span class="highlight-hanzi">${escapeHtml(sel.hanzi)}</span>`);
             eb.style.display = 'block';
         } else {
             eb.style.display = 'none';
         }
     }
 
-    function renderCardUI(sel) {
-        currentVariantIndex = 0;
-        lastShownCardId = sel.id;
+    function renderCardUI(sel, targetVarIdx = 0, targetSenseIdx = 0, autoSpeak = true) {
         const variants = getCardVariants(sel);
-        const firstVar = variants[0];
+        currentVariantIndex = (targetVarIdx >= 0 && targetVarIdx < variants.length) ? targetVarIdx : 0;
+        const activeVar = variants[currentVariantIndex];
+        currentSenseIndex = (targetSenseIdx >= 0 && targetSenseIdx < activeVar.senses.length) ? targetSenseIdx : 0;
+        const activeSense = activeVar.senses[currentSenseIndex];
+
+        lastShownCardId = sel.id;
         document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
         document.getElementById('cardDetails').classList.remove('show');
         document.getElementById('clickHint').style.display = 'block';
         document.getElementById('displayHanzi').innerText = sel.hanzi;
-        document.getElementById('seenCount').innerText = `${t('seen_count')} ${sel.interval}`;
-        renderPinyinSwitcher(variants, 0);
-        applyVariantDetailsToCard(sel, firstVar);
-        if (autoSpeechEnabled) speakText(sel.hanzi, firstVar.pinyin, variants.length > 1);
+        document.getElementById('seenCount').innerText = `${t('seen_count')} ${activeSense.interval ?? sel.interval ?? 0}`;
+        renderTopSwitchers(variants, currentVariantIndex, currentSenseIndex);
+        applySenseDetailsToCard(sel, activeVar, activeSense, currentSenseIndex, activeVar.senses.length);
+        if (autoSpeechEnabled && autoSpeak) speakText(sel.hanzi, activeVar.pinyin, variants.length > 1);
+    }
+
+    // Tìm nghĩa tiếp theo chưa được ôn trong lượt xem hiện tại của từ (hỗ trợ từ 2 nghĩa trở lên)
+    function findNextUnreviewedSenseInWord(item) {
+        const variants = getCardVariants(item);
+        // Ưu tiên kiểm tra tiếp các nghĩa còn lại trong cách đọc hiện tại trước
+        const curVar = variants[currentVariantIndex] || variants[0];
+        if (curVar && Array.isArray(curVar.senses)) {
+            for (let s = currentSenseIndex + 1; s < curVar.senses.length; s++) {
+                if (!reviewedSensesInVisit.has(`${currentVariantIndex}:${s}`)) {
+                    return { variantIdx: currentVariantIndex, senseIdx: s };
+                }
+            }
+            for (let s = 0; s < currentSenseIndex; s++) {
+                if (!reviewedSensesInVisit.has(`${currentVariantIndex}:${s}`)) {
+                    return { variantIdx: currentVariantIndex, senseIdx: s };
+                }
+            }
+        }
+        // Tiếp theo kiểm tra các cách đọc phụ khác nếu từ có đa âm
+        for (let v = 0; v < variants.length; v++) {
+            const vr = variants[v];
+            if (!vr || !Array.isArray(vr.senses)) continue;
+            for (let s = 0; s < vr.senses.length; s++) {
+                if (!reviewedSensesInVisit.has(`${v}:${s}`)) {
+                    return { variantIdx: v, senseIdx: s };
+                }
+            }
+        }
+        return null;
     }
 
     function loadNextCard() {
@@ -1832,10 +1968,11 @@
             document.getElementById('displayMeaning').innerText = "";
             document.getElementById('seenCount').innerText = "";
             document.getElementById('displayExampleBox').style.display = 'none';
-            document.getElementById('pinyinSwitcher').style.display = 'none';
-            document.getElementById('flashcard').classList.remove('has-variants');
+            document.getElementById('cardTopSwitchers').style.display = 'none';
+            document.getElementById('flashcard').classList.remove('has-1-switcher', 'has-2-switchers');
             currentCardIndex = -1;
             lastShownCardId = null;
+            reviewedSensesInVisit = new Set();
             return; 
         }
         
@@ -1879,52 +2016,155 @@
 
         const sel = selectedPool[Math.floor(Math.random() * selectedPool.length)];
         currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
-        renderCardUI(sel);
+        reviewedSensesInVisit = new Set();
+        renderCardUI(sel, 0, 0, true);
     }
 
     function updateUndoButton() { const btn = document.getElementById('btnUndoCard'); if(historyStack.length > 0 || blockManualMark) { btn.style.display = 'block'; btn.innerText = t('btn_undo'); } else { btn.style.display = 'none'; } }
 
     function markCard(isL) {
-        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return; 
-        if (blockManualMark) { clearTimeout(actionTimeout); blockManualMark = false; document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); executeCardTransition(isL); return; }
-        blockManualMark = true; updateUndoButton(); document.getElementById('cardDetails').classList.add('show'); document.getElementById('clickHint').style.display = 'none';
+        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return;
         const c = document.getElementById('flashcard');
-        if (isL) { c.classList.add('learned-bg'); } else { c.classList.add('unlearned-bg'); }
+
+        if (blockManualMark) {
+            clearTimeout(actionTimeout);
+            // Nếu bấm lại đúng nút đang chờ -> chuyển ngay lập tức
+            if (pendingMarkResult === isL) {
+                blockManualMark = false;
+                pendingMarkResult = null;
+                c.classList.remove('learned-bg', 'unlearned-bg');
+                executeCardTransition(isL);
+                return;
+            }
+            // Nếu đang chờ mà bấm sang nút khác -> đổi sang thao tác bấm cuối cùng và đếm lại thời gian chờ
+            pendingMarkResult = isL;
+            c.classList.remove('learned-bg', 'unlearned-bg');
+            c.classList.add(isL ? 'learned-bg' : 'unlearned-bg');
+            const switchDelay = isL ? 3000 : 5000;
+            actionTimeout = setTimeout(() => {
+                if (!blockManualMark) return;
+                const finalChoice = pendingMarkResult;
+                blockManualMark = false;
+                pendingMarkResult = null;
+                c.classList.remove('learned-bg', 'unlearned-bg');
+                executeCardTransition(finalChoice);
+            }, switchDelay);
+            return;
+        }
+
+        blockManualMark = true;
+        pendingMarkResult = isL;
+        updateUndoButton();
+        document.getElementById('cardDetails').classList.add('show');
+        document.getElementById('clickHint').style.display = 'none';
+        c.classList.add(isL ? 'learned-bg' : 'unlearned-bg');
         const delay = isL ? 3000 : 5000;
-        actionTimeout = setTimeout(() => { if (!blockManualMark) return; blockManualMark = false; c.classList.remove('learned-bg', 'unlearned-bg'); executeCardTransition(isL); }, delay);
+        actionTimeout = setTimeout(() => {
+            if (!blockManualMark) return;
+            const finalChoice = pendingMarkResult;
+            blockManualMark = false;
+            pendingMarkResult = null;
+            c.classList.remove('learned-bg', 'unlearned-bg');
+            executeCardTransition(finalChoice);
+        }, delay);
     }
 
     function executeCardTransition(isL) {
         isAnimating = true;
         const i = vocabList[currentCardIndex]; 
         lastShownCardId = i.id;
+        const variants = getCardVariants(i);
+        const activeVar = variants[currentVariantIndex] || variants[0];
+        const activeSense = activeVar.senses[currentSenseIndex] || activeVar.senses[0];
         
-        historyStack.push({ cardIndex: currentCardIndex, cardId: i.id, oldInterval: i.interval, oldEase: i.ease, oldNextReview: i.nextReview, oldSeenCount: i.seenCount });
+        historyStack.push({
+            cardIndex: currentCardIndex,
+            cardId: i.id,
+            variantIndex: currentVariantIndex,
+            senseIndex: currentSenseIndex,
+            reviewedSensesSnapshot: Array.from(reviewedSensesInVisit),
+            oldVariants: JSON.parse(JSON.stringify(variants)),
+            oldInterval: i.interval,
+            oldEase: i.ease,
+            oldNextReview: i.nextReview,
+            oldSeenCount: i.seenCount
+        });
         updateUndoButton();
-        i.seenCount += 1;
-        
+
+        // Chạy thuật toán SRS cho đúng nghĩa hiện tại (cả khi thuộc lẫn chưa thuộc)
+        activeSense.seenCount = (Number(activeSense.seenCount) || 0) + 1;
+        activeSense.ease = activeSense.ease !== undefined ? Number(activeSense.ease) : 2.5;
+        activeSense.interval = activeSense.interval !== undefined ? Number(activeSense.interval) : 0;
+
         if (isL) {
-            if (i.interval === 0) i.interval = 1; else if (i.interval === 1) i.interval = 3; else i.interval = Math.round(i.interval * i.ease);
-            i.ease = Math.max(1.3, i.ease + 0.1);
+            if (activeSense.interval === 0) activeSense.interval = 1;
+            else if (activeSense.interval === 1) activeSense.interval = 3;
+            else activeSense.interval = Math.round(activeSense.interval * activeSense.ease);
+            activeSense.ease = Math.max(1.3, activeSense.ease + 0.1);
         } else {
-            i.interval = 0; 
-            i.ease = Math.max(1.3, i.ease - 0.2);
+            activeSense.interval = 0;
+            activeSense.ease = Math.max(1.3, activeSense.ease - 0.2);
         }
-        
-        i.nextReview = getNextReviewDate(i.interval);
-        saveData(); updateUI();
+        activeSense.nextReview = getNextReviewDate(activeSense.interval);
+
+        // Đồng bộ lại tiến độ tổng của từ & lưu dữ liệu
+        syncWordAggregatesFromSenses(i);
+        saveData();
+        updateUI();
+
+        // Đánh dấu nghĩa này đã ôn trong lượt hiện tại của thẻ và kiểm tra nghĩa tiếp theo
+        reviewedSensesInVisit.add(`${currentVariantIndex}:${currentSenseIndex}`);
+        const nextSenseTarget = findNextUnreviewedSenseInWord(i);
         
         const c = document.getElementById('flashcard'); 
         if (isL) { c.classList.add('card-exit-left'); } else { c.classList.add('card-exit-right'); }
-        setTimeout(() => { c.classList.remove('card-exit-left', 'card-exit-right'); loadNextCard(); c.classList.add('card-enter'); setTimeout(() => { c.classList.remove('card-enter'); isAnimating = false; }, 400); }, 300);
+        setTimeout(() => {
+            c.classList.remove('card-exit-left', 'card-exit-right');
+            if (nextSenseTarget) {
+                // Từ có >= 2 nghĩa: nhảy sang nghĩa tiếp theo của cùng từ đó
+                const isSameVariant = nextSenseTarget.variantIdx === currentVariantIndex;
+                renderCardUI(i, nextSenseTarget.variantIdx, nextSenseTarget.senseIdx, !isSameVariant);
+            } else {
+                // Đã ôn xong hết các nghĩa của từ này: chuyển sang từ tiếp theo
+                loadNextCard();
+            }
+            c.classList.add('card-enter');
+            setTimeout(() => { c.classList.remove('card-enter'); isAnimating = false; }, 400);
+        }, 300);
     }
     
     function undoPreviousCard() { 
-        if (blockManualMark) { clearTimeout(actionTimeout); blockManualMark = false; document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg'); renderCardUI(vocabList[currentCardIndex]); updateUndoButton(); showToast('btn_undo', currentLang==='vi'?'Đã hủy chấm điểm!':'已取消评分！'); return; }
+        if (blockManualMark) {
+            clearTimeout(actionTimeout);
+            blockManualMark = false;
+            pendingMarkResult = null;
+            document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
+            renderCardUI(vocabList[currentCardIndex], currentVariantIndex, currentSenseIndex, false);
+            updateUndoButton();
+            showToast('btn_undo', currentLang==='vi'?'Đã hủy chấm điểm!':'已取消评分！');
+            return;
+        }
         if (historyStack.length === 0) return; 
         const lastAction = historyStack.pop(); updateUndoButton();
         const i = vocabList.find(v => v.id === lastAction.cardId);
-        if (i) { i.interval = lastAction.oldInterval; i.ease = lastAction.oldEase; i.nextReview = lastAction.oldNextReview; i.seenCount = lastAction.oldSeenCount; saveData(); updateUI(); currentCardIndex = vocabList.findIndex(v => v.id === i.id); renderCardUI(i); const c = document.getElementById('flashcard'); c.classList.add('card-enter'); setTimeout(() => { c.classList.remove('card-enter'); }, 400); showToast('btn_undo', currentLang==='vi'?'↩ Đã quay lại từ trước và rút lại kết quả!':'↩ 已撤销并恢复卡片！'); }
+        if (i) {
+            if (lastAction.oldVariants) {
+                i.variants = lastAction.oldVariants;
+            }
+            i.interval = lastAction.oldInterval;
+            i.ease = lastAction.oldEase;
+            i.nextReview = lastAction.oldNextReview;
+            i.seenCount = lastAction.oldSeenCount;
+            saveData();
+            updateUI();
+            currentCardIndex = vocabList.findIndex(v => v.id === i.id);
+            reviewedSensesInVisit = new Set(lastAction.reviewedSensesSnapshot || []);
+            renderCardUI(i, lastAction.variantIndex || 0, lastAction.senseIndex || 0, true);
+            const c = document.getElementById('flashcard');
+            c.classList.add('card-enter');
+            setTimeout(() => { c.classList.remove('card-enter'); }, 400);
+            showToast('btn_undo', currentLang==='vi'?'↩ Đã quay lại từ trước và rút lại kết quả!':'↩ 已撤销并恢复卡片！');
+        }
     }
 
     function toggleCardDetails() {
@@ -2018,14 +2258,15 @@
         const q = vocabList[Math.floor(Math.random() * vocabList.length)];
         const qVariants = getCardVariants(q);
         const chosenVariant = qVariants[Math.floor(Math.random() * qVariants.length)];
-        const chosenMeaning = chosenVariant.meanings[Math.floor(Math.random() * chosenVariant.meanings.length)] || '';
+        const chosenSense = chosenVariant.senses[Math.floor(Math.random() * chosenVariant.senses.length)] || { meaning: '' };
+        const chosenMeaning = chosenSense.meaning || '';
         document.getElementById('quizHanzi').innerText = q.hanzi;
 
         let opts = [{ id: q.id, meaning: chosenMeaning }];
         let others = vocabList.filter(v => v.id !== q.id).sort(() => 0.5 - Math.random());
         others.slice(0, 3).forEach(o => {
             const ov = getCardVariants(o);
-            opts.push({ id: o.id, meaning: ov[0].meanings[0] || '' });
+            opts.push({ id: o.id, meaning: ov[0].senses[0]?.meaning || '' });
         });
         opts.sort(() => 0.5 - Math.random());
 
@@ -2115,8 +2356,8 @@
         resetForm, renderVocabList, speakCurrentCard, editCurrentCard,
         deleteCurrentCard, markCard, undoPreviousCard, startMic, stopMic, endQuiz,
         speakText, editWordFromList, deleteWordFromList,
-        addMeaningField, removeMeaningField, addExampleField, removeExampleField,
-        addVariantBlock, removeVariantBlock, selectCardVariant,
+        addSenseField, removeSenseField,
+        addVariantBlock, removeVariantBlock, selectCardVariant, selectCardMeaning,
         updateLevelRatioPreview, saveLevelRatios, resetLevelRatios
     });
 
