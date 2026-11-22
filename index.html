@@ -137,6 +137,10 @@
             gap: 6px;
             pointer-events: none;
         }
+        .card-top-switchers.locked .switcher-pill-bar {
+            opacity: 0.6;
+            pointer-events: none;
+        }
         .switcher-pill-bar {
             pointer-events: auto;
             display: inline-flex;
@@ -648,7 +652,7 @@
 <!-- SỬ DỤNG FIREBASE MODULAR SDK MỚI NHẤT & CHẠY SCRIPT NHƯ MỘT MODULE -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, increment } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, remove, increment } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCtvpUboIrjw2Sd2X1e9N85ZtGbJzwEbx4",
@@ -773,14 +777,14 @@
         if (currentRange) renderTimeStats(currentRange);
         renderCalendar();
         if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
-        if (document.getElementById('page-flashcard').classList.contains('active') && currentCardIndex !== -1 && vocabList[currentCardIndex]) {
-            const item = vocabList[currentCardIndex];
-            const variants = getCardVariants(item);
+        const activeCard = getActiveCardItem();
+        if (document.getElementById('page-flashcard').classList.contains('active') && activeCard) {
+            const variants = getCardVariants(activeCard);
             const activeVar = variants[currentVariantIndex] || variants[0];
             const activeSense = activeVar.senses[currentSenseIndex] || activeVar.senses[0];
             renderTopSwitchers(variants, currentVariantIndex, currentSenseIndex);
-            applySenseDetailsToCard(item, activeVar, activeSense, currentSenseIndex, activeVar.senses.length);
-            document.getElementById('seenCount').innerText = `${t('seen_count')} ${activeSense.interval ?? item.interval ?? 0}`;
+            applySenseDetailsToCard(activeCard, activeVar, activeSense, currentSenseIndex, activeVar.senses.length);
+            document.getElementById('seenCount').innerText = `${t('seen_count')} ${activeSense.interval ?? activeCard.interval ?? 0}`;
         }
         if (document.getElementById('page-quiz').classList.contains('active')) {
             document.getElementById('quizStatus').innerText = `${t('quiz_q')} ${quizQuestionCount}${t('quiz_q_suffix')} | ${t('quiz_score')} ${quizScore}`;
@@ -934,6 +938,12 @@
     function getYesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return formatLocalDate(d); }
     function getNextReviewDate(intervalDays) { const d = new Date(); d.setDate(d.getDate() + intervalDays); return formatLocalDate(d); }
 
+    // Kiểm tra một nghĩa có đang tới hạn ôn hay không
+    function isSenseDue(s, tk = getTodayKey()) {
+        if (!s) return true;
+        return (Number(s.seenCount) || 0) === 0 || (Number(s.interval) || 0) === 0 || !s.nextReview || s.nextReview <= tk;
+    }
+
     // Tách chuỗi ngăn cách bởi dấu ; cũ thành mảng sạch
     function splitLegacySemicolon(str) {
         if (typeof str !== 'string') return [];
@@ -969,6 +979,11 @@
     function migrateVocabItem(item) {
         if (!item || typeof item !== 'object') return false;
         let changed = false;
+
+        if (!item.id) {
+            item.id = Date.now() + Math.floor(Math.random() * 10000);
+            changed = true;
+        }
 
         const baseInterval = item.interval !== undefined ? Number(item.interval) : 0;
         const baseEase = item.ease !== undefined ? Number(item.ease) : 2.5;
@@ -1092,6 +1107,17 @@
         return item.variants;
     }
 
+    // Chuyển mảng vocabList thành object map theo ID để đồng bộ từng từ trên Firebase không ghi đè nhau
+    function vocabListToIdMap(list) {
+        const map = {};
+        list.forEach(item => {
+            if (item && item.id !== undefined) {
+                map[String(item.id)] = item;
+            }
+        });
+        return map;
+    }
+
     // Tính năng OFFLINE CACHE - Đọc ngay từ máy để load tức thì và tự động chuyển đổi từ cũ
     let vocabList = JSON.parse(localStorage.getItem('my_infinite_vocab')) || [];
     if (migrateVocabList(vocabList)) {
@@ -1115,24 +1141,49 @@
         return [...DEFAULT_LEVEL_WEIGHTS];
     })();
     
-    let currentFilter = 'srs', currentListFilter = 'all', currentCardIndex = -1, currentVariantIndex = 0, currentSenseIndex = 0, editingId = null, matchedDuplicateItem = null, isAnimating = false, chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
+    let currentFilter = 'srs', currentListFilter = 'all';
+    let currentCardIndex = -1, currentCardId = null, currentVariantIndex = 0, currentSenseIndex = 0;
+    let editingId = null, matchedDuplicateItem = null, isAnimating = false;
+    let chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let lastShownCardId = null;
     let reviewedSensesInVisit = new Set();
     let currentCalDate = new Date();
     let historyStack = []; 
     let blockManualMark = false;
     let pendingMarkResult = null;
+    let pendingVariantIndex = null;
+    let pendingSenseIndex = null;
     let actionTimeout = null;
     let localSecondsAccumulated = 0;
+
+    function getActiveCardItem() {
+        if (currentCardId !== null) {
+            const foundIdx = vocabList.findIndex(v => v.id === currentCardId);
+            if (foundIdx !== -1) {
+                currentCardIndex = foundIdx;
+                return vocabList[foundIdx];
+            }
+        }
+        if (currentCardIndex >= 0 && currentCardIndex < vocabList.length) {
+            currentCardId = vocabList[currentCardIndex].id;
+            return vocabList[currentCardIndex];
+        }
+        return null;
+    }
 
     // --- LẮNG NGHE ĐỒNG BỘ REALTIME ---
     onValue(ref(db, 'vocabList'), (snapshot) => {
         const data = snapshot.val();
-        vocabList = data ? (Array.isArray(data) ? data : Object.values(data)) : [];
+        const isLegacyArray = Array.isArray(data);
+        vocabList = data ? (isLegacyArray ? data.filter(Boolean) : Object.values(data)) : [];
+        vocabList.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
         let needsSave = migrateVocabList(vocabList);
+        if (currentCardId !== null) {
+            currentCardIndex = vocabList.findIndex(v => v.id === currentCardId);
+        }
         localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
-        if (needsSave && vocabList.length > 0) {
-            saveData();
+        if ((needsSave || isLegacyArray) && vocabList.length > 0) {
+            saveAllVocab();
         }
         updateUI();
         if (document.getElementById('page-list').classList.contains('active')) renderVocabList();
@@ -1153,8 +1204,23 @@
         }
     });
 
-    function saveData() {
-        set(ref(db, 'vocabList'), vocabList);
+    // Lưu toàn bộ kho từ dạng object map theo ID (dùng khi import, reset toàn bộ, migrate)
+    function saveAllVocab() {
+        set(ref(db, 'vocabList'), vocabListToIdMap(vocabList));
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+    }
+
+    // Chỉ cập nhật đúng 1 từ lên Firebase theo ID (không bao giờ ghi đè từ khác đang học trên thiết bị khác)
+    function saveSingleWord(item) {
+        if (!item || item.id === undefined) return;
+        set(ref(db, `vocabList/${item.id}`), item);
+        localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
+    }
+
+    // Chỉ xóa đúng 1 từ theo ID trên Firebase
+    function deleteSingleWord(id) {
+        if (id === undefined || id === null) return;
+        remove(ref(db, `vocabList/${id}`));
         localStorage.setItem('my_infinite_vocab', JSON.stringify(vocabList));
     }
 
@@ -1325,8 +1391,8 @@
     }
 
     function speakCurrentCard() {
-        if (currentCardIndex !== -1 && vocabList[currentCardIndex]) {
-            const item = vocabList[currentCardIndex];
+        const item = getActiveCardItem();
+        if (item) {
             const variants = getCardVariants(item);
             const activeVar = variants[currentVariantIndex] || variants[0];
             speakText(item.hanzi, activeVar.pinyin, variants.length > 1);
@@ -1337,8 +1403,27 @@
     function toggleAutoSpeech(val) { autoSpeechEnabled = val; localStorage.setItem('my_auto_speech', autoSpeechEnabled); }
     function showToast(msgKey, exactStr=null) { const tst = document.getElementById('toastMsg'); tst.innerText = exactStr ? exactStr : t(msgKey); tst.style.display = 'block'; setTimeout(() => { tst.style.display = 'none'; }, 2500); }
 
+    // Hủy sạch bộ đếm chờ chấm điểm thẻ (khi thoát trang, chuyển từ, sửa, xóa, undo)
+    function cancelPendingCardMark(resetVisual = true) {
+        clearTimeout(actionTimeout);
+        actionTimeout = null;
+        blockManualMark = false;
+        pendingMarkResult = null;
+        pendingVariantIndex = null;
+        pendingSenseIndex = null;
+        const switchers = document.getElementById('cardTopSwitchers');
+        if (switchers) switchers.classList.remove('locked');
+        if (resetVisual) {
+            const c = document.getElementById('flashcard');
+            if (c) c.classList.remove('learned-bg', 'unlearned-bg');
+        }
+    }
+
     function showPage(pageId) {
-        if(isMicListening) stopMic(); 
+        if (isMicListening) stopMic();
+        if (pageId !== 'page-flashcard') {
+            cancelPendingCardMark(true);
+        }
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active')); 
         setTimeout(() => { document.getElementById(pageId).classList.add('active'); }, 10);
         
@@ -1361,8 +1446,9 @@
 
     function openVocabListFilter(f) { currentListFilter = f; document.getElementById('searchVocabInput').value = ''; showPage('page-list'); }
     function startStudy(f) { 
-        currentFilter = f; historyStack = []; lastShownCardId = null; reviewedSensesInVisit = new Set(); updateUndoButton(); 
-        blockManualMark = false; pendingMarkResult = null; clearTimeout(actionTimeout);
+        currentFilter = f; historyStack = []; lastShownCardId = null; reviewedSensesInVisit = new Set();
+        cancelPendingCardMark(true);
+        updateUndoButton(); 
         showPage('page-flashcard'); loadNextCard(); 
     }
     
@@ -1677,7 +1763,14 @@
     }
     
     function editWordFromList(id) { const i = vocabList.find(v => v.id === id); if (!i) return; populateFormWithItem(i); showPage('page-add'); }
-    function deleteWordFromList(id) { if (confirm(currentLang === 'vi' ? "Bạn có chắc chắn muốn xóa từ này khỏi danh sách?" : "您确定要从列表中删除此词汇吗？")) { vocabList = vocabList.filter(v => v.id !== id); saveData(); renderVocabList(); updateUI(); } }
+    function deleteWordFromList(id) {
+        if (confirm(currentLang === 'vi' ? "Bạn có chắc chắn muốn xóa từ này khỏi danh sách?" : "您确定要从列表中删除此词汇吗？")) {
+            vocabList = vocabList.filter(v => v.id !== id);
+            deleteSingleWord(id);
+            renderVocabList();
+            updateUI();
+        }
+    }
 
     function addOrUpdateWord() {
         const hz = document.getElementById('hanziInput').value.trim();
@@ -1725,6 +1818,7 @@
                 delete vocabList[idx].meanings;
                 delete vocabList[idx].examples;
                 syncWordAggregatesFromSenses(vocabList[idx]);
+                saveSingleWord(vocabList[idx]);
             }
             showToast('msg_update');
         } else {
@@ -1742,9 +1836,10 @@
             };
             syncWordAggregatesFromSenses(newItem);
             vocabList.push(newItem);
+            saveSingleWord(newItem);
             showToast('msg_save');
         }
-        saveData(); resetForm(); updateUI();
+        resetForm(); updateUI();
     }
 
     function resetAllSeenCounts() {
@@ -1769,13 +1864,30 @@
                     });
                 }
             });
-            saveData();
+            saveAllVocab();
             updateUI();
             showToast('msg_update');
         }
     }
-    function editCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; blockManualMark = false; pendingMarkResult = null; clearTimeout(actionTimeout); populateFormWithItem(vocabList[currentCardIndex]); showPage('page-add'); }
-    function deleteCurrentCard() { if (currentCardIndex === -1 || vocabList.length === 0) return; if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) { vocabList.splice(currentCardIndex, 1); saveData(); blockManualMark = false; pendingMarkResult = null; clearTimeout(actionTimeout); loadNextCard(); updateUI(); } }
+    function editCurrentCard() {
+        const item = getActiveCardItem();
+        if (!item) return;
+        cancelPendingCardMark(true);
+        populateFormWithItem(item);
+        showPage('page-add');
+    }
+    function deleteCurrentCard() {
+        const item = getActiveCardItem();
+        if (!item) return;
+        if (confirm(currentLang === 'vi' ? "Bạn có chắc muốn xóa vĩnh viễn từ này khỏi danh sách học?" : "删除此词汇？")) {
+            const delId = item.id;
+            vocabList = vocabList.filter(v => v.id !== delId);
+            deleteSingleWord(delId);
+            cancelPendingCardMark(true);
+            loadNextCard();
+            updateUI();
+        }
+    }
     function resetForm() {
         editingId = null; matchedDuplicateItem = null;
         document.getElementById('hanziInput').value = '';
@@ -1788,10 +1900,11 @@
         document.getElementById('cancelEditBtn').style.display = "none";
     }
 
-    // Chuyển đổi qua lại giữa các Pinyin của từ đa âm ngay trên Flashcard
+    // Chuyển đổi qua lại giữa các Pinyin của từ đa âm ngay trên Flashcard (khóa khi đang đếm ngược chấm điểm)
     function selectCardVariant(idx) {
-        if (currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
-        const item = vocabList[currentCardIndex];
+        if (blockManualMark || isAnimating) return;
+        const item = getActiveCardItem();
+        if (!item) return;
         const variants = getCardVariants(item);
         if (idx < 0 || idx >= variants.length) return;
         currentVariantIndex = idx;
@@ -1804,10 +1917,11 @@
         speakText(item.hanzi, activeVar.pinyin, variants.length > 1);
     }
 
-    // Chuyển đổi qua lại giữa Nghĩa 1, Nghĩa 2, Nghĩa 3... và hiện đúng VD tương ứng
+    // Chuyển đổi qua lại giữa Nghĩa 1, Nghĩa 2, Nghĩa 3... và hiện đúng VD tương ứng (khóa khi đang đếm ngược chấm điểm)
     function selectCardMeaning(mIdx) {
-        if (currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
-        const item = vocabList[currentCardIndex];
+        if (blockManualMark || isAnimating) return;
+        const item = getActiveCardItem();
+        if (!item) return;
         const variants = getCardVariants(item);
         const activeVar = variants[currentVariantIndex] || variants[0];
         if (!activeVar || mIdx < 0 || mIdx >= activeVar.senses.length) return;
@@ -1829,6 +1943,7 @@
         const hasMultiMeaning = Array.isArray(activeVar.senses) && activeVar.senses.length > 1;
 
         cardEl.classList.remove('has-1-switcher', 'has-2-switchers');
+        wrapper.classList.toggle('locked', blockManualMark);
 
         if (!hasMultiPinyin && !hasMultiMeaning) {
             wrapper.style.display = 'none';
@@ -1895,6 +2010,8 @@
 
     function renderCardUI(sel, targetVarIdx = 0, targetSenseIdx = 0, autoSpeak = true) {
         const variants = getCardVariants(sel);
+        currentCardId = sel.id;
+        currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
         currentVariantIndex = (targetVarIdx >= 0 && targetVarIdx < variants.length) ? targetVarIdx : 0;
         const activeVar = variants[currentVariantIndex];
         currentSenseIndex = (targetSenseIdx >= 0 && targetSenseIdx < activeVar.senses.length) ? targetSenseIdx : 0;
@@ -1911,29 +2028,46 @@
         if (autoSpeechEnabled && autoSpeak) speakText(sel.hanzi, activeVar.pinyin, variants.length > 1);
     }
 
-    // Tìm nghĩa tiếp theo chưa được ôn trong lượt xem hiện tại của từ (hỗ trợ từ 2 nghĩa trở lên)
-    function findNextUnreviewedSenseInWord(item) {
+    // Tìm nghĩa đầu tiên đang tới hạn ôn của từ (nếu Nghĩa 1 đã thuộc và Nghĩa 2 chưa thuộc thì mở thẳng Nghĩa 2)
+    function findFirstDueSenseInWord(item) {
+        const tk = getTodayKey();
         const variants = getCardVariants(item);
-        // Ưu tiên kiểm tra tiếp các nghĩa còn lại trong cách đọc hiện tại trước
-        const curVar = variants[currentVariantIndex] || variants[0];
-        if (curVar && Array.isArray(curVar.senses)) {
-            for (let s = currentSenseIndex + 1; s < curVar.senses.length; s++) {
-                if (!reviewedSensesInVisit.has(`${currentVariantIndex}:${s}`)) {
-                    return { variantIdx: currentVariantIndex, senseIdx: s };
-                }
-            }
-            for (let s = 0; s < currentSenseIndex; s++) {
-                if (!reviewedSensesInVisit.has(`${currentVariantIndex}:${s}`)) {
-                    return { variantIdx: currentVariantIndex, senseIdx: s };
-                }
-            }
-        }
-        // Tiếp theo kiểm tra các cách đọc phụ khác nếu từ có đa âm
         for (let v = 0; v < variants.length; v++) {
             const vr = variants[v];
             if (!vr || !Array.isArray(vr.senses)) continue;
             for (let s = 0; s < vr.senses.length; s++) {
-                if (!reviewedSensesInVisit.has(`${v}:${s}`)) {
+                if (isSenseDue(vr.senses[s], tk)) {
+                    return { variantIdx: v, senseIdx: s };
+                }
+            }
+        }
+        return { variantIdx: 0, senseIdx: 0 };
+    }
+
+    // Tìm nghĩa tiếp theo chưa được ôn trong lượt xem hiện tại và đang tới hạn (hỗ trợ từ 2 nghĩa trở lên)
+    function findNextUnreviewedSenseInWord(item, fromVarIdx = currentVariantIndex, fromSenseIdx = currentSenseIndex) {
+        const tk = getTodayKey();
+        const variants = getCardVariants(item);
+        // 1. Ưu tiên kiểm tra tiếp các nghĩa còn lại trong cách đọc hiện tại trước
+        const curVar = variants[fromVarIdx] || variants[0];
+        if (curVar && Array.isArray(curVar.senses)) {
+            for (let s = fromSenseIdx + 1; s < curVar.senses.length; s++) {
+                if (!reviewedSensesInVisit.has(`${fromVarIdx}:${s}`) && isSenseDue(curVar.senses[s], tk)) {
+                    return { variantIdx: fromVarIdx, senseIdx: s };
+                }
+            }
+            for (let s = 0; s < fromSenseIdx; s++) {
+                if (!reviewedSensesInVisit.has(`${fromVarIdx}:${s}`) && isSenseDue(curVar.senses[s], tk)) {
+                    return { variantIdx: fromVarIdx, senseIdx: s };
+                }
+            }
+        }
+        // 2. Tiếp theo kiểm tra các cách đọc phụ khác nếu từ có đa âm
+        for (let v = 0; v < variants.length; v++) {
+            const vr = variants[v];
+            if (!vr || !Array.isArray(vr.senses)) continue;
+            for (let s = 0; s < vr.senses.length; s++) {
+                if (!reviewedSensesInVisit.has(`${v}:${s}`) && isSenseDue(vr.senses[s], tk)) {
                     return { variantIdx: v, senseIdx: s };
                 }
             }
@@ -1971,6 +2105,7 @@
             document.getElementById('cardTopSwitchers').style.display = 'none';
             document.getElementById('flashcard').classList.remove('has-1-switcher', 'has-2-switchers');
             currentCardIndex = -1;
+            currentCardId = null;
             lastShownCardId = null;
             reviewedSensesInVisit = new Set();
             return; 
@@ -2015,25 +2150,26 @@
         }
 
         const sel = selectedPool[Math.floor(Math.random() * selectedPool.length)];
-        currentCardIndex = vocabList.findIndex(v => v.id === sel.id);
         reviewedSensesInVisit = new Set();
-        renderCardUI(sel, 0, 0, true);
+        const firstTarget = findFirstDueSenseInWord(sel);
+        renderCardUI(sel, firstTarget.variantIdx, firstTarget.senseIdx, true);
     }
 
     function updateUndoButton() { const btn = document.getElementById('btnUndoCard'); if(historyStack.length > 0 || blockManualMark) { btn.style.display = 'block'; btn.innerText = t('btn_undo'); } else { btn.style.display = 'none'; } }
 
     function markCard(isL) {
-        if (isAnimating || currentCardIndex === -1 || vocabList.length === 0) return;
+        const activeItem = getActiveCardItem();
+        if (isAnimating || !activeItem) return;
         const c = document.getElementById('flashcard');
 
         if (blockManualMark) {
             clearTimeout(actionTimeout);
-            // Nếu bấm lại đúng nút đang chờ -> chuyển ngay lập tức
+            // Nếu bấm lại đúng nút đang chờ -> chuyển ngay lập tức theo đúng nghĩa đã chốt
             if (pendingMarkResult === isL) {
-                blockManualMark = false;
-                pendingMarkResult = null;
-                c.classList.remove('learned-bg', 'unlearned-bg');
-                executeCardTransition(isL);
+                const targetVarIdx = pendingVariantIndex !== null ? pendingVariantIndex : currentVariantIndex;
+                const targetSenseIdx = pendingSenseIndex !== null ? pendingSenseIndex : currentSenseIndex;
+                cancelPendingCardMark(true);
+                executeCardTransition(isL, targetVarIdx, targetSenseIdx);
                 return;
             }
             // Nếu đang chờ mà bấm sang nút khác -> đổi sang thao tác bấm cuối cùng và đếm lại thời gian chờ
@@ -2044,16 +2180,19 @@
             actionTimeout = setTimeout(() => {
                 if (!blockManualMark) return;
                 const finalChoice = pendingMarkResult;
-                blockManualMark = false;
-                pendingMarkResult = null;
-                c.classList.remove('learned-bg', 'unlearned-bg');
-                executeCardTransition(finalChoice);
+                const targetVarIdx = pendingVariantIndex !== null ? pendingVariantIndex : currentVariantIndex;
+                const targetSenseIdx = pendingSenseIndex !== null ? pendingSenseIndex : currentSenseIndex;
+                cancelPendingCardMark(true);
+                executeCardTransition(finalChoice, targetVarIdx, targetSenseIdx);
             }, switchDelay);
             return;
         }
 
         blockManualMark = true;
         pendingMarkResult = isL;
+        pendingVariantIndex = currentVariantIndex;
+        pendingSenseIndex = currentSenseIndex;
+        document.getElementById('cardTopSwitchers').classList.add('locked');
         updateUndoButton();
         document.getElementById('cardDetails').classList.add('show');
         document.getElementById('clickHint').style.display = 'none';
@@ -2062,26 +2201,29 @@
         actionTimeout = setTimeout(() => {
             if (!blockManualMark) return;
             const finalChoice = pendingMarkResult;
-            blockManualMark = false;
-            pendingMarkResult = null;
-            c.classList.remove('learned-bg', 'unlearned-bg');
-            executeCardTransition(finalChoice);
+            const targetVarIdx = pendingVariantIndex !== null ? pendingVariantIndex : currentVariantIndex;
+            const targetSenseIdx = pendingSenseIndex !== null ? pendingSenseIndex : currentSenseIndex;
+            cancelPendingCardMark(true);
+            executeCardTransition(finalChoice, targetVarIdx, targetSenseIdx);
         }, delay);
     }
 
-    function executeCardTransition(isL) {
+    function executeCardTransition(isL, targetVarIdx = currentVariantIndex, targetSenseIdx = currentSenseIndex) {
+        const i = getActiveCardItem();
+        if (!i) return;
         isAnimating = true;
-        const i = vocabList[currentCardIndex]; 
         lastShownCardId = i.id;
         const variants = getCardVariants(i);
-        const activeVar = variants[currentVariantIndex] || variants[0];
-        const activeSense = activeVar.senses[currentSenseIndex] || activeVar.senses[0];
+        const safeVarIdx = (targetVarIdx >= 0 && targetVarIdx < variants.length) ? targetVarIdx : 0;
+        const activeVar = variants[safeVarIdx];
+        const safeSenseIdx = (targetSenseIdx >= 0 && targetSenseIdx < activeVar.senses.length) ? targetSenseIdx : 0;
+        const activeSense = activeVar.senses[safeSenseIdx];
         
         historyStack.push({
             cardIndex: currentCardIndex,
             cardId: i.id,
-            variantIndex: currentVariantIndex,
-            senseIndex: currentSenseIndex,
+            variantIndex: safeVarIdx,
+            senseIndex: safeSenseIdx,
             reviewedSensesSnapshot: Array.from(reviewedSensesInVisit),
             oldVariants: JSON.parse(JSON.stringify(variants)),
             oldInterval: i.interval,
@@ -2107,14 +2249,14 @@
         }
         activeSense.nextReview = getNextReviewDate(activeSense.interval);
 
-        // Đồng bộ lại tiến độ tổng của từ & lưu dữ liệu
+        // Đồng bộ lại tiến độ tổng của từ & lưu riêng từ này
         syncWordAggregatesFromSenses(i);
-        saveData();
+        saveSingleWord(i);
         updateUI();
 
         // Đánh dấu nghĩa này đã ôn trong lượt hiện tại của thẻ và kiểm tra nghĩa tiếp theo
-        reviewedSensesInVisit.add(`${currentVariantIndex}:${currentSenseIndex}`);
-        const nextSenseTarget = findNextUnreviewedSenseInWord(i);
+        reviewedSensesInVisit.add(`${safeVarIdx}:${safeSenseIdx}`);
+        const nextSenseTarget = findNextUnreviewedSenseInWord(i, safeVarIdx, safeSenseIdx);
         
         const c = document.getElementById('flashcard'); 
         if (isL) { c.classList.add('card-exit-left'); } else { c.classList.add('card-exit-right'); }
@@ -2122,10 +2264,10 @@
             c.classList.remove('card-exit-left', 'card-exit-right');
             if (nextSenseTarget) {
                 // Từ có >= 2 nghĩa: nhảy sang nghĩa tiếp theo của cùng từ đó
-                const isSameVariant = nextSenseTarget.variantIdx === currentVariantIndex;
+                const isSameVariant = nextSenseTarget.variantIdx === safeVarIdx;
                 renderCardUI(i, nextSenseTarget.variantIdx, nextSenseTarget.senseIdx, !isSameVariant);
             } else {
-                // Đã ôn xong hết các nghĩa của từ này: chuyển sang từ tiếp theo
+                // Đã ôn xong hết các nghĩa tới hạn của từ này: chuyển sang từ tiếp theo
                 loadNextCard();
             }
             c.classList.add('card-enter');
@@ -2135,11 +2277,11 @@
     
     function undoPreviousCard() { 
         if (blockManualMark) {
-            clearTimeout(actionTimeout);
-            blockManualMark = false;
-            pendingMarkResult = null;
-            document.getElementById('flashcard').classList.remove('learned-bg', 'unlearned-bg');
-            renderCardUI(vocabList[currentCardIndex], currentVariantIndex, currentSenseIndex, false);
+            const activeItem = getActiveCardItem();
+            cancelPendingCardMark(true);
+            if (activeItem) {
+                renderCardUI(activeItem, currentVariantIndex, currentSenseIndex, false);
+            }
             updateUndoButton();
             showToast('btn_undo', currentLang==='vi'?'Đã hủy chấm điểm!':'已取消评分！');
             return;
@@ -2155,9 +2297,8 @@
             i.ease = lastAction.oldEase;
             i.nextReview = lastAction.oldNextReview;
             i.seenCount = lastAction.oldSeenCount;
-            saveData();
+            saveSingleWord(i);
             updateUI();
-            currentCardIndex = vocabList.findIndex(v => v.id === i.id);
             reviewedSensesInVisit = new Set(lastAction.reviewedSensesSnapshot || []);
             renderCardUI(i, lastAction.variantIndex || 0, lastAction.senseIndex || 0, true);
             const c = document.getElementById('flashcard');
@@ -2168,7 +2309,8 @@
     }
 
     function toggleCardDetails() {
-        if (currentCardIndex === -1 || vocabList.length === 0) return;
+        const activeItem = getActiveCardItem();
+        if (!activeItem) return;
         const d = document.getElementById('cardDetails');
         const h = document.getElementById('clickHint');
         if (d.classList.contains('show')) {
@@ -2238,9 +2380,9 @@
     function stopMic(e) { if(e && e.type === 'touchend') e.preventDefault(); if(isMicListening && micRecog) { try { micRecog.stop(); } catch(err) {} } }
     function resetMicUI() { isMicListening = false; document.getElementById('btnMic').classList.remove('listening'); }
     function handleMicResult(tr) {
-        if(currentCardIndex === -1 || !vocabList[currentCardIndex]) return;
-        if(blockManualMark) return;
-        const target = vocabList[currentCardIndex].hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
+        const activeItem = getActiveCardItem();
+        if (!activeItem || blockManualMark) return;
+        const target = activeItem.hanzi.replace(/[.,!?。，！？]/g, '').trim().toLowerCase();
         const isCorrect = (tr === target || tr.includes(target));
         if(isCorrect) {
             showToast('msg_mic_correct', `${t('msg_mic_correct')}${tr} ${t('next_3s')}`);
@@ -2319,7 +2461,8 @@
                         nextReview: item.nextReview || getTodayKey()
                     }));
                     migrateVocabList(vocabList);
-                    saveData();
+                    vocabList.sort((a, b) => (Number(a.id) || 0) - (Number(b.id) || 0));
+                    saveAllVocab();
                 }
                 if (imp.dailyStats && typeof imp.dailyStats === 'object') {
                     dailyStats = imp.dailyStats;
