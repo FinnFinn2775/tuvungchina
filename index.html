@@ -550,7 +550,7 @@
                 <div class="cal-day-name" data-i18n="day_mon">T2</div><div class="cal-day-name" data-i18n="day_tue">T3</div><div class="cal-day-name" data-i18n="day_wed">T4</div><div class="cal-day-name" data-i18n="day_thu">T5</div><div class="cal-day-name" data-i18n="day_fri">T6</div><div class="cal-day-name" data-i18n="day_sat">T7</div><div class="cal-day-name" data-i18n="day_sun">CN</div>
             </div>
             <div class="calendar-grid" id="calendarGridDays" style="margin-top: 10px;"></div>
-            <div style="font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 16px; font-weight: 600;" data-i18n="cal_hint">🔥 = Đã học trên 30 phút</div>
+            <div id="calHintText" style="font-size: 12px; color: var(--text-sub); text-align: center; margin-top: 16px; font-weight: 600;">🔥 = Đã học trên 30 phút</div>
         </div>
     </div>
 
@@ -566,7 +566,7 @@
             </div>
             
             <!-- Cách đọc chính (Mặc định #1) -->
-            <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" data-i18n-ph="ph_pinyin"></div>
+            <div class="input-group"><label data-i18n="lbl_pinyin">Bính âm (Pinyin):</label><input type="text" id="pinyinInput" data-i18n-ph="ph_pinyin" oninput="markPinyinManual()"></div>
             
             <div id="primarySensesContainer">
                 <div class="input-group sense-row">
@@ -698,7 +698,7 @@
             device_iphone: "📱 Chế độ iPhone", device_laptop: "💻 Chế độ Laptop",
             msg_save: "✓ Đã thêm từ thành công!", msg_update: "✓ Đã cập nhật thành công!", empty_list: "Không có từ nào trong mục này", end_card: "Hoàn thành! Bạn đã ôn hết từ cho hôm nay.", seen_count: "Cấp độ:", time_min: "Phút", time_sec: "Giây", time_hr: "Giờ", day_lbl: "Ngày", welcome_title: "Màn hình Chào mừng",
             msg_mic_correct: "🎙️ Chuẩn xác: ", msg_mic_wrong: "🎙️ Sai rồi! Bạn đọc là: ", btn_quit_quiz: "⬅ Thoát Minigame",
-            day_mon: "T2", day_tue: "T3", day_wed: "T4", day_thu: "T5", day_fri: "T6", day_sat: "T7", day_sun: "CN", cal_hint: "🔥 = Đã học trên 30 phút", cal_month: "Tháng",
+            day_mon: "T2", day_tue: "T3", day_wed: "T4", day_thu: "T5", day_fri: "T6", day_sat: "T7", day_sun: "CN", cal_month: "Tháng",
             goal_not_reach: "Chưa đủ mục tiêu", goal_reach: "Đã đạt mục tiêu"
         },
         zh: {
@@ -729,7 +729,7 @@
             device_iphone: "📱 iPhone 模式", device_laptop: "💻 电脑模式",
             msg_save: "✓ 成功添加！", msg_update: "✓ 成功更新！", empty_list: "列表为空", end_card: "太棒了！您已完成今天的复习任务。", seen_count: "级别:", time_min: "分钟", time_sec: "秒", time_hr: "小时", day_lbl: "天", welcome_title: "欢迎屏幕",
             msg_mic_correct: "🎙️ 准确：", msg_mic_wrong: "🎙️ 错了！您读成了：", btn_quit_quiz: "⬅ 退出游戏",
-            day_mon: "一", day_tue: "二", day_wed: "三", day_thu: "四", day_fri: "五", day_sat: "六", day_sun: "日", cal_hint: "🔥 = 学习超过30分钟", cal_month: "月",
+            day_mon: "一", day_tue: "二", day_wed: "三", day_thu: "四", day_fri: "五", day_sat: "六", day_sun: "日", cal_month: "月",
             goal_not_reach: "未达目标", goal_reach: "已达目标"
         }
     };
@@ -767,6 +767,14 @@
         }
     }, { passive: true });
 
+    function updateCalendarHint() {
+        const el = document.getElementById('calHintText');
+        if (!el) return;
+        el.innerText = currentLang === 'vi'
+            ? `🔥 = Đã học trên ${dailyGoalMins} phút`
+            : `🔥 = 学习超过${dailyGoalMins}分钟`;
+    }
+
     function changeLanguage(lang) {
         currentLang = lang;
         localStorage.setItem('my_app_lang', lang);
@@ -800,6 +808,7 @@
         document.querySelectorAll('[data-i18n-ph]').forEach(el => {
             if (d[el.getAttribute('data-i18n-ph')] !== undefined) el.placeholder = d[el.getAttribute('data-i18n-ph')];
         });
+        updateCalendarHint();
         updateSenseLabels(document.getElementById('primarySensesContainer'));
         document.querySelectorAll('#extraVariantsContainer .variant-block').forEach((blk, idx) => {
             const titleEl = blk.querySelector('.variant-block-title');
@@ -823,9 +832,9 @@
         ha1:'哈',ha2:'蛤',ha3:'哈',hai1:'嗨',hai2:'孩',hai3:'海',hai4:'害',han1:'酣',han2:'寒',han3:'喊',han4:'汉',hang1:'夯',hang2:'航',hang4:'巷',hao1:'蒿',hao2:'豪',hao3:'郝',hao4:'浩',hao5:'好',he1:'喝',he2:'河',he4:'贺',hei1:'黑',hen2:'痕',hen3:'很',hen4:'恨',heng1:'哼',heng2:'恒',heng4:'横',hong1:'轰',hong2:'红',hong3:'哄',hong4:'讧',hou1:'齁',hou2:'猴',hou3:'吼',hou4:'后',hu1:'呼',hu2:'湖',hu3:'虎',hu4:'户',hua1:'花',hua2:'滑',hua4:'画',huai2:'怀',huai4:'坏',huan1:'欢',huan2:'环',huan3:'缓',huan4:'换',huang1:'荒',huang2:'黄',huang3:'谎',huang4:'晃',hui1:'灰',hui2:'回',hui3:'悔',hui4:'汇',hui5:'回',hun1:'婚',hun2:'魂',hun4:'混',huo1:'豁',huo2:'活',huo3:'火',huo4:'货',
         ji1:'机',ji2:'急',ji3:'挤',ji4:'记',jia1:'家',jia2:'荚',jia3:'甲',jia4:'架',jian1:'尖',jian3:'简',jian4:'见',jian5:'见',jiang1:'江',jiang3:'讲',jiang4:'匠',jiao1:'交',jiao2:'嚼',jiao3:'脚',jiao4:'叫',jie1:'接',jie2:'节',jie3:'姐',jie4:'借',jin1:'今',jin3:'紧',jin4:'进',jin5:'进',jing1:'京',jing3:'警',jing4:'静',jiong1:'扃',jiong3:'窘',jiu1:'究',jiu3:'九',jiu4:'就',ju1:'居',ju2:'局',ju3:'举',ju4:'句',juan1:'捐',juan3:'卷',juan4:'倦',jue1:'撅',jue2:'决',jue3:'蹶',jue4:'倔',jun1:'军',jun4:'俊',
         ka1:'咖',ka3:'卡',kai1:'开',kai3:'凯',kai4:'慨',kai5:'开',kan1:'刊',kan3:'砍',kan4:'看',kang1:'康',kang2:'扛',kang4:'抗',kao1:'尻',kao3:'考',kao4:'靠',ke1:'科',ke2:'咳',ke3:'可',ke4:'客',ken3:'肯',ken4:'裉',keng1:'坑',kong1:'空',kong3:'孔',kong4:'控',kou1:'抠',kou3:'口',kou4:'扣',ku1:'枯',ku3:'苦',ku4:'库',kua1:'夸',kua3:'垮',kua4:'跨',kuai3:'蒯',kuai4:'快',kuan1:'宽',kuan3:'款',kuang1:'筐',kuang2:'狂',kuang4:'矿',kui1:'亏',kui2:'葵',kui3:'傀',kui4:'愧',kun1:'昆',kun3:'捆',kun4:'困',kuo4:'扩',
-        la1:'拉',la2:'砬',la3:'喇',la4:'辣',la5:'啦',lai2:'来',lai4:'赖',lai5:'来',lan2:'蓝',lan3:'懒',lan4:'烂',lang1:'啷',lang2:'狼',lang3:'朗',lang4:'浪',lao1:'捞',lao2:'劳',lao3:'老',lao4:'涝',le4:'勒',le5:'了',lei1:'勒',lei2:'雷',lei3:'垒',lei4:'泪',leng2:'棱',leng3:'冷',leng4:'愣',li1:'哩',li2:'离',li3:'里',li4:'力',lia3:'俩',lian2:'连',lian3:'脸',lian4:'练',liang2:'凉',liang3:'两',liang4:'亮',liao1:'撩',liao2:'聊',liao3:'瞭',liao4:'料',lie1:'咧',lie3:'咧',lie4:'列',lin2:'林',lin3:'凛',lin4:'吝',ling1:'拎',ling2:'零',ling3:'领',ling4:'另',liu1:'溜',liu2:'流',liu3:'柳',liu4:'六',long2:'龙',long3:'拢',long4:'弄',lou1:'搂',lou2:'楼',lou3:'篓',lou4:'漏',lu1:'撸',lu2:'炉',lu3:'鲁',lu4:'路',lv2:'驴',lv3:'旅',lv4:'绿',luan2:'峦',luan3:'卵',luan4:'乱',lve4:'略',lun1:'抡',lun2:'轮',lun4:'论',luo1:'啰',luo2:'罗',luo3:'裸',luo4:'落',
+        la1:'拉',la2:'砬',la3:'喇',la4:'辣',la5:'啦',lai2:'来',lai4:'赖',lai5:'来',lan2:'蓝',lan3:'懒',lan4:'烂',lang1:'啷',lang2:'狼',lang3:'朗',lang4:'浪',lao1:'捞',lao2:'劳',lao3:'老',lao4:'涝',le4:'勒',le5:'了',lei1:'勒',lei2:'雷',lei3:'垒',lei4:'泪',leng2:'棱',leng3:'冷',leng4:'愣',li1:'哩',li2:'离',li3:'里',li4:'力',lia3:'俩',lian2:'连',lian3:'脸',lian4:'练',liang2:'凉',liang3:'两',liang4:'亮',liao1:'撩',liao2:'聊',liao3:'瞭',liao4:'料',lie1:'咧',lie3:'咧',lie4:'列',lin2:'林',lin3:'凛',lin4:'吝',ling1:'拎',ling2:'零',ling3:'领',ling4:'另',liu1:'溜',liu2:'流',liu3:'柳',liu4:'六',long2:'龙',long3:'拢',long4:'弄',lou1:'搂',lou2:'楼',lou3:'篓',lou4:'漏',lu1:'撸',lu2:'炉',lu3:'鲁',lu4:'路',lue4:'略',lv2:'驴',lv3:'旅',lv4:'绿',luan2:'峦',luan3:'卵',luan4:'乱',lve4:'略',lun1:'抡',lun2:'轮',lun4:'论',luo1:'啰',luo2:'罗',luo3:'裸',luo4:'落',
         ma1:'妈',ma2:'麻',ma3:'马',ma4:'骂',ma5:'吗',mai2:'埋',mai3:'买',mai4:'卖',man1:'颟',man2:'蛮',man3:'满',man4:'慢',mang2:'忙',mang3:'莽',mao1:'猫',mao2:'毛',mao3:'卯',mao4:'帽',me5:'么',mei2:'没',mei3:'美',mei4:'妹',men1:'闷',men2:'门',men4:'闷',men5:'们',meng1:'蒙',meng2:'萌',meng3:'猛',meng4:'梦',mi1:'咪',mi2:'迷',mi3:'米',mi4:'密',mian2:'棉',mian3:'免',mian4:'面',miao1:'喵',miao2:'苗',miao3:'秒',miao4:'妙',mie1:'咩',mie4:'灭',min2:'民',min3:'敏',ming2:'明',ming3:'酩',ming4:'命',miu4:'谬',mo1:'摸',mo2:'魔',mo3:'抹',mo4:'末',mou2:'谋',mou3:'某',mu2:'模',mu3:'母',mu4:'木',
-        na1:'呐',na2:'拿',na3:'哪',na4:'那',na5:'呐',nai3:'奶',nai4:'耐',nan1:'囡',nan2:'男',nan3:'赧',nan4:'难',nang1:'囔',nang2:'囊',nang3:'曩',nang4:'齉',nao1:'孬',nao2:'挠',nao3:'脑',nao4:'闹',ne2:'哪',ne4:'呐',ne5:'呢',nei3:'馁',nei4:'内',nen4:'嫩',neng2:'能',ni1:'妮',ni2:'泥',ni3:'你',ni4:'逆',nian1:'拈',nian2:'年',nian3:'碾',nian4:'念',niang2:'娘',niang4:'酿',niao3:'鸟',niao4:'尿',nie1:'捏',nie4:'镍',nin2:'您',ning2:'宁',ning3:'拧',ning4:'泞',niu1:'妞',niu2:'牛',niu3:'扭',niu4:'拗',nong2:'农',nong4:'弄',nou4:'耨',nu2:'奴',nu3:'努',nu4:'怒',nv3:'女',nv4:'衄',nuan3:'暖',nve4:'虐',nuo2:'挪',nuo4:'诺',
+        na1:'呐',na2:'拿',na3:'哪',na4:'那',na5:'呐',nai3:'奶',nai4:'耐',nan1:'囡',nan2:'男',nan3:'赧',nan4:'难',nang1:'囔',nang2:'囊',nang3:'曩',nang4:'齉',nao1:'孬',nao2:'挠',nao3:'脑',nao4:'闹',ne2:'哪',ne4:'呐',ne5:'呢',nei3:'馁',nei4:'内',nen4:'嫩',neng2:'能',ni1:'妮',ni2:'泥',ni3:'你',ni4:'逆',nian1:'拈',nian2:'年',nian3:'碾',nian4:'念',niang2:'娘',niang4:'酿',niao3:'鸟',niao4:'尿',nie1:'捏',nie4:'镍',nin2:'您',ning2:'宁',ning3:'拧',ning4:'泞',niu1:'妞',niu2:'牛',niu3:'扭',niu4:'拗',nong2:'农',nong4:'弄',nou4:'耨',nu2:'奴',nu3:'努',nu4:'怒',nue4:'虐',nv3:'女',nv4:'衄',nuan3:'暖',nve4:'虐',nuo2:'挪',nuo4:'诺',
         o1:'喔',o2:'哦',o4:'哦',o5:'哦',ou1:'欧',ou3:'偶',ou4:'沤',ou5:'噢',
         pa1:'趴',pa2:'爬',pa4:'怕',pai1:'拍',pai2:'牌',pai3:'迫',pai4:'派',pan1:'攀',pan2:'盘',pan4:'判',pang1:'乓',pang2:'旁',pang3:'耪',pang4:'胖',pao1:'抛',pao2:'袍',pao3:'跑',pao4:'炮',pei1:'胚',pei2:'陪',pei4:'配',pen1:'喷',pen2:'盆',peng1:'烹',peng2:'朋',peng3:'捧',peng4:'碰',pi1:'批',pi2:'皮',pi3:'匹',pi4:'屁',pian1:'篇',pian2:'便',pian3:'谝',pian4:'片',piao1:'飘',piao2:'瓢',piao3:'漂',piao4:'票',pie1:'撇',pie3:'撇',pin1:'拼',pin2:'贫',pin3:'品',pin4:'聘',ping1:'乒',ping2:'平',po1:'坡',po2:'婆',po3:'叵',po4:'破',pou1:'剖',pou2:'裒',pou3:'瓿',pu1:'扑',pu2:'仆',pu3:'普',pu4:'瀑',
         qi1:'七',qi2:'齐',qi3:'起',qi4:'气',qi5:'起',qia1:'掐',qia3:'卡',qia4:'恰',qian1:'千',qian2:'钱',qian3:'浅',qian4:'欠',qiang1:'枪',qiang2:'墙',qiang3:'抢',qiang4:'呛',qiao1:'敲',qiao2:'桥',qiao3:'巧',qiao4:'俏',qie1:'切',qie2:'茄',qie3:'且',qie4:'窃',qin1:'亲',qin2:'琴',qin3:'寝',qin4:'沁',qing1:'轻',qing2:'情',qing3:'请',qing4:'庆',qiong2:'穷',qiu1:'秋',qiu2:'球',qiu3:'糗',qu1:'区',qu2:'渠',qu3:'取',qu4:'去',qu5:'去',quan1:'圈',quan2:'全',quan3:'犬',quan4:'劝',que1:'缺',que2:'瘸',que4:'却',qun1:'逡',qun2:'群',
@@ -949,7 +958,7 @@
         return str.split(';').map(s => s.trim()).filter(Boolean);
     }
 
-    // Đồng bộ lại các trường SRS tổng của từ dựa trên toàn bộ các nghĩa (senses)
+    // Đồng bộ lại các trường SRS tổng của từ dựa trên các nghĩa tới hạn (hoặc toàn bộ nếu chưa tới hạn)
     function syncWordAggregatesFromSenses(item) {
         if (!item || !Array.isArray(item.variants) || item.variants.length === 0) return;
         const allSenses = [];
@@ -960,18 +969,22 @@
         });
         if (allSenses.length === 0) return;
 
+        const tk = getTodayKey();
+        const dueSenses = allSenses.filter(s => isSenseDue(s, tk));
+        const targetSensesForInterval = dueSenses.length > 0 ? dueSenses : allSenses;
+
         const totalSeen = allSenses.reduce((sum, s) => sum + (Number(s.seenCount) || 0), 0);
-        const minInterval = Math.min(...allSenses.map(s => Number(s.interval) || 0));
+        const minInterval = Math.min(...targetSensesForInterval.map(s => Number(s.interval) || 0));
         const avgEase = allSenses.reduce((sum, s) => sum + (Number(s.ease) || 2.5), 0) / allSenses.length;
         const earliestReview = allSenses
-            .map(s => s.nextReview || getTodayKey())
-            .sort()[0] || getTodayKey();
+            .map(s => s.nextReview || tk)
+            .sort()[0] || tk;
 
         item.seenCount = totalSeen;
         item.interval = minInterval;
         item.ease = Math.round(avgEase * 100) / 100;
-        item.nextReview = minInterval === 0 ? getTodayKey() : earliestReview;
-        item.status = (totalSeen > 0 && minInterval > 0 && item.nextReview > getTodayKey()) ? 'learned' : 'unlearned';
+        item.nextReview = minInterval === 0 ? tk : earliestReview;
+        item.status = (totalSeen > 0 && minInterval > 0 && item.nextReview > tk) ? 'learned' : 'unlearned';
     }
 
     // Chuẩn hóa và tự động chuyển đổi dữ liệu cũ sang cấu trúc senses: [{ meaning, example, interval, ease, nextReview, seenCount }]
@@ -1142,7 +1155,7 @@
     
     let currentFilter = 'srs', currentListFilter = 'all';
     let currentCardIndex = -1, currentCardId = null, currentVariantIndex = 0, currentSenseIndex = 0;
-    let editingId = null, matchedDuplicateItem = null, isAnimating = false;
+    let editingId = null, matchedDuplicateItem = null, isAnimating = false, pinyinManuallyEdited = false;
     let chartInstance = null, timeChartInstance = null, memoryChartInstance = null, currentRange = 7;
     let lastShownCardId = null;
     let reviewedSensesInVisit = new Set();
@@ -1153,6 +1166,7 @@
     let pendingVariantIndex = null;
     let pendingSenseIndex = null;
     let actionTimeout = null;
+    let speakTimer = null;
     let localSecondsAccumulated = 0;
 
     function getActiveCardItem() {
@@ -1254,7 +1268,12 @@
     });
 
     function toggleWelcome(val) { showWelcomeScreen = val; localStorage.setItem('my_show_welcome', val); }
-    function updateDailyGoal(val) { dailyGoalMins = parseInt(val); localStorage.setItem('my_daily_goal', dailyGoalMins); }
+    function updateDailyGoal(val) {
+        dailyGoalMins = parseInt(val);
+        localStorage.setItem('my_daily_goal', dailyGoalMins);
+        updateCalendarHint();
+        renderCalendar();
+    }
 
     // --- QUẢN LÝ TỈ LỆ PHẦN TRĂM MỨC ĐỘ THUỘC (6 NHÓM) ---
     function populateLevelRatioInputs() {
@@ -1382,11 +1401,14 @@
             }
         }
         if (!textToSpeak) return;
+        clearTimeout(speakTimer);
         window.speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(textToSpeak);
-        u.lang = 'zh-CN';
-        u.rate = globalSpeechRate;
-        window.speechSynthesis.speak(u);
+        speakTimer = setTimeout(() => {
+            const u = new SpeechSynthesisUtterance(textToSpeak);
+            u.lang = 'zh-CN';
+            u.rate = globalSpeechRate;
+            window.speechSynthesis.speak(u);
+        }, 40);
     }
 
     function speakCurrentCard() {
@@ -1451,7 +1473,17 @@
         showPage('page-flashcard'); loadNextCard(); 
     }
     
-    function autoPinyin() { const ip = document.getElementById('hanziInput').value.trim(); document.getElementById('pinyinInput').value = ip ? pinyin(ip, { toneType: 'symbol' }) : ''; }
+    function markPinyinManual() {
+        const val = document.getElementById('pinyinInput').value.trim();
+        pinyinManuallyEdited = val !== '';
+    }
+
+    function autoPinyin() {
+        if (editingId !== null || pinyinManuallyEdited) return;
+        const ip = document.getElementById('hanziInput').value.trim();
+        document.getElementById('pinyinInput').value = ip ? pinyin(ip, { toneType: 'symbol' }) : '';
+    }
+
     function checkDuplicateHanzi() {
         if (editingId) return;
         const hz = document.getElementById('hanziInput').value.trim();
@@ -1562,6 +1594,7 @@
 
     function populateFormWithItem(item) {
         editingId = item.id;
+        pinyinManuallyEdited = true;
         const variants = getCardVariants(item);
         document.getElementById('hanziInput').value = item.hanzi;
         document.getElementById('pinyinInput').value = variants[0].pinyin || '';
@@ -1702,6 +1735,7 @@
             let cls = 'cal-day'; if (isHighlight) cls += ' highlight'; if (isToday) cls += ' today';
             grid.innerHTML += `<div class="${cls}">${d}</div>`;
         }
+        updateCalendarHint();
     }
     function changeMonth(dir) { currentCalDate.setMonth(currentCalDate.getMonth() + dir); renderCalendar(); }
 
@@ -1888,7 +1922,7 @@
         }
     }
     function resetForm() {
-        editingId = null; matchedDuplicateItem = null;
+        editingId = null; matchedDuplicateItem = null; pinyinManuallyEdited = false;
         document.getElementById('hanziInput').value = '';
         document.getElementById('pinyinInput').value = '';
         renderSensesContainer(document.getElementById('primarySensesContainer'), [{ meaning: '', example: '' }]);
@@ -2442,6 +2476,13 @@
     function importData(e) {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
+        const confirmMsg = currentLang === 'vi'
+            ? "Khôi phục từ file sao lưu sẽ ghi đè toàn bộ kho từ vựng và lịch sử học hiện tại. Bạn có chắc chắn muốn tiếp tục?"
+            : "从备份文件恢复将覆盖当前所有词汇和学习记录。您确定要继续吗？";
+        if (!confirm(confirmMsg)) {
+            e.target.value = '';
+            return;
+        }
         const r = new FileReader();
         r.onload = function(ev) {
             try {
@@ -2488,7 +2529,7 @@
         startQuizMode, showPage, exportData, importData, updateDailyGoal,
         toggleWelcome, changeLanguage, updateSpeechRate, toggleAutoSpeech,
         testSpeech, resetAllSeenCounts, renderTimeStats, changeMonth,
-        autoPinyin, checkDuplicateHanzi, loadDuplicateToEdit, addOrUpdateWord,
+        markPinyinManual, autoPinyin, checkDuplicateHanzi, loadDuplicateToEdit, addOrUpdateWord,
         resetForm, renderVocabList, speakCurrentCard, editCurrentCard,
         deleteCurrentCard, markCard, undoPreviousCard, startMic, stopMic, endQuiz,
         speakText, editWordFromList, deleteWordFromList,
